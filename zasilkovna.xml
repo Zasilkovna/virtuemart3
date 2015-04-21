@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<extension version="3.0" type="plugin" method="upgrade" group="vmshipment">
+	<!--  The extension commercial name: make it different form others at JED http://extensions.joomla.org/-->
+	<name>Zasilkovna VM2</name>
+	<!-- The following elements are optional and free of formatting constraints --> 
+	<!-- Original creation date. Recommended: YYYY-MM-DD -->
+	<creationDate>2015-04-20</creationDate>
+	<author>Zásilkovna s.r.o.</author>
+	<authorEmail>technicka.podpora@zasilkovna.cz</authorEmail>
+	<authorUrl>http://www.zasilkovna.cz/</authorUrl>
+	<copyright>(c) 2013 Zásilkovna s.r.o.</copyright>
+	<license>License Info with link</license>
+	<!--  The version string is recorded in the components table -->
+	<version>1.0</version>
+	<!--  The date for the actual version release -->
+	<releaseDate>2015-04-20</releaseDate>
+	<!--  Type of release: Bug fix, Security Fix, Minor update, Major update -->
+	<releaseType>First version</releaseType>
+	<downloadUrl>http://www.example.org/downloads/myjoomlaextensions/</downloadUrl>
+	<!-- The description is optional and defaults to the name -->
+	<description>Zasilkovna.cz VM3 shipment plugin</description>
+
+	<!-- <installfile>install.zasilkovna.php</installfile>            -->
+    <!-- <uninstallfile>uninstall.zasilkovna.php</uninstallfile> -->
+	<scriptfile>install.zasilkovna.php</scriptfile> 
+	<installfile>install.zasilkovna.php</installfile>
+	<uninstallfile>uninstall.zasilkovna.php</uninstallfile>
+    <files>
+		<filename plugin="zasilkovna">zasilkovna.php</filename>
+		<!--folder>administrator</folder-->
+    </files> 
+
+	<config>
+		<fields addpath="/administrator/components/com_virtuemart/elements">
+			<field type="vmjpluginwarning" default="xx"/>
+			<field type="spacer" default="" level="level1" />
+			<!-- <param name="desc" type="text"  size="15"  default="Rate" label="PLG_VMSHIPMENT_ZASILKOVNA_DESC" description="PLG_VMSHIPMENT_ZASILKOVNA_DESC"/> -->
+			<field type="spacer" default="" />
+			<field name="country" type="vmzasilkovnacountries"  scope="com_virtuemart" default="" label="PLG_VMSHIPMENT_ZASILKOVNA_COUNTRIES" description="PLG_VMSHIPMENT_ZASILKOVNA_COUNTRIES"/>
+			<field name="packet_price_czk" type="text" size="10" default="" label="Cena za dopravu" description="Cena za dopravu"/>	
+			<field name="free_shipping_treshold_czk" type="text" size="10" default="-1" label="Minimální cena objednavky pro dopravu zdarma(vypnuto = -1)" description="Minimální cena objednavky pro dopravu zdarma"/>	
+			<field name="weight_treshold" type="text" size="10" default="-1" label="Maximální váha objednávky v kg (vypnuto = -1)" description="Maximální váha objednávky"/>		
+			<field name="tax_id" type="vmtaxes" scope="com_virtuemart"  label="VMSHIPMENT_WEIGHT_COUNTRIES_TAX" description="VMSHIPMENT_WEIGHT_COUNTRIES_TAX_DESC" />
+			<field type="spacer" default="" />			
+		</fields>
+	</config>
+        
+ 	<media folder="media" destination="com_zasilkovna">
+		<!--filename>cancel-icon.png</filename>
+		<filename>ie9p-helper.php</filename>
+		<filename>jquery.css</filename>
+		<filename>jquery.js</filename>
+		<filename>jquery.fancybox.css</filename>
+		<filename>jquery.fancybox.js</filename>
+		<filename>jquery.min.js</filename>
+		<filename>logo-cz.jpg</filename>
+		<filename>logo-sk.jpg</filename>
+		<filename>packetery.css</filename>
+		<folder>fancybox</folder>
+		<folder>zasilkovna</folder-->
+		<folder>admin</folder>
+		<folder>media</folder>
+	</media>
+	<administration>
+		<!--languages folder="administrator">
+			<language tag="cs-CZ">cs-CZ.plg_vmshipment_zasilkovna.ini</language>
+			<language tag="en-GB">en-GB.plg_vmshipment_zasilkovna.ini</language>
+			<language tag="sk-SK">sk-SK.plg_vmshipment_zasilkovna.ini</language>
+		</languages>
+		 <languages>
+			<language tag="en-GB">en-GB.plg_vmshipment_zasilkovna.ini</language>
+        </languages-->
+	</administration>
+</extension>
