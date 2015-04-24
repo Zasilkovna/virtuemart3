@@ -48,9 +48,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             'virtuemart_order_id' => 'int(11) UNSIGNED',
             'virtuemart_shipmentmethod_id' => 'mediumint(1) UNSIGNED',
             'order_number' => 'char(32)',
-            'zasilkovna_packet_id' => 'decimal(10)',
+            'zasilkovna_packet_id' => 'decimal(10,0)',
             'zasilkovna_packet_price' => 'decimal(15,2)',
-            'branch_id' => 'decimal(10)',
+            'branch_id' => 'decimal(10,0)',
             'branch_currency' => 'char(5)',
             'branch_name_street' => 'varchar(500)',
             'email' => 'varchar(255)', 
@@ -61,10 +61,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             'city' => 'varchar(255)',
             'zip_code' => 'varchar(255)',            
             'virtuemart_country_id' => 'varchar(255)',            
-            'adult_content' => 'smallint(1) DEFAULT 0', 
+            'adult_content' => 'smallint(1) DEFAULT \'0\'', 
             'is_cod' => 'smallint(1)',            
             'exported' => 'smallint(1)',
-            'printed_label' => 'smallint(1) DEFAULT 0',            
+            'printed_label' => 'smallint(1) DEFAULT \'0\'',            
             'shipment_name' => 'varchar(5000)',            
             'shipment_cost' => 'decimal(10,2)',
             'shipment_package_fee' => 'decimal(10,2)',
@@ -349,7 +349,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $js_html .= '<input type="hidden" name="branch_id">';
         $js_html .= '<input type="hidden" name="branch_currency">';
         $js_html .= '<input type="hidden" name="branch_name_street">';
-        $jsHtmlIsSet = false;                
+        $jsHtmlIsSet = false;  
         foreach ($this->methods as $key => $method) {            
             $html[$key] = '';
             /*this part adds javascript api and controls 
@@ -366,7 +366,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 }           
             }
 
-            $country = $method->country[0];
+            $country = $method->country;
+			
             if ($this->checkConditions($cart, $method, $cart->pricesUnformatted)) {
                 $html[$key] .= '<div name="helper_div">';//this div packs the select box with radio input - helps js easily find the radio
                 $methodSalesPrice     = $this->calculateSalesPrice($cart, $method, $cart->pricesUnformatted);               
@@ -571,6 +572,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return $this->setOnTablePluginParams($name, $id, $table);
     }
     
+	function plgVmDeclarePluginParamsShipmentVM3 (&$data) {
+		return $this->declarePluginParams ('shipment', $data);
+	}
 }
 
 // No closing tag

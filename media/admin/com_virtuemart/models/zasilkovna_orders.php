@@ -532,8 +532,7 @@ $q = 'SELECT virtuemart_order_item_id, product_quantity, order_item_name,
           ;
         }else if($shipment_id==self::ZASILKOVNA_ORDERS){
 			$zas_methods =  $this->zas_model->getShipmentMethodIds();
-			if(!empty($zas_methods))
-				$where[] = ' o.virtuemart_shipmentmethod_id IN ('.implode(',',$zas_methods).')';
+			$where[] = ' o.virtuemart_shipmentmethod_id IN ('. (!empty($zas_methods) ? implode(',',$zas_methods) : 'NULL') .')';
 		}else{
             //exact shipping method was selected, filter by its id.
 		    $where[] = ' o.virtuemart_shipmentmethod_id = '.$shipment_id;
