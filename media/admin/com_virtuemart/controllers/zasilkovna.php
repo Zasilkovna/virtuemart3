@@ -19,10 +19,7 @@
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
 
-// Load the controller framework
-jimport('joomla.application.component.controller');
-
-if(!class_exists('VmController'))require(JPATH_VM_ADMINISTRATOR.DS.'helpers'.DS.'vmcontroller.php');
+if(!class_exists('VmController'))require(VMPATH_ADMIN.DS.'helpers'.DS.'vmcontroller.php');
 $zas_model=VmModel::getModel('zasilkovna');
 $zas_model->loadLanguage();
 
@@ -43,19 +40,15 @@ class VirtuemartControllerZasilkovna extends VmController {
 	 * @author Zasilkovna
 	 */
 	function save($data = 0){
-		JRequest::checkToken() or jexit( 'Invalid Token' );
-		$model = VmModel::getModel('config');
-
-		$data = JRequest::get('post');		
-		if ($model->store($data)) {
-			$msg = JText::_('COM_VIRTUEMART_CONFIG_SAVED');
-			// Load the newly saved values into the session.
-			VmConfig::loadConfig();
-		}
-		else {
-			$msg = $model->getError();
-		}
-
+		
+		vRequest::vmCheckToken();
+		$data = vRequest::getPost();
+		
+		$db =& JFactory::getDBO();
+		$q="UPDATE #__extensions SET custom_data='" . serialize($data) . "' WHERE element='zasilkovna'";
+		$db->setQuery($q);
+		$db->query();
+		
 		$redir = 'index.php?option=com_virtuemart';
 		if(JRequest::getCmd('task') == 'apply'){
 			$redir = $this->redirectPath;			

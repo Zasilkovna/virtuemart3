@@ -18,30 +18,37 @@
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
+
+$q = "SELECT custom_data FROM #__extensions WHERE element='zasilkovna'";
+$db = JFactory::getDBO ();
+$db->setQuery($q);
+$obj = $db->loadObject ();
+$zasConfig = unserialize($obj->custom_data);
+
 ?>
 <br />
 <fieldset>
     <legend><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SETTINGS') ?></legend>
     <table class="admintable">
-	<tr>	    
-		<?php 			
-			echo VmHTML::row('input','PLG_VMSHIPMENT_ZASILKOVNA_API_PASS','zasilkovna_api_pass',$this->config->get('zasilkovna_api_pass'));
+	<tr>
+		<?php
+			echo VmHTML::row('input','PLG_VMSHIPMENT_ZASILKOVNA_API_PASS','zasilkovna_api_pass',$zasConfig['zasilkovna_api_pass']);
 		?>
 	</tr>
-	<tr>	    
-		<?php 
-			echo VmHTML::row('input','PLG_VMSHIPMENT_ZASILKOVNA_ESHOP_DOMAIN','zasilkovna_eshop_domain',$this->config->get('zasilkovna_eshop_domain'));
+	<tr>
+		<?php
+			echo VmHTML::row('input','PLG_VMSHIPMENT_ZASILKOVNA_ESHOP_DOMAIN','zasilkovna_eshop_domain',$zasConfig['zasilkovna_eshop_domain']);
 		?>
 	</tr>
-	<tr>	    		
-		<?php 					
+	<tr>
+		<?php
 			echo VmHTML::row('value','PLG_VMSHIPMENT_ZASILKOVNA_VERSION',$this->moduleVersion);
 		?>
 	</tr>
-	<tr>	   
+	<tr>
 
-		<?php 					
-		echo VmHTML::row('checkbox','PLG_VMSHIPMENT_ZASILKOVNA_DEFAULT_SELECT','zasilkovna_default_select',$this->config->get('zasilkovna_default_select'));
+		<?php
+		echo VmHTML::row('checkbox','PLG_VMSHIPMENT_ZASILKOVNA_DEFAULT_SELECT','zasilkovna_default_select',$zasConfig['zasilkovna_default_select']);
 		?>
 	</tr>
 	</table>
@@ -50,19 +57,19 @@ defined('_JEXEC') or die('Restricted access');
 <fieldset>
 <legend><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_COD') ?></legend>
 <table class="admintable">
-	<?php 
+	<?php
 	foreach ($this->paymentMethods as $paymentMethod) {?>
 	<tr>
 		<td>
 			<?php echo $paymentMethod->payment_name;?>
 		</td>
 		<td>
-			<?php echo VmHTML::checkbox('zasilkovna_payment_method_'.$paymentMethod->virtuemart_paymentmethod_id, $this->config->get('zasilkovna_payment_method_'.$paymentMethod->virtuemart_paymentmethod_id,'0'));?>
+			<?php echo VmHTML::checkbox('zasilkovna_payment_method_'.$paymentMethod->virtuemart_paymentmethod_id, (isset($zasConfig['zasilkovna_payment_method_'.$paymentMethod->virtuemart_paymentmethod_id]) ? $zasConfig['zasilkovna_payment_method_'.$paymentMethod->virtuemart_paymentmethod_id] : '0'));?>
 		</td>
 	</tr>
-	<?php		
+	<?php
 	}
-	?>	
+	?>
 
 </table>
 </fieldset>
@@ -80,43 +87,43 @@ defined('_JEXEC') or die('Restricted access');
 	<thead>
 		<tr>
 			<th></th>
-			<?php 
+			<?php
 			foreach ($this->paymentMethods as $paymentMethod) {?>
 				<th>
 					<?php echo $paymentMethod->payment_name;?>
 				</th>
-			<?php		
+			<?php
 				}
-			?>	
+			?>
 		</tr>
 	</thead>
-	<?php 	
+	<?php
 	//$shipmentMethod->virtuemart_shipmentmethod_id;
-	$row=0;	
+	$row=0;
 	foreach ($this->shipmentMethods as $shipmentMethod) {?>
 	<tr class="row<?php echo $row%2;?>">
-		<td>			
+		<td>
 			<?php echo $shipmentMethod->shipment_name;?>
 		</td>
-		<?php 		
+		<?php
 		foreach ($this->paymentMethods as $paymentMethod) {?>
 			<td>
 				<?php
 				$configRecordName='zasilkovna_combination_payment_'.$paymentMethod->virtuemart_paymentmethod_id.'_shipment_'.$shipmentMethod->virtuemart_shipmentmethod_id;
-				echo VmHTML::checkbox($configRecordName, $this->config->get($configRecordName,'1'));
+				echo VmHTML::checkbox($configRecordName, (isset($zasConfig[$configRecordName]) ? $zasConfig[$configRecordName] : '1'));
 				?>
 			</td>
 		<?php
-		$row++;		
+		$row++;
 			}
-		?>	
+		?>
 	</tr>
-	<?php		
+	<?php
 	}
-	?>	
+	?>
 </table>
 <br>
-Jak nainstalovat omezení: <br> 
+Jak nainstalovat omezení: <br>
   1. v souboru <i>/components/com_virtuemart/views/cart/tmpl/select_payment.php</i> najít tuto část kodu: (řádek cca 60)<br>
   <textarea onfocus="this.select();" onclick="this.select();"  readonly=""   rows="3" cols="80">
 foreach ($paymentplugin_payments as $paymentplugin_payment) {
@@ -125,17 +132,22 @@ foreach ($paymentplugin_payments as $paymentplugin_payment) {
   </textarea><br><br> <br><br><br>
   2. A nahradit ji tímto:<br>
   <textarea onfocus="this.select();" onclick="this.select();"  readonly=""    rows="13" cols="130">
+$q = "SELECT custom_data FROM #__extensions WHERE element=&#39;zasilkovna&#39;";
+$db = JFactory::getDBO ();
+$db->setQuery($q);
+$obj = $db->loadObject ();
+
+$config = unserialize($obj->custom_data);
 foreach ($paymentplugin_payments as $paymentplugin_payment) {
 	//ZASILKOVNA - payment-shipment combination restriction
-	$selectedShipment = (empty($this->cart->virtuemart_shipmentmethod_id) ? 0 : $this->cart->virtuemart_shipmentmethod_id);						
+	$selectedShipment = (empty($this->cart->virtuemart_shipmentmethod_id) ? 0 : $this->cart->virtuemart_shipmentmethod_id);
 	if($selectedShipment!=0){
 		preg_match(&#39;#\s+value\s*=\s*"([^"]*)"#&#39;, $paymentplugin_payment, $matches);
-		$paymentId=$matches[1];									
-		$configRecordName=&#39;zasilkovna_combination_payment_&#39;.$paymentId.&#39;_shipment_&#39;.$selectedShipment;					
-		$config = VmConfig::loadConfig();														
-		if($config->get($configRecordName,&#39;1&#39;)==&#39;0&#39;)continue;							
+		$paymentId=$matches[1];
+		$configRecordName=&#39;zasilkovna_combination_payment_&#39;.$paymentId.&#39;_shipment_&#39;.$selectedShipment;
+		if((isset($config[$configRecordName]) ? $config[$configRecordName] : &#39;1&#39;) == &#39;0&#39;) continue;
 	}
 	echo $paymentplugin_payment.&#39;<br />&#39;;
 }
-  </textarea> 
+  </textarea>
 </fieldset>

@@ -17,7 +17,12 @@
  */
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
+$q = "SELECT custom_data FROM #__extensions WHERE element='zasilkovna'";
+$db = JFactory::getDBO ();
+$db->setQuery($q);
+$obj = $db->loadObject ();
 
+$zasConfig = unserialize($obj->custom_data);
 
 
 ?>
@@ -121,7 +126,7 @@ if (count($this->orderslist) > 0) {
 		<!-- is cod -->
 			<td><?php			
 			if($order->is_cod==-1){
-				$is_cod=$this->config->get('zasilkovna_payment_method_'.$order->virtuemart_paymentmethod_id);			 
+				$is_cod=$zasConfig['zasilkovna_payment_method_'.$order->virtuemart_paymentmethod_id];
 			}else{				
 				$is_cod=$order->is_cod;
 			}

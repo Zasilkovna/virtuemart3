@@ -19,18 +19,18 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 {
     // instance of class
     public static $_this = false;
-    
+
     function __construct(&$subject, $config)
     {
         parent::__construct($subject, $config);
-        
+
         $this->_loggable   = true;
         $this->tableFields = array_keys($this->getTableSQLFields());
         $varsToPush        = $this->getVarsToPush();
-        $this->setConfigParameterable($this->_configTableFieldName, $varsToPush);        
-        
-        
-    }    
+        $this->setConfigParameterable($this->_configTableFieldName, $varsToPush);
+
+
+    }
 
     /**
      * Create the table for this plugin if it does not yet exist.
@@ -40,7 +40,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     {
         return $this->createTableSQL('zasilkovna');
     }
-    
+
     function getTableSQLFields()
     {
         $SQLfields = array(
@@ -53,26 +53,26 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             'branch_id' => 'decimal(10,0)',
             'branch_currency' => 'char(5)',
             'branch_name_street' => 'varchar(500)',
-            'email' => 'varchar(255)', 
-            'phone' => 'varchar(255)', 
+            'email' => 'varchar(255)',
+            'phone' => 'varchar(255)',
             'first_name' => 'varchar(255)',
             'last_name' => 'varchar(255)',
             'address' => 'varchar(255)',
             'city' => 'varchar(255)',
-            'zip_code' => 'varchar(255)',            
-            'virtuemart_country_id' => 'varchar(255)',            
-            'adult_content' => 'smallint(1) DEFAULT \'0\'', 
-            'is_cod' => 'smallint(1)',            
+            'zip_code' => 'varchar(255)',
+            'virtuemart_country_id' => 'varchar(255)',
+            'adult_content' => 'smallint(1) DEFAULT \'0\'',
+            'is_cod' => 'smallint(1)',
             'exported' => 'smallint(1)',
-            'printed_label' => 'smallint(1) DEFAULT \'0\'',            
-            'shipment_name' => 'varchar(5000)',            
+            'printed_label' => 'smallint(1) DEFAULT \'0\'',
+            'shipment_name' => 'varchar(5000)',
             'shipment_cost' => 'decimal(10,2)',
             'shipment_package_fee' => 'decimal(10,2)',
             'tax_id' => 'smallint(1)'
         );
         return $SQLfields;
     }
-    
+
     /**
      * This method is fired when showing the order details in the frontend.
      * It displays the shipment-specific data.
@@ -86,7 +86,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     {
         $this->onShowOrderFE($virtuemart_order_id, $virtuemart_shipmentmethod_id, $shipment_name);
     }
-    
+
     /**
      * This event is fired after the order has been stored; it gets the shipment method-
      * specific data.
@@ -97,7 +97,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @return mixed Null when this method was not selected, otherwise true
      * @author Valerie Isaksen
      */
-    
+
     function plgVmConfirmedOrder(VirtueMartCart $cart, $order)
     {
         if (!($method = $this->getVmPluginMethod($order['details']['BT']->virtuemart_shipmentmethod_id))) {
@@ -110,10 +110,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return false;
         }
 
-        $zas_model=VmModel::getModel('zasilkovna');        
-        $zas_orders=VmModel::getModel('zasilkovna_orders');        
+        $zas_model=VmModel::getModel('zasilkovna');
+        $zas_orders=VmModel::getModel('zasilkovna_orders');
         $fromCurrency=$zas_model->getCurrencyCode($order['details']['BT']->order_currency);
-      
+
         //convert from payment currency to branch currency
         $price_in_branch_currency=$zas_orders->convertToBranchCurrency($order['details']['BT']->order_total,$fromCurrency,$_SESSION['branch_currency']);
 
@@ -126,25 +126,30 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['branch_currency']              = $_SESSION['branch_currency'];
         $values['branch_name_street']           = $_SESSION['branch_name_street'];
         $values['email']                        = $cart->BT['email'];
-        $values['phone']                        = $cart->BT['phone_1'];
+        $values['phone']                        = $cart->BT['phone_1'] ? $cart->BT['phone_1'] : $cart->BT['phone_2'];
+        $values['first_name']                   = $cart->BT['first_name'];
+        $values['last_name']                    = $cart->BT['last_name'];
+        $values['address']                      = $cart->BT['address_1'];
+        $values['city']                         = $cart->BT['city'];
+        $values['zip_code']                     = $cart->BT['zip'];
         $values['adult_content']                = 0;
         $values['is_cod']                       = -1; //depends on actual settings of COD payments until its set manually in administration
-        $values['exported     ']                = 0;        
-        $values['shipment_name']                = $method->shipment_name;             
-        $values['shipment_cost']                = $this->getCosts ($cart, $method, "");                
+        $values['exported     ']                = 0;
+        $values['shipment_name']                = $method->shipment_name;
+        $values['shipment_cost']                = $this->getCosts ($cart, $method, "");
         $values['tax_id']                       = $method->tax_id;
         $this->storePSPluginInternalData($values);
         return true;
     }
-    
-    
+
+
   /**
    * calculateSalesPrice
    * overrides default function to remove currency conversion
    * @author Zasilkovna
    */
 
-  function calculateSalesPrice ($cart, $method, $cart_prices) {    
+  function calculateSalesPrice ($cart, $method, $cart_prices) {
       $value = $this->getCosts ($cart, $method, $cart_prices);
 
       $tax_id = @$method->tax_id;
@@ -155,7 +160,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
       $db = JFactory::getDBO ();
       $calculator = calculationHelper::getInstance ();
-      $currency = CurrencyDisplay::getInstance ();    
+      $currency = CurrencyDisplay::getInstance ();
 
       $taxrules = array();
       if (!empty($tax_id)) {
@@ -168,28 +173,28 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $salesPrice = $calculator->roundInternal ($calculator->executeCalculation ($taxrules, $value));
       } else {
         $salesPrice = $value;
-      }      
-      return $salesPrice;       
+      }
+      return $salesPrice;
 	}
 
-    /**    
+    /**
      * @return delivery cost for the shipping method instance
      * @author Zasilkovna
      */
-    
-    function getCosts(VirtueMartCart $cart, $method, $cart_prices){                   
-		$freeShippingTreshold = $method->{'free_shipping_treshold_czk'};  
+
+    function getCosts(VirtueMartCart $cart, $method, $cart_prices){
+		$freeShippingTreshold = $method->{'free_shipping_treshold_czk'};
 		$shippingPrice = $method->{'packet_price_czk'};
 				
-		if($freeShippingTreshold && 
-				$cart_prices['salesPrice'] >= $freeShippingTreshold && 
+		if($freeShippingTreshold &&
+				$cart_prices['salesPrice'] >= $freeShippingTreshold &&
 				$freeShippingTreshold >= 0) {
 			return 0;
 		}else{
 			return $shippingPrice;
 		}
     }
-    
+
     /** TODO
     * Here can add check if user has filled in valid phone number or mail so he is reachable by zasilkovna
     */
@@ -199,12 +204,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
       $orderWeight = $this->getOrderWeight ($cart, $method->weight_unit);
       if(empty($weightTreshold) || $weightTreshold == -1 || $orderWeight < $weightTreshold) return true;
       return false;
-    }      
-    
+    }
+
     /*
      * We must reimplement this triggers for joomla 1.7
      */
-    
+
     /**
      * Create the table for this plugin if it does not yet exist.
      * This functions checks if the called plugin is active one.
@@ -216,7 +221,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     {
         return $this->onStoreInstallPluginTable($jplugin_id);
     }
-    
+
     /**
      * This event is fired after the shipment method has been selected. It can be used to store
      * additional payment info in the cart.
@@ -232,7 +237,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     // return $this->OnSelectCheck($psType, $cart);
     // }
     public function plgVmOnSelectCheckShipment(VirtueMartCart &$cart)
-    {        
+    {
         if ($this->OnSelectCheck($cart)) {
             session_start();
             $_SESSION['branch_id']          = JRequest::getVar('branch_id', '', 'post', 'STRING', JREQUEST_ALLOWHTML);
@@ -261,31 +266,39 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     {
         $js_html = '';
         if ($this->getPluginMethods($cart->vendorId) === 0) {
-                return FALSE;            
-        }        
-
+                return FALSE;
+        }
+		
+		$q = "SELECT custom_data FROM #__extensions WHERE element='zasilkovna'";
+        $db = JFactory::getDBO ();
+        $db->setQuery($q);
+        $obj = $db->loadObject ();
+		
+		$zasConfig = unserialize($obj->custom_data);
+		
         $zas_model = VmModel::getModel('zasilkovna');
         $js_url    = $zas_model->updateJSApi();
-        
 
-        if ($js_url === false) return false;        
+
+        if ($js_url === false) return false;
         if (isset($zas_model->errors)) return false; //api key or smth is wrong - more info shows in administration
-        
+
         $html        = array();
         $method_name = $this->_psType . '_name';
-        $prevSelectedBranch=$_SESSION['branch_id'];        
+        $prevSelectedBranch=$_SESSION['branch_id'];
         $js_html.= '<script src="' . $js_url . '"></script>';
-        $js_html.='<script language="javascript" type="text/javascript"> 
-      var zasilkovnaDefaultSelect = '.VmConfig::loadConfig()->get('zasilkovna_default_select').' ;    
+        $js_html.='<script language="javascript" type="text/javascript">
+      var zasilkovnaDefaultSelect = '.$zasConfig['zasilkovna_default_select'].' ;
+			
       (function($) {
       window.addHooks=function(){
         function setRequiredOpt(){
           var setOnce = false;
-          $("div.packetery-branch-list").each(            
-            function() { 
-              var div = $(this).closest(\'div[name="helper_div"]\');                          
-              var radioButt = $(div).find(\'input[name="virtuemart_shipmentmethod_id"]:radio\');                            
-              if($(radioButt).is(\':checked\')){            
+          $("div.packetery-branch-list").each(
+            function() {
+              var div = $(this).closest(\'div[name="helper_div"]\');
+              var radioButt = $(div).find(\'input[name="virtuemart_shipmentmethod_id"]:radio\');
+              if($(radioButt).is(\':checked\')){
                 this.packetery.option("required", true);
               }else{
                 this.packetery.option("required", false);
@@ -305,31 +318,30 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
           if($(\'input[name="branch_id"]\').val()>0)return;
           var firstZasilkovnaDiv = $(\'div[name="helper_div"]\')[0];
           var firstZasilkovnaRadio = $(firstZasilkovnaDiv).find(\'input[name="virtuemart_shipmentmethod_id"]:radio\');
-          $(firstZasilkovnaRadio).attr("checked",true);        
+          $(firstZasilkovnaRadio).attr("checked",true);
         }
 
         //set each radio button to call setRequiredOpt if clicked
         $(\'input[name="virtuemart_shipmentmethod_id"]:radio\').each(
           function(){
-            $(this).click(setRequiredOpt);         
+            $(this).click(setRequiredOpt);
           }
         );
-
-        $("div.packetery-branch-list").each(            
-          function() {             
-            var fn = function(){   
+        $("div.packetery-branch-list").each(
+          function() {
+            var fn = function(){
               var branches = this.packetery.option("branches");
-              var selected_id = this.packetery.option("selected-id");              
-              var box = $(this).closest(\'div.zasilkovna_box\');        
+              var selected_id = this.packetery.option("selected-id");
+              var box = $(this).closest(\'div.zasilkovna_box\');
               var newVal="";
               if(selected_id){//if this branch was already selected
-                box.find(\'input[name="branch_id"]\').val(branches[selected_id].id);                
-                box.find(\'input[name="branch_currency"]\').val(branches[selected_id].currency);                
-                box.find(\'input[name="branch_name_street"]\').val(branches[selected_id].name_street);                
-                var div = $(this).closest(\'div[name="helper_div"]\');                          
-                var radioButt = $(div).find(\'input[name="virtuemart_shipmentmethod_id"]:radio\');                 
+                box.find(\'input[name="branch_id"]\').val(branches[selected_id].id);
+                box.find(\'input[name="branch_currency"]\').val(branches[selected_id].currency);
+                box.find(\'input[name="branch_name_street"]\').val(branches[selected_id].name_street);
+                var div = $(this).closest(\'div[name="helper_div"]\');
+                var radioButt = $(div).find(\'input[name="virtuemart_shipmentmethod_id"]:radio\');
                 $(radioButt).prop("checked",true);
-              }                         
+              }
 
               setTimeout(setRequiredOpt, 1);
             };
@@ -341,39 +353,38 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
           }
         );
         $(\'input[name="shipping_rate_id"]:radio\').on("change", function() {setTimeout(setRequiredOpt, 1); });
-        
-      } 
+
+      }
       })(window.packetery.jQuery);
     </script>';
         $js_html .= "<div class='zasilkovna_box'>";
         $js_html .= '<input type="hidden" name="branch_id">';
         $js_html .= '<input type="hidden" name="branch_currency">';
         $js_html .= '<input type="hidden" name="branch_name_street">';
-        $jsHtmlIsSet = false;  
-        foreach ($this->methods as $key => $method) {            
+        $jsHtmlIsSet = false;
+        foreach ($this->methods as $key => $method) {
             $html[$key] = '';
-            /*this part adds javascript api and controls 
-            ONLY TO ONE of the zasilkovna shipment methods that ARE allowed to show               
+            /*this part adds javascript api and controls
+            ONLY TO ONE of the zasilkovna shipment methods that ARE allowed to show
             */
-            $selectedPayment = (empty($cart->virtuemart_paymentmethod_id) ? 0 : $cart->virtuemart_paymentmethod_id);                        
-            if($jsHtmlIsSet==false){            
-                $shipmentID=$method->virtuemart_shipmentmethod_id;                                    
-                $configRecordName='zasilkovna_combination_payment_'.$selectedPayment.'_shipment_'.$shipmentID;                  
-                $config = VmConfig::loadConfig();
-                if(($config->get($configRecordName,'1')=='1')||($selectedPayment==0)){
+            $selectedPayment = (empty($cart->virtuemart_paymentmethod_id) ? 0 : $cart->virtuemart_paymentmethod_id);
+            if($jsHtmlIsSet==false){
+                $shipmentID=$method->virtuemart_shipmentmethod_id;     
+                $configRecordName='zasilkovna_combination_payment_'.$selectedPayment.'_shipment_'.$shipmentID;
+                if(((isset($zasConfig[$configRecordName]) ? $zasConfig[$configRecordName] : '1')=='1')||($selectedPayment==0)){
                     $html[$key] .= $js_html;
                     $jsHtmlIsSet=true;
-                }           
+                }
             }
 
             $country = $method->country;
 			
             if ($this->checkConditions($cart, $method, $cart->pricesUnformatted)) {
                 $html[$key] .= '<div name="helper_div">';//this div packs the select box with radio input - helps js easily find the radio
-                $methodSalesPrice     = $this->calculateSalesPrice($cart, $method, $cart->pricesUnformatted);               
+                $methodSalesPrice     = $this->calculateSalesPrice($cart, $method, $cart->pricesUnformatted);
                 $method->$method_name = $this->renderPluginName($method);
                 $html[$key] .= $this->getPluginHtml($method, $selected, $methodSalesPrice);
-                $selected_id_attr = 'selected-id='.$_SESSION['branch_id'];       
+                $selected_id_attr = 'selected-id='.$_SESSION['branch_id'];
                 $html[$key] .= '<p name="select-branch-message" style="float: none; color: red; font-weight: bold; display: none; ">vyberte pobočku</p><div id="zasilkovna_select" class="packetery-branch-list list-type=3 country=' . $country . ' '.$selected_id_attr.' style="border: 1px dotted black;">Načítání: seznam poboček osobního odběru</div>';
                 $html[$key] .= '</select></div>';
             }
@@ -383,7 +394,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if (empty($html)) {
             return FALSE;
         }
-        
+
         $htmlIn[] = $html;
         return TRUE;
     }
@@ -436,20 +447,20 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
     $html = '<table class="adminlist">' . "\n";
     $html .= $this->getHtmlHeaderBE ();
-    $html .= $this->getHtmlRowBE ('WEIGHT_COUNTRIES_SHIPPING_NAME', $shipinfo->shipment_name);   
-    $html .= $this->getHtmlRowBE ('BRANCH', $shipinfo->branch_name_street);   
-    $html .= $this->getHtmlRowBE ('CURRENCY', $shipinfo->branch_currency);       
+    $html .= $this->getHtmlRowBE ('WEIGHT_COUNTRIES_SHIPPING_NAME', $shipinfo->shipment_name);
+    $html .= $this->getHtmlRowBE ('BRANCH', $shipinfo->branch_name_street);
+    $html .= $this->getHtmlRowBE ('CURRENCY', $shipinfo->branch_currency);
 
     $html .= '</table>' . "\n";
 
     return $html;
-  }    
-    
+  }
+
     public function plgVmonSelectedCalculatePriceShipment(VirtueMartCart $cart, array &$cart_prices, &$cart_prices_name)
-    {        
+    {
         return $this->onSelectedCalculatePrice($cart, $cart_prices, $cart_prices_name);
     }
-    
+
     /**
      * plgVmOnCheckAutomaticSelected
      * Checks how many plugins are available. If only one, the user will not have the choice. Enter edit_xxx page
@@ -463,19 +474,19 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     {
         return $this->onCheckAutomaticSelected($cart, $cart_prices);
     }
-    
+
     /**
      * This event is fired during the checkout process. It can be used to validate the
      * method data as entered by the user.
      *
      * @return boolean True when the data was valid, false otherwise. If the plugin is not activated, it should return null.
      * @author Max Milbers
-     
+
      public function plgVmOnCheckoutCheckData($psType, VirtueMartCart $cart) {
      return null;
      }
      */
-    
+
     /**
      * This method is fired when showing when priting an Order
      * It displays the the payment method-specific data.
@@ -489,7 +500,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     {
         return $this->onShowOrderPrint($order_number, $method_id);
     }
-    
+
     /**
      * Save updated order data to the method specific table
      *
@@ -497,7 +508,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @return mixed, True on success, false on failures (the rest of the save-process will be
      * skipped!), or null when this method is not actived.
      * @author Oscar van Eijk
-     
+
      public function plgVmOnUpdateOrder($psType, $_formData) {
      return null;
      }
@@ -509,7 +520,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @return mixed, True on success, false on failures (the rest of the save-process will be
      * skipped!), or null when this method is not actived.
      * @author Oscar van Eijk
-     
+
      public function plgVmOnUpdateOrderLine($psType, $_formData) {
      return null;
      }
@@ -523,7 +534,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @param integer $_lineId
      * @return mixed Null for method that aren't active, text (HTML) otherwise
      * @author Oscar van Eijk
-     
+
      public function plgVmOnEditOrderLineBE($psType, $_orderId, $_lineId) {
      return null;
      }
@@ -537,12 +548,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @param integer $_lineId
      * @return mixed Null for method that aren't active, text (HTML) otherwise
      * @author Oscar van Eijk
-     
+
      public function plgVmOnShowOrderLineFE($psType, $_orderId, $_lineId) {
      return null;
      }
      */
-    
+
     /**
      * plgVmOnResponseReceived
      * This event is fired when the  method returns to the shop after the transaction
@@ -557,7 +568,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      *
      * @author Valerie Isaksen
      *
-     
+
      function plgVmOnResponseReceived($psType, &$virtuemart_order_id, &$html) {
      return null;
      }
@@ -566,12 +577,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     {
         return $this->declarePluginParams('shipment', $name, $id, $data);
     }
-    
+
     function plgVmSetOnTablePluginParamsShipment($name, $id, &$table)
     {
         return $this->setOnTablePluginParams($name, $id, $table);
     }
-    
+
 	function plgVmDeclarePluginParamsShipmentVM3 (&$data) {
 		return $this->declarePluginParams ('shipment', $data);
 	}

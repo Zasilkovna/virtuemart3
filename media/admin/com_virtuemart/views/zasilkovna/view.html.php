@@ -55,13 +55,13 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
 		$model=VmModel::getModel();
 
-		$shipModel=VmModel::getModel('shipmentmethod');		
+		$shipModel=VmModel::getModel('shipmentmethod');
 		$shipments=$shipModel->getShipments();
 		function cmpShipments($a, $b)
 		{
 		    return strcmp($a->virtuemart_shipmentmethod_id, $b->virtuemart_shipmentmethod_id);
 		}
-		usort($shipments, "cmpShipments");//sort, coz it comes in random order		
+		usort($shipments, "cmpShipments");//sort, coz it comes in random order
 		$this->assignRef('shipmentMethods', $shipments);
 
 
@@ -136,10 +136,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
 		$currConverterList = $configModel->getCurrencyConverterList();
 		$this->assignRef('currConverterList', $currConverterList);
-	//	$moduleList = $configModel->getModuleList();
-		//$this->assignRef('moduleList', $moduleList);
-		//$contentLinks = $configModel->getContentLinks();
-		//$this->assignRef('contentLinks', $contentLinks);
+		
 		$activeLanguages = $configModel->getActiveLanguages( VmConfig::get('active_languages') );
 		$this->assignRef('activeLanguages', $activeLanguages);
 
@@ -208,8 +205,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 		$this->assignRef('branches',$zas_model->getBranches());
 		JToolBarHelper::save('submitToZasilkovna', JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SUBMIT_ORDERS_TO_ZASILKOVNA'));
 		JToolBarHelper::custom('printLabels','copy','', JText::_('PLG_VMSHIPMENT_ZASILKOVNA_DO_PRINT_LABELS'),false,false);
-		// JToolBarHelper::custom( $task = 'submitToZasilkovna', $icon = $zas_model->_media_url, $iconOver = ' ', $alt = 'Podat na zásilkovnu', $listSelect = true, $x = false );
-		// JToolBarHelper::deleteListX();
+		
 		/* Assign the data */
 		$this->assignRef('orderslist', $orderslist);
 		$pagination = $ordersModel->getPagination();
