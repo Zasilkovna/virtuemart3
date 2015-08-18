@@ -2,7 +2,7 @@
 <h2>Instalace</h2>
 <ol style="color: black; ">
   <li><a href="https://github.com/Zasilkovna/virtuemart3/archive/master.zip">Stáhnout soubor modulu »</a></li>
-  <li>Modul vyžaduje minimálně verzi <b>Joomla 3.0</b> a <b>VirtueMart 2.0.10</b>. Máte-li starší, napište nám prosím používanou verzi a adresu e-shopu na <a href="mailto:technicka.podpora@zasilkovna.cz">technicka.podpora@zasilkovna.cz</a>.</li>
+  <li>Modul vyžaduje minimálně verzi <b>Joomla 3.0</b> a <b>VirtueMart 3.0.x</b>. Máte-li starší, napište nám prosím používanou verzi a adresu e-shopu na <a href="mailto:technicka.podpora@zasilkovna.cz">technicka.podpora@zasilkovna.cz</a>.</li>
   <li>
     Přihlašte se do administrace Joomly, otevřete nabídku Extensions -> Extension manager a nahrajte nainstalujte modul<br><br>
     <a href="https://cloud.githubusercontent.com/assets/11771520/9033047/5410b934-39c4-11e5-8335-ba934bc9cf7c.png"><img src="https://cloud.githubusercontent.com/assets/11771520/9033047/5410b934-39c4-11e5-8335-ba934bc9cf7c.png"></a><br><br>
@@ -39,7 +39,7 @@
 <h2>Informace o modulu</h2>
 <p>Podporované verze:</p>
 <ul>
-  <li>VirtueMart 2.0.x a novější</li>
+  <li>VirtueMart 3.0.x a novější</li>
   <li>Joomla! 3.0 a novější</li>
   <li>Při problému s použitím v jiné verzi nás kontaktujte na adrese <a href="mailto:technicka.podpora@zasilkovna.cz">technicka.podpora@zasilkovna.cz</a></li>
 </ul>
