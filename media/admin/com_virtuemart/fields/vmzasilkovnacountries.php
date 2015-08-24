@@ -32,6 +32,7 @@ class JFormFieldVmZasilkovnaCountries extends JFormFieldList {
         $fields=array();
 		
         $class = '';
+		$fields[]=JHtml::_('select.option', '','Vše');
 		$fields[]=JHtml::_('select.option', 'cz','Czech Republic');
 		$fields[]=JHtml::_('select.option', 'sk','Slovak Republic');
         $class = 'size="10"';
