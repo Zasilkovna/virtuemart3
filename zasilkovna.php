@@ -118,7 +118,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 		$price_in_branch_currency=$zas_orders->convertToBranchCurrency($order['details']['BT']->order_total,$fromCurrency,$_SESSION['branch_currency']);
 
 		$values['virtuemart_order_id']			= $order['details']['BT']->virtuemart_order_id;
-		$values['virtuemart_shipmentmethod_id'] = $order['details']['BT']->virtuemart_shipmentmethod_id;
+		$values['virtuemart_shipmentmethod_id']	= $order['details']['BT']->virtuemart_shipmentmethod_id;
 		$values['order_number']					= $order['details']['BT']->order_number;
 		$values['zasilkovna_packet_id']			= 0;
 		$values['zasilkovna_packet_price']		= $price_in_branch_currency;
@@ -134,10 +134,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 		$values['zip_code']						= $cart->BT['zip'];
 		$values['adult_content']				= 0;
 		$values['is_cod']						= -1; //depends on actual settings of COD payments until its set manually in administration
-		$values['exported']					= 0;
+		$values['exported']						= 0;
 		$values['shipment_name']				= $method->shipment_name;
 		$values['shipment_cost']				= $this->getCosts ($cart, $method, "");
-		$values['tax_id']							= $method->tax_id;
+		$values['tax_id']						= $method->tax_id;
 		$this->storePSPluginInternalData($values);
 		return true;
 	}
@@ -164,9 +164,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
 		$taxrules = array();
 		if (!empty($tax_id)) {
-		$q = 'SELECT * FROM #__virtuemart_calcs WHERE `virtuemart_calc_id`="' . $tax_id . '" ';
-		$db->setQuery ($q);
-		$taxrules = $db->loadAssocList ();
+			$q = 'SELECT * FROM #__virtuemart_calcs WHERE `virtuemart_calc_id`="' . $tax_id . '" ';
+			$db->setQuery ($q);
+			$taxrules = $db->loadAssocList ();
 		}
 
 		if (count ($taxrules) > 0) {
@@ -185,14 +185,14 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	function getCosts(VirtueMartCart $cart, $method, $cart_prices){
 		$freeShippingTreshold = $method->{'free_shipping_treshold_czk'};
 		$shippingPrice = $method->{'packet_price_czk'};
-				
+			
 		if($freeShippingTreshold &&
 			$cart_prices['salesPrice'] >= $freeShippingTreshold &&
 			$freeShippingTreshold >= 0) {
 			return 0;
 		}else{
 			return $shippingPrice;
-		}
+	}
 	}
 
 	/** TODO
@@ -202,9 +202,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	{
 		$weightTreshold = $method->weight_treshold;
 		$orderWeight = $this->getOrderWeight ($cart, $method->weight_unit);
-		
 		if(empty($weightTreshold) || $weightTreshold == -1 || $orderWeight < $weightTreshold) return true;
-		
 		return false;
 	}
 
@@ -242,13 +240,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	{
 		if ($this->OnSelectCheck($cart)) {
 			session_start();
-			$_SESSION['branch_id']			= JRequest::getVar('branch_id', '', 'post', 'STRING', JREQUEST_ALLOWHTML);
-			$_SESSION['branch_currency']	= JRequest::getVar('branch_currency', '', 'post', 'STRING', JREQUEST_ALLOWHTML);
-			$_SESSION['branch_name_street'] = JRequest::getVar('branch_name_street', '', 'post', 'STRING', JREQUEST_ALLOWHTML);
+			if(JRequest::getVar('branch_id')){
+				$_SESSION['branch_id']			= JRequest::getVar('branch_id');
+				$_SESSION['branch_currency']	= JRequest::getVar('branch_currency');
+				$_SESSION['branch_name_street'] = JRequest::getVar('branch_name_street');
+			}
 		}else{
 			$_SESSION['branch_id'] = -1;
 		}
-		$cart->virtuemart_paymentmethod_id = 0;//reset selected payment. Payment options are shown depending on selected shipment
+		//$cart->virtuemart_paymentmethod_id = 0;//reset selected payment. Payment options are shown depending on selected shipment
 		return $this->OnSelectCheck($cart);
 	}
 
@@ -268,110 +268,172 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	{
 		$js_html = '';
 		if ($this->getPluginMethods($cart->vendorId) === 0) {
-			return FALSE;
+				return FALSE;
 		}
-		
+	
 		$q = "SELECT custom_data FROM #__extensions WHERE element='zasilkovna'";
 		$db = JFactory::getDBO ();
 		$db->setQuery($q);
 		$obj = $db->loadObject ();
-		
+	
 		$zasConfig = unserialize($obj->custom_data);
-		
+	
 		$zas_model = VmModel::getModel('zasilkovna');
 		$js_url	= $zas_model->updateJSApi();
 
-
+		$document = JFactory::getDocument();
+		$document->addStyleSheet('/media/com_zasilkovna/media/jquery.css');
+		$document->addScript($js_url);
 		if ($js_url === false) return false;
 		if (isset($zas_model->errors)) return false; //api key or smth is wrong - more info shows in administration
 
 		$html		= array();
 		$method_name = $this->_psType . '_name';
 		$prevSelectedBranch=$_SESSION['branch_id'];
-		$js_html.= '<script src="' . $js_url . '"></script>';
+
 		$js_html.='<script language="javascript" type="text/javascript">
-		var zasilkovnaDefaultSelect = '.$zasConfig['zasilkovna_default_select'].' ;
-			
-		(function($) {
-		window.addHooks=function(){
-		function setRequiredOpt(){
-			var setOnce = false;
-			$("div.packetery-branch-list").each(
-			function() {
-				var div = $(this).closest(\'div[name="helper_div"]\');
-				var radioButt = $(div).find(\'input[name="virtuemart_shipmentmethod_id"]:radio\');
-				if($(radioButt).is(\':checked\')){
-				this.packetery.option("required", true);
-				}else{
-				this.packetery.option("required", false);
+	(function($) {
+
+	function initBoxes(){
+		var api = window.packetery;
+		divs = $(\'#zasilkovna_box\');
+		var reinited=false;
+		$(\'.packetery-branch-list\').each(function() {
+
+		if(typeof this.packetery != "undefined")return;
+			api.initialize(api.jQuery(this));	 
+			reinited = true;
+		});
+
+		if(reinited){
+		$(\'.packetery-branch-list\').each(function() {
+			if($(findRadio(this)).attr("id") == window.selected_ship_method_id ){
+				this.packetery.option("selected-id",window.selected_id);	
+				setBranchesInputs.call(this);
+			}else{			
+				this.packetery.option("selected-id",0);
+			} 
+		});
+
+		var name = "virtuemart_shipmentmethod_id";
+		$(\'[name="\'+name+\'"]:radio\').each(function(){ 
+			$(this).attr("onclick","");		
+			$(this).click(
+			function(){				
+				if($(this).find("div.packetery-branch-list").length == 0){
+					window.selected_ship_method_id = "";
+				}
+				ProOPC.setshipment(this);
+			});
+		}); 
+		}
+
+	}	
+
+	function isBranchSelected(){
+	var isSelected = true;
+	$("div.packetery-branch-list").each(
+		function() {		
+			radioButt = findRadio(this);
+			console.log(this.packetery.option("selected-id"));
+			if($(radioButt).is(\':checked\')){		
+				if(!this.packetery.option("selected-id") || this.packetery.option("selected-id")==-1){
+					isSelected = false;
 				}
 			}
-			);
 		}
+	);
+	return isSelected;
+	}	
 
-		function uncheckAll(){
-			$(\'input[name="virtuemart_shipmentmethod_id"]:radio\').each(
-				function(){
-					$(this).prop("checked",false);
-				}
-			);
+	window.isBranchSelected=function(){
+		if(isBranchSelected()){
+			return true;
+		}else{
+			alert("Pros\u00EDm zvolte pobo\u010Dku doru\u010Den\u00ED u z\u00E1silkovny.");
+			return false;
 		}
-		function selectFirstOption(){
-			if($(\'input[name="branch_id"]\').val()>0)return;
-			var firstZasilkovnaDiv = $(\'div[name="helper_div"]\')[0];
-			var firstZasilkovnaRadio = $(firstZasilkovnaDiv).find(\'input[name="virtuemart_shipmentmethod_id"]:radio\');
-			$(firstZasilkovnaRadio).attr("checked",true);
+	}
+
+	function editSubmitButt(){
+		submitButt = $(\'#proopc-order-submit\');
+		$(submitButt).attr("onclick","if(isBranchSelected()){return ProOPC.submitOrder()} else {return false;}");
+	}
+
+	setInterval(initBoxes,300);
+	setTimeout(editSubmitButt,2000);
+	setTimeout(function(){window.packetery.jQuery(addHooks());}, 2000);
+
+	function setBranchesInputs(){		 
+	var selected_id = this.packetery.option("selected-id");
+	
+	if(selected_id){
+		var name = "virtuemart_shipmentmethod_id" ;
+		var div = $(this).closest(\'div[name="helper_div"]\'); 
+		var radioButt = $(div).find(\'[name="\' + name + \'"]:radio\');
+		var box = $(this).closest(\'div.zasilkovna_box\');			
+		var branches = this.packetery.option("branches");
+		window.selected_id = selected_id;		 
+		window.selected_ship_method_id = $(radioButt).attr("id");
+		box.find(\'[name="branch_id"]\').val(branches[selected_id].id);
+		box.find(\'[name="branch_currency"]\').val(branches[selected_id].currency);
+		box.find(\'[name="branch_name_street"]\').val(branches[selected_id].name_street);
+		
+		if($(radioButt).prop("checked") == false){
+			$(radioButt).prop("checked",true);
+			ProOPC.setshipment(radioButt);
 		}
+	} 
+		
+	}
+	window.addHooks=function(){
+		$("#ProOPC").delegate("div.packetery-branch-list")
+		$("div.packetery-branch-list").each(function() { 
+			this.packetery.on("branch-change", setBranchesInputs);
+		});
+	}
+	function findRadio(x){
+		var name = "virtuemart_shipmentmethod_id";
+		var div = $(x).closest(\'div[name="helper_div"]\'); 
+		var radioButt = $(div).find(\'[name="\'+name+\'"]:radio\');
+		return radioButt;
+	}
 
-		//set each radio button to call setRequiredOpt if clicked
-		$(\'input[name="virtuemart_shipmentmethod_id"]:radio\').each(
-			function(){
-				$(this).click(setRequiredOpt);
-			}
-		);
-		$("div.packetery-branch-list").each(
-			function() {
-			var fn = function(){
-				var branches = this.packetery.option("branches");
-				var selected_id = this.packetery.option("selected-id");
-				var box = $(this).closest(\'div.zasilkovna_box\');
-				var newVal="";
-				if(selected_id){//if this branch was already selected
-					box.find(\'input[name="branch_id"]\').val(branches[selected_id].id);
-					box.find(\'input[name="branch_currency"]\').val(branches[selected_id].currency);
-					box.find(\'input[name="branch_name_street"]\').val(branches[selected_id].name_street);
-					var div = $(this).closest(\'div[name="helper_div"]\');
-					var radioButt = $(div).find(\'input[name="virtuemart_shipmentmethod_id"]:radio\');
-					$(radioButt).prop("checked",true);
-				}
-
-				setTimeout(setRequiredOpt, 1);
-			};
-			this.packetery.on("branch-change", fn);
-			fn.call(this);
-			if(zasilkovnaDefaultSelect == 1){
-				selectFirstOption();
-			}
-			}
-		);
-		$(\'input[name="shipping_rate_id"]:radio\').on("change", function() {setTimeout(setRequiredOpt, 1); });
-
-		}
-		})(window.packetery.jQuery);
+	/******** VP OPC *********/
+	var opc_process = ProOPC.processCheckout;
+	ProOPC.processCheckout = function (e){
+		opc_process(e);
+		setTimeout(window.addHooks, 1000);
+	}
+	var opc_shippaylist = ProOPC.getshipmentpaymentcartlist;
+	ProOPC.processCheckout = function (){
+		opc_shippaylist();
+		setTimeout(window.addHooks, 1000);
+	}
+	/************************/
+	})(window.packetery.jQuery);
 	</script>';
-		$js_html .= "<div class='zasilkovna_box'>";
+		$js_html .= "<div class='zasilkovna_box' style='width: 190px;'>";
 		$js_html .= '<input type="hidden" name="branch_id">';
 		$js_html .= '<input type="hidden" name="branch_currency">';
 		$js_html .= '<input type="hidden" name="branch_name_street">';
 		$jsHtmlIsSet = false;
+
+		$q = "SELECT country_2_code FROM #__virtuemart_countries WHERE virtuemart_country_id=" . $cart->BT["virtuemart_country_id"];
+		$db = JFactory::getDBO ();
+		$db->setQuery($q);
+		$obj = $db->loadObject ();
+		$cart_country = $obj->country_2_code;
 		foreach ($this->methods as $key => $method) {
+			if($method->country && ($method->country != strtolower($cart_country))){
+				continue;
+			}
+
 			$html[$key] = '';
-			/*this part adds javascript api and controls
-			ONLY TO ONE of the zasilkovna shipment methods that ARE allowed to show
-			*/
-			$selectedPayment = (empty($cart->virtuemart_paymentmethod_id) ? 0 : $cart->virtuemart_paymentmethod_id);
+
+			$selectedPayment = (!isset($cart->virtuemart_paymentmethod_id) ? 0 : $cart->virtuemart_paymentmethod_id);
 			if($jsHtmlIsSet==false){
-				$shipmentID=$method->virtuemart_shipmentmethod_id;	 
+				$shipmentID= $method->virtuemart_shipmentmethod_id;	 
 				$configRecordName='zasilkovna_combination_payment_'.$selectedPayment.'_shipment_'.$shipmentID;
 				if(((isset($zasConfig[$configRecordName]) ? $zasConfig[$configRecordName] : '1')=='1')||($selectedPayment==0)){
 					$html[$key] .= $js_html;
@@ -380,14 +442,14 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 			}
 
 			$country = $method->country;
-			
+		
 			if ($this->checkConditions($cart, $method, $cart->pricesUnformatted)) {
 				$html[$key] .= '<div name="helper_div">';//this div packs the select box with radio input - helps js easily find the radio
 				$methodSalesPrice	 = $this->calculateSalesPrice($cart, $method, $cart->pricesUnformatted);
 				$method->$method_name = $this->renderPluginName($method);
 				$html[$key] .= $this->getPluginHtml($method, $selected, $methodSalesPrice);
 				$selected_id_attr = 'selected-id='.$_SESSION['branch_id'];
-				$html[$key] .= '<p name="select-branch-message" style="float: none; color: red; font-weight: bold; display: none; ">vyberte pobočku</p><div id="zasilkovna_select" class="packetery-branch-list list-type=3 country=' . $country . ' '.$selected_id_attr.' style="border: 1px dotted black;">Načítání: seznam poboček osobního odběru</div>';
+				$html[$key] .= '<br /><p name="select-branch-message" style="float: none; color: red; font-weight: bold; display: none; ">vyberte pobočku</p><div id="zasilkovna_select" class="packetery-branch-list list-type=1 country=' . $country . ' '.$selected_id_attr.' style="border: 1px dotted black;">Načítání: seznam poboček osobního odběru</div>';
 				$html[$key] .= '</select></div>';
 			}
 		}
@@ -484,9 +546,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	 * @return boolean True when the data was valid, false otherwise. If the plugin is not activated, it should return null.
 	 * @author Max Milbers
 
-	 public function plgVmOnCheckoutCheckData($psType, VirtueMartCart $cart) {
-	 return null;
-	 }
+	public function plgVmOnCheckoutCheckData($psType, VirtueMartCart $cart) {
+	 	return null;
+	}
 	 */
 
 	/**
@@ -511,9 +573,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	 * skipped!), or null when this method is not actived.
 	 * @author Oscar van Eijk
 
-	 public function plgVmOnUpdateOrder($psType, $_formData) {
-	 return null;
-	 }
+	public function plgVmOnUpdateOrder($psType, $_formData) {
+		return null;
+	}
 	 */
 	/**
 	 * Save updated orderline data to the method specific table
@@ -523,9 +585,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	 * skipped!), or null when this method is not actived.
 	 * @author Oscar van Eijk
 
-	 public function plgVmOnUpdateOrderLine($psType, $_formData) {
-	 return null;
-	 }
+	public function plgVmOnUpdateOrderLine($psType, $_formData) {
+		return null;
+	}
 	 */
 	/**
 	 * plgVmOnEditOrderLineBE
@@ -537,9 +599,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	 * @return mixed Null for method that aren't active, text (HTML) otherwise
 	 * @author Oscar van Eijk
 
-	 public function plgVmOnEditOrderLineBE($psType, $_orderId, $_lineId) {
-	 return null;
-	 }
+	public function plgVmOnEditOrderLineBE($psType, $_orderId, $_lineId) {
+		return null;
+	}
 	 */
 	/**
 	 * This method is fired when showing the order details in the frontend, for every orderline.
@@ -551,9 +613,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	 * @return mixed Null for method that aren't active, text (HTML) otherwise
 	 * @author Oscar van Eijk
 
-	 public function plgVmOnShowOrderLineFE($psType, $_orderId, $_lineId) {
-	 return null;
-	 }
+	public function plgVmOnShowOrderLineFE($psType, $_orderId, $_lineId) {
+		return null;
+	}
 	 */
 
 	/**
@@ -571,9 +633,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	 * @author Valerie Isaksen
 	 *
 
-	 function plgVmOnResponseReceived($psType, &$virtuemart_order_id, &$html) {
-	 return null;
-	 }
+	function plgVmOnResponseReceived($psType, &$virtuemart_order_id, &$html) {
+		return null;
+	}
 	 */
 	function plgVmDeclarePluginParamsShipment($name, $id, &$data)
 	{
