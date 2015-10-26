@@ -1,4 +1,4 @@
-<h1>Modul pro VirtueMart 3, úprava pro modul One Page Checkotu od VirtuePlanet</h1>
+<h1>Modul pro VirtueMart 3, úprava pro modul One Page Checkout od VirtuePlanet</h1>
 <h2>Instalace</h2>
 <ol style="color: black; ">
   <li><a href="https://github.com/Zasilkovna/virtuemart3/archive/VirtuePlanetOPC.zip">Stáhnout soubor modulu »</a></li>
