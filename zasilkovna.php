@@ -403,12 +403,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 	var opc_process = ProOPC.processCheckout;
 	ProOPC.processCheckout = function (e){
 		opc_process(e);
-		setTimeout(window.addHooks, 1000);
+		window.addHooks();
 	}
 	var opc_shippaylist = ProOPC.getshipmentpaymentcartlist;
-	ProOPC.processCheckout = function (){
+	ProOPC.getshipmentpaymentcartlist = function (){
 		opc_shippaylist();
-		setTimeout(window.addHooks, 1000);
+		window.addHooks();
 	}
 	/************************/
 	})(window.packetery.jQuery);
