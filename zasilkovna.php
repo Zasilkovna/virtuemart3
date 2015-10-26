@@ -365,6 +365,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 		$js_html .= '<input type="hidden" name="branch_name_street">';
 		$jsHtmlIsSet = false;
 		foreach ($this->methods as $key => $method) {
+			if($method->country && ($method->country != strtolower($cart_country))){
+				continue;
+			}
+			
 			$html[$key] = '';
 			/*this part adds javascript api and controls
 			ONLY TO ONE of the zasilkovna shipment methods that ARE allowed to show
