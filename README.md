@@ -1,7 +1,12 @@
 <h1>Modul pro VirtueMart 3</h1>
 <h2>Instalace</h2>
 <ol style="color: black; ">
-  <li><a href="https://github.com/Zasilkovna/virtuemart3/archive/master.zip">Stáhnout soubor modulu »</a></li>
+  <li>
+    <ul>
+      <li><a href="https://github.com/Zasilkovna/virtuemart3/archive/master.zip">Stáhnout soubor modulu »</a></li>
+      <li>V případě, že používáte modul One Page Checkout od VirtuePlanet <a href="https://github.com/Zasilkovna/virtuemart3/archive/VirtuePlanetOPC.zip">upravenou verzi stáhnete zde »</a></li>
+    </ul>
+  </li>
   <li>Modul vyžaduje minimálně verzi <b>Joomla 3.0</b> a <b>VirtueMart 3.0.x</b>. Máte-li starší, napište nám prosím používanou verzi a adresu e-shopu na <a href="mailto:technicka.podpora@zasilkovna.cz">technicka.podpora@zasilkovna.cz</a>.</li>
   <li>
     Přihlašte se do administrace Joomly, otevřete nabídku Extensions -> Extension manager a nahrajte nainstalujte modul<br><br>
