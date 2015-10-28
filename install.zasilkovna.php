@@ -76,8 +76,14 @@ class plgVmShipmentZasilkovnaInstallerScript
                 if($route=="install"){
                         $media_path=JPATH_ROOT.DS.'media'.DS.'com_zasilkovna'.DS;
                         recurse_copy($media_path.'admin'.DS.'com_virtuemart'.DS,$vm_admin_path.DS);
-                        foreach(array('en-GB','cs-CZ','sk-SK') as $langCode){
-                            recurse_copy($media_path.'admin'.DS.$langCode.'.plg_vmshipment_zasilkovna.ini',JPATH_ADMINISTRATOR.DS.'language'.DS.$langCode.DS.$langCode.'.plg_vmshipment_zasilkovna.ini');
+                        
+                        $db =& JFactory::getDBO();
+                        $q = "SELECT DISTINCT element FROM `aagdqzj_extensions` WHERE `type` = 'language' AND `element` IN ('en-GB','cs-CZ','sk-SK')";
+                        $db->setQuery($q);
+	
+                        while($obj = $db->loadNextObject()){
+                                $langCode = $obj->element;
+                                recurse_copy($media_path.'admin'.DS.$langCode.'.plg_vmshipment_zasilkovna.ini',JPATH_ADMINISTRATOR.DS.'language'.DS.$langCode.DS.$langCode.'.plg_vmshipment_zasilkovna.ini');
                         }
 
                         $db =& JFactory::getDBO();
