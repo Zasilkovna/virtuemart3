@@ -364,8 +364,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 		$js_html .= '<input type="hidden" name="branch_currency">';
 		$js_html .= '<input type="hidden" name="branch_name_street">';
 		$jsHtmlIsSet = false;
+
+		$cart_country = strtolower($cart->STaddress['fields']['virtuemart_country_id']['country_2_code']);
 		foreach ($this->methods as $key => $method) {
-			if($method->country && ($method->country != strtolower($cart_country))){
+			if($method->country && ($method->country != $cart_country)){
 				continue;
 			}
 			
