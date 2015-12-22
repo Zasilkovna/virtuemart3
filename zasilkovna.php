@@ -419,11 +419,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 		$js_html .= '<input type="hidden" name="branch_name_street">';
 		$jsHtmlIsSet = false;
 
-		$q = "SELECT country_2_code FROM #__virtuemart_countries WHERE virtuemart_country_id=" . $cart->BT["virtuemart_country_id"];
-		$db = JFactory::getDBO ();
-		$db->setQuery($q);
-		$obj = $db->loadObject ();
-		$cart_country = $obj->country_2_code;
+		$cart_country = strtolower($cart->STaddress['fields']['virtuemart_country_id']['country_2_code']);
 		foreach ($this->methods as $key => $method) {
 			if($method->country && ($method->country != strtolower($cart_country))){
 				continue;
