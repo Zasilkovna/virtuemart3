@@ -30,9 +30,10 @@
    <vmconfig>
         <fields name="params">
             <fieldset name="restrictions">
-				<field name="country" type="vmzasilkovnacountries"  scope="com_virtuemart" default="" label="PLG_VMSHIPMENT_ZASILKOVNA_COUNTRIES" description="PLG_VMSHIPMENT_ZASILKOVNA_COUNTRIES"/>
+				<field name="country" type="vmzasilkovnacountries"  scope="com_virtuemart" default="" label="Země poboček" description="Zobrazí se pouze pobočky pro vybranou zemi"/>
             </fieldset>
             <fieldset name="fee">
+            	<field name="countries" type="vmcountries" multiple="true" scope="com_virtuemart" default="" label="Zóna" description="Metoda se zobrazí pouze této zemi"/>
 				<field name="packet_price_czk" type="text" size="10" default="" label="Cena za dopravu" description="Cena za dopravu"/>	
 				<field name="free_shipping_treshold_czk" type="text" size="10" default="-1" label="Minimální cena objednavky pro dopravu zdarma(vypnuto = -1)" description="Minimální cena objednavky pro dopravu zdarma"/>	
 				<field name="weight_treshold" type="text" size="10" default="-1" label="Maximální váha objednávky v kg (vypnuto = -1)" description="Maximální váha objednávky"/>		
