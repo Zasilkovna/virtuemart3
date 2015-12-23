@@ -365,9 +365,22 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 		$js_html .= '<input type="hidden" name="branch_name_street">';
 		$jsHtmlIsSet = false;
 
-		$cart_country = strtolower($cart->STaddress['fields']['virtuemart_country_id']['country_2_code']);
+
+		$address = $cart->getST();
+		if (!isset($address['virtuemart_country_id'])) {
+			$address['virtuemart_country_id'] = 0;
+		}
+		
 		foreach ($this->methods as $key => $method) {
-			if($method->country && ($method->country != $cart_country)){
+			$countries = array();
+			if (!empty($method->countries)) {
+				if (!is_array ($method->countries)) {
+					$countries[0] = $method->countries;
+				} else {
+					$countries = $method->countries;
+				}
+			}
+			if(count ($countries) && !in_array ($address['virtuemart_country_id'], $countries)){
 				continue;
 			}
 			
