@@ -78,7 +78,7 @@ class plgVmShipmentZasilkovnaInstallerScript
                         recurse_copy($media_path.'admin'.DS.'com_virtuemart'.DS,$vm_admin_path.DS);
                         
                         $db =& JFactory::getDBO();
-                        $q = "SELECT DISTINCT element FROM `aagdqzj_extensions` WHERE `type` = 'language' AND `element` IN ('en-GB','cs-CZ','sk-SK')";
+                        $q = "SELECT DISTINCT element FROM `#_extensions` WHERE `type` = 'language' AND `element` IN ('en-GB','cs-CZ','sk-SK')";
                         $db->setQuery($q);
 	
                         while($obj = $db->loadNextObject()){
