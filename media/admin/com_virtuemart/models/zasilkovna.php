@@ -113,7 +113,7 @@ class VirtueMartModelZasilkovna extends VmModel
 		if ($this->checked_configuration) return $this->config_ok;
 		$this->checked_configuration = true;
 		$key                         = $this->api_key;
-		$testUrl                     = $this->_zas_url . "api/$key/test";
+		$testUrl                     = $this->_zas_url . "api/v3/$key/test";
 
 		if (!$key) {
 			$this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_API_KEY_NOT_SET');
@@ -245,7 +245,7 @@ class VirtueMartModelZasilkovna extends VmModel
 	      	  }else{
 	      	    $q.=", (";
 	      	  }
-	      	  $q .= "'$branch->id', '$branch->name_street','$branch->currency','$branch->country')";
+	      	  $q .= "'$branch->id', '$branch->nameStreet','$branch->currency','$branch->country')";
 
 	      	}
 	      	$db->setQuery($q);
@@ -276,7 +276,7 @@ class VirtueMartModelZasilkovna extends VmModel
 
 	private function updateFile($path, $type)
 	{
-		$remote = $this->_zas_url . "api/" . $this->api_key . "/branch." . $type;
+		$remote = $this->_zas_url . "api/v3/" . $this->api_key . "/branch." . $type;
 		if ($type == 'js') {
 			$lib_path = substr($this->_media_url, 0, -1);
 			$remote .= "?callback=addHooks";

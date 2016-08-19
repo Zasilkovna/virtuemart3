@@ -51,7 +51,7 @@ AdminUIHelper::endAdminArea ();
 
 ?>
 <script>
-$("a.toolbar").each(function(){
+jQuery("a.toolbar").each(function(){
 	var onClickStr = $(this).attr("onclick");
 	if(onClickStr.indexOf('printLabels') >=0 || onClickStr.indexOf('updateAndExportZasilkovnaOrders') >= 0){
 		$(this).click(function(){
