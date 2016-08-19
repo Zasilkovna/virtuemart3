@@ -279,7 +279,7 @@ class VirtueMartModelZasilkovna extends VmModel
 		$remote = $this->_zas_url . "api/v3/" . $this->api_key . "/branch." . $type;
 		if ($type == 'js') {
 			$lib_path = substr($this->_media_url, 0, -1);
-			$remote .= "?callback=addHooks";
+			$remote .= "?callback=window.addHooks";
 			$remote .= "&lib_path=$lib_path&sync_load=1";
 		}
 		$data = $this->fetch($remote);
