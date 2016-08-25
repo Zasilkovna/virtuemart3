@@ -334,7 +334,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 			var fn = function(){
 				var branches = this.packetery.option("branches");
 				var selected_id = this.packetery.option("selected-id");
-				var box = $(this).closest(\'div.zasilkovna_box\');
+				var box = $(\'div.zasilkovna_box\');
 				var newVal="";
 				if(selected_id){//if this branch was already selected
 					box.find(\'input[name="branch_id"]\').val(branches[selected_id].id);
