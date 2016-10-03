@@ -13,8 +13,8 @@ $com_virtuemart=JPATH_ADMINISTRATOR."/components/com_virtuemart";
 //delete dir content
 $files = glob($com_virtuemart."/classes/shipping/".$mod_name.'/*'); // get all file names
 foreach($files as $file){ 
-  if(is_file($file))
-    unlink($file); 
+	if(is_file($file))
+		unlink($file); 
 }
 rmdir($com_virtuemart."/classes/shipping/".$mod_name);
 
@@ -35,13 +35,3 @@ $db =& JFactory::getDBO();
 $q="DROP TABLE IF EXISTS #__zasilkovna_branches;";
 $db->setQuery($q);
 $db->query();
-
-//$q="DROP TABLE IF EXISTS #__zasilkovna_ship_payment;";
-//$db->setQuery($q);
-//$db->query();
-
-/*
-$q="DROP TABLE IF EXISTS #__zasilkovna_orders;";
-$db->setQuery($q);
-$db->query();
-*/
