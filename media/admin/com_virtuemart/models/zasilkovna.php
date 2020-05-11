@@ -4,330 +4,432 @@
  * @author Zasilkovna
  * @link http://www.zasilkovna.cz
  */
+
 defined('_JEXEC') or die('Restricted access');
-/*if (!class_exists('JModel'))
-	require JPATH_VM_LIBRARIES . DS . 'joomla' . DS . 'application' . DS . 'component' . DS . 'model.php';*/
+
 if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmodel.php');
 
 /**
- * @author Zasilkovna
+ * Class VirtueMartModelZasilkovna
  */
-class VirtueMartModelZasilkovna extends VmModel {
-	const VERSION = '1.0';
-	const PLG_NAME = 'zasilkovna';
-	public $warnings = array();
-	public $api_key;
+class VirtueMartModelZasilkovna extends VmModel
+{
+    const VERSION = '1.1.8';
+    const PLG_NAME = 'zasilkovna';
 
-	static $_couriers_to_address = array(13 => 'Česká pošta', 106 => 'Doručení na adresu ČR', 16 => 'Slovenská pošta');
+    const MAX_WEIGHT_DEFAULT = 5;
+    const FREE_SHIPPING_DEFAULT = FALSE; // disabled
+    const PRICE_DEFAULT = 100;
 
-	var $_zas_url = "http://www.zasilkovna.cz/";
+    public $warnings = array();
+    public $api_key;
 
-	var $_media_url = "";
-	var $_media_path = "";
+    static $_couriers_to_address = array(13 => 'Česká pošta', 106 => 'Doručení na adresu ČR', 16 => 'Slovenská pošta');
 
-	var $_db_table_name = "#__virtuemart_shipment_plg_zasilkovna";
-	var $checked_configuration = false;
-	var $config_ok = false;
+    protected $config;
 
+    public $_zas_url = "http://www.zasilkovna.cz/";
 
-	public function __construct() {
-		$language = JFactory::getLanguage();
-		$language->load('plg_vmshipment_zasilkovna', JPATH_ADMINISTRATOR, NULL, true);
-		$language->load('plg_vmshipment_zasilkovna', JPATH_SITE, NULL, true);
+    public $_media_url = "";
+    public $_media_path = "";
 
-		$q = "SELECT custom_data FROM #__extensions WHERE element='zasilkovna'";
-		$db = JFactory::getDBO();
-		$db->setQuery($q);
-		$obj = $db->loadObject();
+    private $_db_table_name = "#__virtuemart_shipment_plg_zasilkovna";
+    public $checked_configuration = false;
+    public $config_ok = false;
 
-		$config = unserialize($obj->custom_data);
-
-		$this->api_pass = $config['zasilkovna_api_pass'];
-		$this->api_key = substr($config['zasilkovna_api_pass'], 0, 16);
-		$this->_media_url = JURI::root(true) . "/media/com_zasilkovna/media/";
-		$this->_media_path = JPATH_SITE . DS . "media" . DS . "com_zasilkovna" . DS . "media" . DS;
-		parent::__construct();
-	}
-
-	public function getDbTableName() {
-		return $this->_db_table_name;
-	}
-
-	public function getShipmentMethodIds() {
-		$q = "SELECT virtuemart_shipmentmethod_id FROM #__virtuemart_shipmentmethods WHERE shipment_element = '" . self::PLG_NAME . "'";
-		$db = JFactory::getDBO();
-		$db->setQuery($q);
-		$objList = $db->loadObjectList();
-		$list = array();
-		foreach($objList as $obj) {
-			$list[] = $obj->virtuemart_shipmentmethod_id;
-		}
-
-		return $list;
-	}
+    public $errors = array();
 
 
-	public function getBranches() {
-		$db = JFactory::getDBO();
-		$q = "SELECT * from #__virtuemart_zasilkovna_branches";
-		$db->setQuery($q);
+    /**
+     * VirtueMartModelZasilkovna constructor.
+     * @throws Exception
+     */
+    public function __construct()
+    {
+        $language = JFactory::getLanguage();
+        $language->load('plg_vmshipment_zasilkovna', JPATH_ADMINISTRATOR, NULL, true);
+        $language->load('plg_vmshipment_zasilkovna', JPATH_SITE, NULL, true);
 
-		return $db->loadObjectList();
-	}
+        $this->config = $this->loadConfig();
 
-	public function getCurrencyCode($currency_id) {
-		$vendorId = VirtueMartModelVendor::getLoggedVendor();
-		$db = JFactory::getDBO();
-		$q = 'SELECT   `currency_code_3` FROM `#__virtuemart_currencies` WHERE `virtuemart_currency_id`=' . $currency_id;
-		$db->setQuery($q);
+        $this->api_pass = $this->config['zasilkovna_api_pass'];
+        $this->api_key = substr($this->config['zasilkovna_api_pass'], 0, 16);
+        $this->_media_url = JURI::root(true) . "/media/com_zasilkovna/media/";
+        $this->_media_path = JPATH_SITE . DS . "media" . DS . "com_zasilkovna" . DS . "media" . DS;
 
-		return $db->loadResult();
-	}
+        parent::__construct();
+    }
 
-	public function isShipmentPaymentRestrictionInstalled() {
-		$file = JPATH_SITE . '/components/com_virtuemart/views/cart/tmpl/select_payment.php';
-		if(strpos(file_get_contents($file), 'ZASILKOVNA') !== false) {
-			return true;
-		}
-		else {
-			return false;
-		}
-	}
 
-	public function checkModuleVersion() {
-		$checkUrl = $this->_zas_url . "api/" . $this->api_key . "/version-check-virtuemart2?my=" . self::VERSION;
-		$data = json_decode($this->fetch($checkUrl));
-		if($data->version > self::VERSION) {
-			$lg =& JFactory::getLanguage();
-			$lang = substr($lg->getTag(), 0, 2);
+    /**
+     * Retrieve database configuration value by forward slash separated path, which corresponds to the config fields
+     * e.g. config field with name='section[fieldset][value]' can be accessed with path 'section/fieldset/value'
+     * returns default value if config value is not found
+     *
+     * @param string $path Path to config
+     * @param mixed|null $default Default value
+     * @return mixed|null for shipments that aren't active, text (HTML) otherwise
+     */
+    public function getConfig($path, $default = NULL){
+        $path = explode('/', $path);
+        if( count($path) < 1 )return NULL;
+        $conf = $this->config;
+        foreach ($path as $s){
+            if( isset( $conf[$s] ) )$conf = $conf[$s];
+            else return $default;
+        }
+        return $conf;
+    }
 
-			return JText::_('PLG_VMSHIPMENT_ZASILKOVNA_NEW_VERSION') . ": " . $data->message->$lang;
-		}
-		else {
-			return JText::_('PLG_VMSHIPMENT_ZASILKOVNA_VERSION_IS_NEWEST') . " - " . self::VERSION;
-		}
-	}
 
-	public function checkConfiguration() {
-		if($this->checked_configuration) return $this->config_ok;
-		$this->checked_configuration = true;
-		$key = $this->api_key;
-		$testUrl = $this->_zas_url . "api/v3/$key/test";
+    /**
+     * Loads configuration from the database and returns it as an array
+     *
+     * @return array|null configuration
+     */
+    public function loadConfig()
+    {
+        $q = "SELECT custom_data FROM #__extensions WHERE element='zasilkovna'";
+        $db = JFactory::getDBO();
+        $db->setQuery($q);
+        $obj = $db->loadObject();
+        return unserialize($obj->custom_data);
+    }
 
-		if(!$key) {
-			$this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_API_KEY_NOT_SET');
-			$this->config_ok = false;
 
-			return false;
-		}
-		if(!$this->httpAccessMethod()) {
-			$this->errors[] = 'cannot load curl or url_fopen';
-			$this->config_ok = false;
+    /**
+     * Returns list of supported countries, parameters 'country' and 'lang' are used in the widget
+     * support for new country can be easily added by expanding the array
+     *
+     * @param bool $unsupported In some cases option for unsupported countries is needed
+     * @return array List of supported countries
+     */
+    public function getCountries($unsupported = false)
+    {
+        $countries = array(
+            "cz" => array(
+                "country" => "cz"
+            ),
+            "sk" => array(
+                "country" => "sk"
+            ),
+            "pl" => array(
+                "country" => "pl"
+            ),
+            "hu" => array(
+                "country" => "hu"
+            ),
+            "ro" => array(
+                "country" => "ro"
+            )
+        );
+        if($unsupported){
+            $countries = array_merge(array(
+                "other" => array(
+                    "country" => "null"
+                )
+            ), $countries);
+        }
 
-			return false;
-		}
-		if($this->fetch($testUrl) != 1) {
-			$this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_API_KEY_NOT_VERIFIED');
-		}
-		$this->config_ok = true;
+        return $countries;
+    }
 
-		return true;
-	}
 
-	private function httpAccessMethod() {
-		if(extension_loaded('curl')) return true;
-		if(ini_get('allow_url_fopen')) return true;
+    /**
+     * Returns model's table name
+     * @return string
+     */
+    public function getDbTableName()
+    {
+        return $this->_db_table_name;
+    }
 
-		return false;
 
-	}
+    public function getShipmentMethodIds()
+    {
+        $q = "SELECT virtuemart_shipmentmethod_id FROM #__virtuemart_shipmentmethods WHERE shipment_element = '" . self::PLG_NAME . "'";
+        $db = JFactory::getDBO();
+        $db->setQuery($q);
+        $objList = $db->loadObjectList();
+        $list = array();
+        foreach($objList as $obj) {
+            $list[] = $obj->virtuemart_shipmentmethod_id;
+        }
 
-	private function fetch($url) {
-		if(extension_loaded('curl')) {
-			$ch = curl_init();
-			curl_setopt($ch, CURLOPT_URL, $url);
-			curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-			curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
-			curl_setopt($ch, CURLOPT_AUTOREFERER, false);
-			curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 2);
-			curl_setopt($ch, CURLOPT_TIMEOUT, 3);
-			$body = curl_exec($ch);
-			if(curl_errno($ch) > 0) {
-				return false;
-			}
+        return $list;
+    }
 
-			return $body;
-		}
-		elseif(ini_get('allow_url_fopen')) {
-			if(function_exists('stream_context_create')) {
-				$ctx = stream_context_create(array(
-					'http' => array(
-						'timeout' => 3
-					)
-				));
+    public function getBranches() {
+        $db = JFactory::getDBO();
+        $q = "SELECT * from #__virtuemart_zasilkovna_branches";
+        $db->setQuery($q);
 
-				return file_get_contents($url, 0, $ctx);
-			}
-			else {
-				return file_get_contents($url);
-			}
-		}
-		else
-			return false;
-	}
+        return $db->loadObjectList();
+    }
 
-	/*
-	 * Return js api url and if it is needed, updates it
-	 */
-	public function updateJSApi() {
-		$js_path = $this->_media_path . 'branch.js';
-		if(!$this->is_writable($js_path)) return false;
-		if(!$this->isFileUpToDate($js_path)) {
-			if(!$this->updateFile($js_path, 'js')) {
-				//updating file failed
-				if(!$this->isFileUsable($js_path)) {
-					// if file is older than 5 days
-					$this->errors[] = "Cannot update javascript file and it is older than 5 days.";
+    public function getCurrencyCode($currency_id)
+    {
+        $vendorId = VirtueMartModelVendor::getLoggedVendor();
+        $db = JFactory::getDBO();
+        $q = 'SELECT   `currency_code_3` FROM `#__virtuemart_currencies` WHERE `virtuemart_currency_id`=' . $currency_id;
+        $db->setQuery($q);
+
+        return $db->loadResult();
+    }
+
+
+    public function isShipmentPaymentRestrictionInstalled()
+    {
+        $file = JPATH_SITE . '/components/com_virtuemart/views/cart/tmpl/select_payment.php';
+        if(strpos(file_get_contents($file), 'ZASILKOVNA') !== false) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+
+
+    public function checkModuleVersion()
+    {
+        $checkUrl = $this->_zas_url . "api/" . $this->api_key . "/version-check-virtuemart2?my=" . self::VERSION;
+        $data = json_decode($this->fetch($checkUrl));
+        if($data->version > self::VERSION) {
+            $lg =& JFactory::getLanguage();
+            $lang = substr($lg->getTag(), 0, 2);
+
+            return JText::_('PLG_VMSHIPMENT_ZASILKOVNA_NEW_VERSION') . ": " . $data->message->$lang;
+        }
+        else {
+            return JText::_('PLG_VMSHIPMENT_ZASILKOVNA_VERSION_IS_NEWEST') . " - " . self::VERSION;
+        }
+    }
+
+
+    public function checkConfiguration()
+    {
+        if($this->checked_configuration) return $this->config_ok;
+        $this->checked_configuration = true;
+        $key = $this->api_key;
+        $testUrl = $this->_zas_url . "api/v3/$key/test";
+
+        if(!$key) {
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_API_KEY_NOT_SET');
+            $this->config_ok = false;
+
+            return false;
+        }
+        if(!$this->httpAccessMethod()) {
+            $this->errors[] = 'cannot load curl or url_fopen';
+            $this->config_ok = false;
+
+            return false;
+        }
+        if($this->fetch($testUrl) != 1) {
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_API_KEY_NOT_VERIFIED');
+        }
+        $this->config_ok = true;
+
+        return true;
+    }
+
+
+    private function httpAccessMethod()
+    {
+        if(extension_loaded('curl')) return true;
+        if(ini_get('allow_url_fopen')) return true;
+
+        return false;
+
+    }
+
+
+    private function fetch($url)
+    {
+        if(extension_loaded('curl')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
+            curl_setopt($ch, CURLOPT_AUTOREFERER, false);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+            $body = curl_exec($ch);
+            if(curl_errno($ch) > 0) {
+                return false;
+            }
+
+            return $body;
+        }
+        elseif(ini_get('allow_url_fopen')) {
+            if(function_exists('stream_context_create')) {
+                $ctx = stream_context_create(array(
+                    'http' => array(
+                        'timeout' => 3
+                    )
+                ));
+
+                return file_get_contents($url, 0, $ctx);
+            }
+            else {
+                return file_get_contents($url);
+            }
+        }
+        else
+            return false;
+    }
+
+    /*
+     * Return js api url and if it is needed, updates it
+     */
+    public function updateJSApi() {
+        $js_path = $this->_media_path . 'branch.js';
+        if(!$this->is_writable($js_path)) return false;
+        if(!$this->isFileUpToDate($js_path)) {
+            if(!$this->updateFile($js_path, 'js')) {
+                //updating file failed
+                if(!$this->isFileUsable($js_path)) {
+                    // if file is older than 5 days
+                    $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_UPDATE_ERROR');
+
+                    return false;
+                }
+            }
+        }
+        if(!$this->updateBranchesInfo()) {
+            return false;
+        }
+
+        return $this->_media_url . "branch.js";
+    }
+
+    public function updateBranchesInfo() {
+        $localFilePath = $this->_media_path . 'branch.xml';
+        if(!$this->is_writable($localFilePath)) return false;
+        if(!$this->isFileUpToDate($localFilePath)) {
+            // file is older than one days
+            if(!$this->updateFile($localFilePath, "xml")) {
+                //failed updating
+                if(!$this->isFileUsable($localFilePath)) {
+                    //file is older than 5 days and thus not usable
+                    $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_UPDATE_ERROR');
 
 					return false;
-				}
-			}
-		}
-		if(!$this->updateBranchesInfo()) {
-			return false;
-		}
+                }
+            }
+            else {
+                //updating succeeded, update mysql db
+                if(!$this->saveBranchesXmlToDb($localFilePath)) {
+                    $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_XML_ERROR');
 
-		return $this->_media_url . "branch.js";
-	}
+                    return false;
+                }
+            }
+        }
 
-	public function updateBranchesInfo() {
-		$localFilePath = $this->_media_path . 'branch.xml';
-		if(!$this->is_writable($localFilePath)) return false;
-		if(!$this->isFileUpToDate($localFilePath)) {
-			// file is older than one days
-			if(!$this->updateFile($localFilePath, "xml")) {
-				//failed updating
-				if(!$this->isFileUsable($localFilePath)) {
-					//file is older than 5 days and thus not usable
-					$this->errors[] = 'Cannot update branches xml file and it is older than 5 days.';
+        return true;
+    }
 
-					return false;
-				}
-			}
-			else {
-				//updating succeeded, update mysql db
-				if(!$this->saveBranchesXmlToDb($localFilePath)) {
-					$this->errors[] = 'cannot update branches database records from xml file';
+    /**
+     * Shows errors in module administration
+     */
+    public function raiseErrors()
+    {
+        if(is_array($this->errors)) {
+            foreach($this->errors as $error) {
+                JError::raiseWarning(600, $error);
+            }
+        }
+    }
 
-					return false;
-				}
-			}
-		}
-
-		return true;
-	}
-
-	/**
-	 * Shows errors in module administration
-	 */
-	public function raiseErrors() {
-		if(is_array($this->errors)) {
-			foreach($this->errors as $error) {
-				JError::raiseWarning(600, $error);
-			}
-		}
-	}
-
-
-	private function saveBranchesXmlToDb($path) {
-		$xml = simplexml_load_file($path);
-		if($xml) {
-			$db = JFactory::getDBO();
-			$query = 'TRUNCATE TABLE #__virtuemart_zasilkovna_branches';
-			$db->setQuery($query);
-			$db->query();
-			$q = "INSERT INTO #__virtuemart_zasilkovna_branches (
+    private function saveBranchesXmlToDb($path) {
+        $xml = simplexml_load_file($path);
+        if($xml) {
+            $db = JFactory::getDBO();
+            $query = 'TRUNCATE TABLE #__virtuemart_zasilkovna_branches';
+            $db->setQuery($query);
+            $db->query();
+            $q = "INSERT INTO #__virtuemart_zasilkovna_branches (
 	              `id` ,
 	              `name_street` ,
 	              `currency` ,
 	              `country`
 	              ) VALUES ";
-			$first = true;
-			foreach($xml->branches->branch as $key => $branch) {
-				if($first) {
-					$q .= " (";
-					$first = false;
-				}
-				else {
-					$q .= ", (";
-				}
-				$q .= "'$branch->id', '$branch->nameStreet','$branch->currency','$branch->country')";
+            $first = true;
+            foreach($xml->branches->branch as $key => $branch) {
+                if($first) {
+                    $q .= " (";
+                    $first = false;
+                }
+                else {
+                    $q .= ", (";
+                }
+                $streetEscaped = $db->escape($branch->nameStreet);
+                $q .= "'$branch->id', '$streetEscaped','$branch->currency','$branch->country')";
 
-			}
-			$db->setQuery($q);
-			$db->query();
-		}
-		else {
-			return false;
-		}
+            }
+            $db->setQuery($q);
+            $db->query();
+        }
+        else {
+            return false;
+        }
 
-		return true;
-	}
+        return true;
+    }
 
+    private function isFileUpToDate($path) {
+        if(!file_exists($path)) return false;
+        if(filemtime($path) < time() - (60 * 60 * 24)) return false;
+        if(filesize($path) <= 1024) return false;
 
-	private function isFileUpToDate($path) {
-		if(!file_exists($path)) return false;
-		if(filemtime($path) < time() - (60 * 60 * 24)) return false;
-		if(filesize($path) <= 1024) return false;
+        return true;
+    }
 
-		return true;
-	}
+    private function isFileUsable($path)//true if not older than 5 days
+    {
+        if(!file_exists($path)) return false;
+        if(filemtime($path) < time() - (60 * 60 * 24 * 5)) return false;
+        if(filesize($path) <= 1024) return false;
 
-	private function isFileUsable($path)//true if not older than 5 days
-	{
-		if(!file_exists($path)) return false;
-		if(filemtime($path) < time() - (60 * 60 * 24 * 5)) return false;
-		if(filesize($path) <= 1024) return false;
-
-		return true;
-	}
-
-
-	private function updateFile($path, $type) {
-		$remote = $this->_zas_url . "api/v3/" . $this->api_key . "/branch." . $type;
-		if($type == 'js') {
-			$lib_path = substr($this->_media_url, 0, -1);
-			$remote .= "?callback=window.addHooks";
-			$remote .= "&lib_path=$lib_path&sync_load=1";
-		}
-		$data = $this->fetch($remote);
-		file_put_contents($path, $data);
-		clearstatcache();
-		if(filesize($path) < 1024) {
-			return false;
-		}
-
-		return true;
-	}
-
-	private function is_writable($filepath) {
-		if(!file_exists($filepath)) {
-			@touch($filepath);
-		}
-		if(is_writable($filepath)) {
-			return true;
-		}
-		$this->errors[] = $filepath . " must be writable.";
-
-		return false;
-	}
+        return true;
+    }
 
 
-	public function loadLanguage() {
-		$language = JFactory::getLanguage();
-		$language->load('plg_vmshipment_zasilkovna', JPATH_ADMINISTRATOR, 'en-GB', true);
-		$language->load('plg_vmshipment_zasilkovna', JPATH_SITE, 'en-GB', true);
-	}
+    private function updateFile($path, $type) {
+        $remote = $this->_zas_url . "api/v3/" . $this->api_key . "/branch." . $type;
+        if($type == 'js') {
+            $lib_path = substr($this->_media_url, 0, -1);
+            $remote .= "?callback=window.addHooks";
+            $remote .= "&lib_path=$lib_path&sync_load=1";
+        }
+        $data = $this->fetch($remote);
+        file_put_contents($path, $data);
+        clearstatcache();
+        if(filesize($path) < 1024) {
+            return false;
+        }
 
+        return true;
+    }
+
+    private function is_writable($filepath) {
+        if(!file_exists($filepath)) {
+            @touch($filepath);
+        }
+        if(is_writable($filepath)) {
+            return true;
+        }
+        $this->errors[] = $filepath . " " . JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_NOT_WRITABLE');
+
+        return false;
+    }
+
+    public function loadLanguage()
+    {
+        $language = JFactory::getLanguage();
+        $language->load('plg_vmshipment_zasilkovna', JPATH_ADMINISTRATOR, NULL, true);
+        $language->load('plg_vmshipment_zasilkovna', JPATH_SITE, NULL, true);
+    }
 
 }

@@ -66,6 +66,16 @@ class plgVmShipmentZasilkovnaInstallerScript {
 
 	}
 
+    function endsWith($haystack, $needle)
+    {
+        $length = strlen($needle);
+        if ($length == 0) {
+            return true;
+        }
+
+        return (substr($haystack, -$length) === $needle);
+    }
+
 	/**
 	 * Called after any type of action
 	 *
@@ -80,14 +90,16 @@ class plgVmShipmentZasilkovnaInstallerScript {
 			$media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna' . DS;
 			recurse_copy($media_path . 'admin' . DS . 'com_virtuemart' . DS, $vm_admin_path . DS);
 
-			$db =& JFactory::getDBO();
-			$q = "SELECT DISTINCT element FROM `#__extensions` WHERE `type` = 'language' AND `element` IN ('en-GB','cs-CZ','sk-SK')";
-			$db->setQuery($q);
-
-			while($obj = $db->loadNextObject()) {
-				$langCode = $obj->element;
-				recurse_copy($media_path . 'admin' . DS . $langCode . '.plg_vmshipment_zasilkovna.ini', JPATH_ADMINISTRATOR . DS . 'language' . DS . $langCode . DS . $langCode . '.plg_vmshipment_zasilkovna.ini');
-			}
+            $files = scandir($media_path . 'admin' . DS);
+            foreach ($files as $index => $filename){
+                if ($this->endsWith($filename, '.ini')){
+                    $locale = explode('.',$filename)[0];
+                    if (file_exists(JPATH_ADMINISTRATOR . DS . 'language' . DS . $locale))
+                    {
+                        recurse_copy($media_path . 'admin' . DS . $filename, JPATH_ADMINISTRATOR . DS . 'language' . DS . $locale . DS . $filename);
+                    }
+                }
+            }
 
 			$db =& JFactory::getDBO();
 			$q = "CREATE TABLE IF NOT EXISTS #__virtuemart_zasilkovna_branches (
@@ -119,6 +131,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
 							  `virtuemart_country_id` varchar(255) DEFAULT NULL,
 							  `adult_content` smallint(1) DEFAULT '0',
 							  `is_cod` smallint(1) DEFAULT NULL,
+							  `packet_cod` decimal(15,2) DEFAULT '0',
 							  `exported` smallint(1) DEFAULT NULL,
 							  `printed_label` smallint(1) DEFAULT '0',
 							  `shipment_name` varchar(5000) DEFAULT NULL,
@@ -136,7 +149,8 @@ class plgVmShipmentZasilkovnaInstallerScript {
 			$db->setQuery($q);
 			$db->query();
 
-			$q = "INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `link`, `depends`, `icon_class`, `ordering`, `published`, `tooltip`, `view`, `task`) VALUES
+			$q = "
+INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `link`, `depends`, `icon_class`, `ordering`, `published`, `tooltip`, `view`, `task`) VALUES
 							(5, 0, 'ZASILKOVNA', '', '', 'vmicon vmicon-16-zasilkovna', 1, 1, '', 'zasilkovna', '');";
 			$db->setQuery($q);
 			$db->query();
@@ -163,6 +177,21 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	 * @return  boolean  True on success
 	 */
 	public function update(JAdapterInstance $adapter) {
+        // update of admin part of module
+        $vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
+        $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna' . DS;
+        recurse_copy($media_path . 'admin' . DS . 'com_virtuemart' . DS, $vm_admin_path . DS);
+
+        $files = scandir($media_path . 'admin' . DS);
+        foreach ($files as $index => $filename){
+            if ($this->endsWith($filename, '.ini')){
+                $locale = explode('.',$filename)[0];
+                if (file_exists(JPATH_ADMINISTRATOR . DS . 'language' . DS . $locale))
+                {
+                    recurse_copy($media_path . 'admin' . DS . $filename, JPATH_ADMINISTRATOR . DS . 'language' . DS . $locale . DS . $filename);
+                }
+            }
+        }
 
 	}
 
@@ -183,8 +212,11 @@ class plgVmShipmentZasilkovnaInstallerScript {
 		recurse_delete($vm_admin_path . DS . 'views' . DS . 'zasilkovna' . DS);
 		recurse_delete($vm_admin_path . DS . 'controllers' . DS . 'zasilkovna.php');
 		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'en-GB' . DS . 'en-GB.plg_vmshipment_zasilkovna.ini');
-
-
+		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'cs-CZ' . DS . 'cs-CZ.plg_vmshipment_zasilkovna.ini');
+		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'sk-SK' . DS . 'sk-SK.plg_vmshipment_zasilkovna.ini');
+		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'pl-PL' . DS . 'pl-PL.plg_vmshipment_zasilkovna.ini');
+		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'hu-HU' . DS . 'hu-HU.plg_vmshipment_zasilkovna.ini');
+		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'ro-RO' . DS . 'ro-RO.plg_vmshipment_zasilkovna.ini');                                
 	}
 
 }

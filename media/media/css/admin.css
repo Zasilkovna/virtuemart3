@@ -1,0 +1,30 @@
+#toolbar-apply{
+    display:none;
+}
+.zasilkovna {
+    font-size: 81%;
+}
+
+.zasilkovna td {
+    vertical-align: inherit;
+}
+
+.zasilkovna input {
+    width: inherit;
+    height: inherit;
+    font-size: inherit;
+}
+
+fieldset {
+    margin: 35px 0 35px 10px;
+}
+legend {
+    background-color: #cccccc;
+    border-radius: 8px;
+}
+.repeater {
+    width:40%;
+}
+.invalid {
+    border-color: red !important;
+}
