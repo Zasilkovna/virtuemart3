@@ -23,6 +23,7 @@ defined('_JEXEC') or die('Restricted access');
 if(!class_exists('VmViewAdmin')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmviewadmin.php');
 //jimport('joomla.html.pane');
 jimport('joomla.version');
+/** @var VirtueMartModelZasilkovna $zas_model */
 $zas_model = VmModel::getModel('zasilkovna');
 $zas_model->loadLanguage();
 $zas_model->checkConfiguration();
@@ -36,235 +37,237 @@ $zas_model->checkConfiguration();
  */
 class VirtuemartViewZasilkovna extends VmViewAdmin {
 
-	function display($tpl = NULL) {
+    function display($tpl = NULL) {
 
 
-		if(!class_exists('VmHTML'))
-			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
-		if(!class_exists('VmImage'))
-			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'image.php');
-		if(!class_exists('CurrencyDisplay'))
-			require(VMPATH_ADMIN . DS . 'helpers' . DS . 'currencydisplay.php');
+        if(!class_exists('VmHTML'))
+            require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
+        if(!class_exists('VmImage'))
+            require(VMPATH_ADMIN . DS . 'helpers' . DS . 'image.php');
+        if(!class_exists('CurrencyDisplay'))
+            require(VMPATH_ADMIN . DS . 'helpers' . DS . 'currencydisplay.php');
 
-		$configModel = VmModel::getModel('config');
+        $configModel = VmModel::getModel('config');
 
-		$model = VmModel::getModel();
+        $model = VmModel::getModel();
 
-		$shipModel = VmModel::getModel('shipmentmethod');
-		$shipments = $shipModel->getShipments();
-		function cmpShipments($a, $b) {
-			return strcmp($a->virtuemart_shipmentmethod_id, $b->virtuemart_shipmentmethod_id);
-		}
+        $shipModel = VmModel::getModel('shipmentmethod');
+        $shipments = $shipModel->getShipments();
+        function cmpShipments($a, $b) {
+            return strcmp($a->virtuemart_shipmentmethod_id, $b->virtuemart_shipmentmethod_id);
+        }
 
-		usort($shipments, "cmpShipments"); //sort, coz it comes in random order
-		$this->assignRef('shipmentMethods', $shipments);
+        usort($shipments, "cmpShipments"); //sort, coz it comes in random order
+        $this->assignRef('shipmentMethods', $shipments);
 
-
-		$this->assignRef('js_path', $model->updateJSApi());
-		$this->assignRef('moduleVersion', $model->checkModuleVersion());
-		$this->assignRef('errors', $model->errors);
-		$this->assignRef('warnings', $model->warnings);
-
-
-		$paymentModel = VmModel::getModel('paymentmethod');
-		$payments = $paymentModel->getPayments();
-		function cmpPayments($a, $b) {
-			return strcmp($a->virtuemart_paymentmethod_id, $b->virtuemart_paymentmethod_id);
-		}
-
-		usort($payments, "cmpPayments"); //sort, coz it comes in random order
-		$this->assignRef('paymentMethods', $payments);
-
-		$usermodel = VmModel::getModel('user');
-
-		$ordersModel = VmModel::getModel('zasilkovna_orders');
-
-		$task = JRequest::getWord('task');
+        $this->assignRef('js_path', $model->updateJSApi());
+        $this->assignRef('moduleVersion', $model->checkModuleVersion());
+        $this->assignRef('errors', $model->errors);
+        $this->assignRef('warnings', $model->warnings);
 
 
-		if(!class_exists('vmPSPlugin')) require(JPATH_VM_PLUGINS . DS . 'vmpsplugin.php');
+        $paymentModel = VmModel::getModel('paymentmethod');
+        $payments = $paymentModel->getPayments();
+        function cmpPayments($a, $b) {
+            return strcmp($a->virtuemart_paymentmethod_id, $b->virtuemart_paymentmethod_id);
+        }
 
-		$orderStatusModel = VmModel::getModel('orderstatus');
-		$orderStates = $orderStatusModel->getOrderStatusList();
+        usort($payments, "cmpPayments"); //sort, coz it comes in random order
+        $this->assignRef('paymentMethods', $payments);
 
+        $usermodel = VmModel::getModel('user');
 
-		$this->SetViewTitle('ORDER');
+        /** @var VirtueMartModelZasilkovna_orders $ordersModel */
+        $ordersModel = VmModel::getModel('zasilkovna_orders');
 
-
-		JToolBarHelper::title(JText::_('COM_VIRTUEMART_CONFIG'), 'head vm_config_48');
-
-
-		$config = VmConfig::loadConfig();
-		unset ($config->_params['pdf_invoice']); // parameter remove and replaced by inv_os
-		$this->assignRef('config', $config);
-
-		$mainframe = JFactory::getApplication();
-		$this->assignRef('joomlaconfig', $mainframe);
-
-		$userparams = JComponentHelper::getParams('com_users');
-		$this->assignRef('userparams', $userparams);
-
-		$templateList = ShopFunctions::renderTemplateList(JText::_('COM_VIRTUEMART_ADMIN_CFG_JOOMLA_TEMPLATE_DEFAULT'));
-
-		$this->assignRef('jTemplateList', $templateList);
-
-		$vmLayoutList = $configModel->getLayoutList('virtuemart');
-		$this->assignRef('vmLayoutList', $vmLayoutList);
+        $task = JRequest::getWord('task');
 
 
-		$categoryLayoutList = $configModel->getLayoutList('category');
-		$this->assignRef('categoryLayoutList', $categoryLayoutList);
+        if(!class_exists('vmPSPlugin')) require(JPATH_VM_PLUGINS . DS . 'vmpsplugin.php');
 
-		$productLayoutList = $configModel->getLayoutList('productdetails');
-		$this->assignRef('productLayoutList', $productLayoutList);
-
-		$noimagelist = $configModel->getNoImageList();
-		$this->assignRef('noimagelist', $noimagelist);
-
-		$orderStatusModel = VmModel::getModel('orderstatus');
+        $orderStatusModel = VmModel::getModel('orderstatus');
+        $orderStates = $orderStatusModel->getOrderStatusList();
 
 
-		$this->assignRef('orderStatusModel', $orderStatusModel);
+        $this->SetViewTitle('ORDER');
 
 
-		$currConverterList = $configModel->getCurrencyConverterList();
-		$this->assignRef('currConverterList', $currConverterList);
-
-		$activeLanguages = $configModel->getActiveLanguages(VmConfig::get('active_languages'));
-		$this->assignRef('activeLanguages', $activeLanguages);
-
-		$orderByFields = $configModel->getProductFilterFields('browse_orderby_fields');
-		$this->assignRef('orderByFields', $orderByFields);
-
-		$searchFields = $configModel->getProductFilterFields('browse_search_fields');
-		$this->assignRef('searchFields', $searchFields);
-
-		$aclGroups = $usermodel->getAclGroupIndentedTree();
-		$this->assignRef('aclGroups', $aclGroups);
+        JToolBarHelper::title(JText::_('COM_VIRTUEMART_CONFIG'), 'head vm_config_48');
 
 
-		if(is_Dir(VmConfig::get('vmtemplate') . DS . 'images' . DS . 'availability' . DS)) {
-			$imagePath = VmConfig::get('vmtemplate') . '/images/availability/';
-		}
-		else {
-			$imagePath = '/components/com_virtuemart/assets/images/availability/';
-		}
-		$this->assignRef('imagePath', $imagePath);
+        $config = VmConfig::loadConfig();
+        unset ($config->_params['pdf_invoice']); // parameter remove and replaced by inv_os
+        $this->assignRef('config', $config);
+
+        $mainframe = JFactory::getApplication();
+        $this->assignRef('joomlaconfig', $mainframe);
+
+        $userparams = JComponentHelper::getParams('com_users');
+        $this->assignRef('userparams', $userparams);
+
+        $templateList = ShopFunctions::renderTemplateList(JText::_('COM_VIRTUEMART_ADMIN_CFG_JOOMLA_TEMPLATE_DEFAULT'));
+
+        $this->assignRef('jTemplateList', $templateList);
+
+        $vmLayoutList = $configModel->getLayoutList('virtuemart');
+        $this->assignRef('vmLayoutList', $vmLayoutList);
 
 
-		$this->setLayout('orders');
+        $categoryLayoutList = $configModel->getLayoutList('category');
+        $this->assignRef('categoryLayoutList', $categoryLayoutList);
+
+        $productLayoutList = $configModel->getLayoutList('productdetails');
+        $this->assignRef('productLayoutList', $productLayoutList);
+
+        $noimagelist = $configModel->getNoImageList();
+        $this->assignRef('noimagelist', $noimagelist);
+
+        $orderStatusModel = VmModel::getModel('orderstatus');
 
 
-		$this->addStandardDefaultViewLists($ordersModel, 'created_on');
-		$this->lists['state_list'] = $this->renderOrderstatesList();
-
-		$shipping_method_selectec_id = JRequest::getInt('order_shipment_code');
-		$orderslist = $ordersModel->getOrdersListByShipment($shipping_method_selectec_id);
+        $this->assignRef('orderStatusModel', $orderStatusModel);
 
 
-		$this->assignRef('orderstatuses', $orderStates);
+        $currConverterList = $configModel->getCurrencyConverterList();
+        $this->assignRef('currConverterList', $currConverterList);
 
-		if(!class_exists('CurrencyDisplay')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'currencydisplay.php');
+        $activeLanguages = $configModel->getActiveLanguages(VmConfig::get('active_languages'));
+        $this->assignRef('activeLanguages', $activeLanguages);
 
-		/* Apply currency This must be done per order since it's vendor specific */
-		$_currencies = array(); // Save the currency data during this loop for performance reasons
-		if($orderslist) {
-			foreach($orderslist as $virtuemart_order_id => $order) {
+        $orderByFields = $configModel->getProductFilterFields('browse_orderby_fields');
+        $this->assignRef('orderByFields', $orderByFields);
 
-				//This is really interesting for multi-X, but I avoid to support it now already, lets stay it in the code
-				if(!array_key_exists('v' . $order->virtuemart_vendor_id, $_currencies)) {
-					$_currencies['v' . $order->virtuemart_vendor_id] = CurrencyDisplay::getInstance('', $order->virtuemart_vendor_id);
-				}
-				$order->order_total = $_currencies['v' . $order->virtuemart_vendor_id]->priceDisplay($order->order_total);
-				$order->invoiceNumber = $ordersModel->getInvoiceNumber($order->virtuemart_order_id);
+        $searchFields = $configModel->getProductFilterFields('browse_search_fields');
+        $this->assignRef('searchFields', $searchFields);
 
-			}
-		}
+        $aclGroups = $usermodel->getAclGroupIndentedTree();
+        $this->assignRef('aclGroups', $aclGroups);
 
-		/*
-		 * UpdateStatus removed from the toolbar; don't understand how this was intented to work but
-		 * the order ID's aren't properly passed. Might be readded later; the controller needs to handle
-		 * the arguments.
-		 */
 
-		/* Toolbar */
-		JToolBarHelper::apply();
-		JToolBarHelper::save('updateAndExportZasilkovnaOrders', 'CSV');
-		$zas_model = VmModel::getModel('zasilkovna');
-		$zas_model->updateJSApi(); //to correcly show dest. branches
-		$this->assignRef('media_url', $zas_model->_media_url);
-		$this->assignRef('restrictionInstalled', $zas_model->isShipmentPaymentRestrictionInstalled());
+        if(is_Dir(VmConfig::get('vmtemplate') . DS . 'images' . DS . 'availability' . DS)) {
+            $imagePath = VmConfig::get('vmtemplate') . '/images/availability/';
+        }
+        else {
+            $imagePath = '/components/com_virtuemart/assets/images/availability/';
+        }
+        $this->assignRef('imagePath', $imagePath);
 
-		$this->assignRef('branches', $zas_model->getBranches());
-		JToolBarHelper::save('submitToZasilkovna', JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SUBMIT_ORDERS_TO_ZASILKOVNA'));
-		JToolBarHelper::custom('printLabels', 'copy', '', JText::_('PLG_VMSHIPMENT_ZASILKOVNA_DO_PRINT_LABELS'), false, false);
 
-		/* Assign the data */
-		$this->assignRef('orderslist', $orderslist);
-		$pagination = $ordersModel->getPagination();
-		$this->assignRef('pagination', $pagination);
+        $this->setLayout('orders');
 
-		$this->assignRef('shipmentSelect', $this->renderShipmentsList());
-		$model->raiseErrors();
-		parent::display($tpl);
-	}
 
-	public function renderOrderstatesList() {
-		$orderstates = JRequest::getWord('order_status_code', '');
+        $this->addStandardDefaultViewLists($ordersModel, 'created_on');
+        $this->lists['state_list'] = $this->renderOrderstatesList();
 
-		$query = 'SELECT `order_status_code` as value, `order_status_name` as text
+        $shipping_method_selectec_id = JRequest::getInt('order_exported');
+        $orderslist = $ordersModel->getOrdersListByShipment($shipping_method_selectec_id);
+
+
+        $this->assignRef('orderstatuses', $orderStates);
+
+        if(!class_exists('CurrencyDisplay')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'currencydisplay.php');
+
+        /* Apply currency This must be done per order since it's vendor specific */
+        $_currencies = array(); // Save the currency data during this loop for performance reasons
+        if($orderslist) {
+            foreach($orderslist as $virtuemart_order_id => $order) {
+
+                //This is really interesting for multi-X, but I avoid to support it now already, lets stay it in the code
+                if(!array_key_exists('v' . $order->virtuemart_vendor_id, $_currencies)) {
+                    $_currencies['v' . $order->virtuemart_vendor_id] = CurrencyDisplay::getInstance('', $order->virtuemart_vendor_id);
+                }
+                $order->order_total = $_currencies['v' . $order->virtuemart_vendor_id]->priceDisplay($order->order_total);
+                $order->invoiceNumber = $ordersModel->getInvoiceNumber($order->virtuemart_order_id);
+
+            }
+        }
+
+        /*
+         * UpdateStatus removed from the toolbar; don't understand how this was intented to work but
+         * the order ID's aren't properly passed. Might be readded later; the controller needs to handle
+         * the arguments.
+         */
+
+        /* Toolbar */
+        $bar = JToolbar::getInstance('toolbar');
+
+        $bar->appendButton(
+            'Custom', '<button onclick="validateForm();" '
+            . 'class="btn btn-small button-apply btn-success validate"><span class="icon-apply icon-white" aria-hidden="true"></span>'
+            . JText::_('Save') . '</button>', 'apply'
+        );
+
+        JToolBarHelper::save('updateAndExportZasilkovnaOrders', 'CSV');
+        /** @var VirtueMartModelZasilkovna $zas_model */
+        $zas_model = VmModel::getModel('zasilkovna');
+		$zas_model->updateBranchesInfo();
+
+        $this->assignRef('media_url', $zas_model->_media_url);
+        $this->assignRef('restrictionInstalled', $zas_model->isShipmentPaymentRestrictionInstalled());
+
+        $this->assignRef('branches', $zas_model->getBranches());
+        JToolBarHelper::save('submitToZasilkovna', JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SUBMIT_ORDERS_TO_ZASILKOVNA'));
+        JToolBarHelper::custom('printLabels', 'copy', '', JText::_('PLG_VMSHIPMENT_ZASILKOVNA_DO_PRINT_LABELS'), false, false);
+
+        /* Assign the data */
+        $this->assignRef('orderslist', $orderslist);
+        $pagination = $ordersModel->getPagination();
+        $this->assignRef('pagination', $pagination);
+
+        $this->assignRef('shipmentSelect', $this->renderShipmentsList());
+        $model->raiseErrors();
+        parent::display($tpl);
+    }
+
+    public function renderOrderstatesList() {
+        $orderstates = JRequest::getWord('order_status_code', '');
+
+        $query = 'SELECT `order_status_code` as value, `order_status_name` as text
 			FROM `#__virtuemart_orderstates`
 			WHERE published=1 ';
-		$db = JFactory::getDBO();
-		$db->setQuery($query);
-		$list = $db->loadObjectList();
+        $db = JFactory::getDBO();
+        $db->setQuery($query);
+        $list = $db->loadObjectList();
 
-		return VmHTML::select('order_status_code', $list, $orderstates, 'class="inputbox" onchange="this.form.submit();"');
-	}
+        return VmHTML::select('order_status_code', $list, $orderstates, 'class="inputbox" onchange="resetTaskAndSubmitForm(this.form);"');
+    }
 
-	public function renderShipmentsList() {
-		$zas_orders_model = VmModel::getModel('zasilkovna_orders');
+    public function renderShipmentsList()
+    {
+        $selected_shipment = JRequest::getInt('order_exported', '');
 
-		$selected_shipment = JRequest::getInt('order_shipment_code', '');
-		$query = 'SELECT virtuemart_shipmentmethod_id as value,shipment_name as text
-			FROM `#__virtuemart_shipmentmethods_' . VMLANG . '`';
-		$db = JFactory::getDBO();
-		$db->setQuery($query);
-		$list = $db->loadObjectList();
-		$db->setQuery($query);
-		$objList = $db->loadObjectList();
-		$allObj = new stdClass;
-		$allObj->value = $zas_orders_model->ALL_ORDERS;
-		$allObj->text = "Všechny objednávky";
-		$objList[] = $allObj;
-		$zasObj = new stdClass;
-		$zasObj->value = $zas_orders_model->ZASILKOVNA_ORDERS;
-		$zasObj->text = "Všechny objednávky zásilkovny";
-		$objList[] = $zasObj;
+        $objList = array();
+        $allObj = new stdClass;
+        $allObj->value = VirtueMartModelZasilkovna_orders::NOT_EXPORTED;
+        $allObj->text = "Nevyexportováno";
+        $objList[] = $allObj;
+        $zasObj = new stdClass;
+        $zasObj->value = VirtueMartModelZasilkovna_orders::EXPORTED;
+        $zasObj->text = "Vyexportováno";
+        $objList[] = $zasObj;
 
-		return VmHTML::select('order_shipment_code', $objList, $selected_shipment, 'class="inputbox" onchange="this.form.submit();"');
-	}
+        return VmHTML::select('order_exported', $objList, $selected_shipment, 'class="inputbox" onchange="resetTaskAndSubmitForm(this.form);"');
+    }
 
-	function generateBranchOptions($branches, $selected_branch_id = 0) {
-		$ret = "";
+    function generateBranchOptions($branches, $selected_branch_id = 0) {
+        $ret = "";
 
-		$zas_model = VmModel::getModel('zasilkovna');
-		$ret .= "<option value='-1' " . ((-1 == $selected_branch_id ? 'selected' : '')) . "  >Není vybrána doprava.</option>";
+        $ret .= "<option value='-1' " . ((-1 == $selected_branch_id ? 'selected' : '')) . "  >Není vybrána doprava.</option>";
 
-		foreach(VirtueMartModelZasilkovna::$_couriers_to_address as $id => $courier_name) {
-			$ret .= "<option value=" . $id . " " . ($selected_branch_id == $id ? " selected " : " ") . " >" . $courier_name . "</option>";
-		}
+        foreach(VirtueMartModelZasilkovna::$_couriers_to_address as $id => $courier_name) {
+            $ret .= "<option value=" . $id . " " . ($selected_branch_id == $id ? " selected " : " ") . " >" . $courier_name . "</option>";
+        }
 
-		foreach($branches as $branch) {
-			$selected = "";
-			if($selected_branch_id == $branch->id) {
-				$selected = " selected ";
-			}
-			$ret .= "<option value=" . $branch->id . "$selected >" . $branch->name_street . "</option>";
-		}
+        foreach($branches as $branch) {
+            $selected = "";
+            if($selected_branch_id == $branch->id) {
+                $selected = " selected ";
+            }
+            $ret .= "<option value=" . $branch->id . "$selected >" . $branch->name_street . "</option>";
+        }
 
 
-		return $ret;
-	}
+        return $ret;
+    }
 
 }
