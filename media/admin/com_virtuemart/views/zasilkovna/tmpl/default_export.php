@@ -65,7 +65,11 @@
 
             $keyword = JRequest::getWord('keyword');
             foreach($this->orderslist as $key => $order) {
-				$branchesAndCarriers = array_merge(array_column($this->branches, 'id'), array_keys(VirtueMartModelZasilkovna::$_couriers_to_address));
+                $branchesIds = [];
+                foreach($this->branches as $branch) {
+                    $branchesIds[] = $branch->id;
+                }
+                $branchesAndCarriers = array_merge($branchesIds, array_keys(VirtueMartModelZasilkovna::$_couriers_to_address));
 				$existBranchOrCarrier = in_array($order->branch_id, $branchesAndCarriers);
 				$disabled = "";
 				$submitted = false;
