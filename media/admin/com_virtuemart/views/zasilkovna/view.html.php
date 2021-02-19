@@ -239,11 +239,11 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $objList = array();
         $allObj = new stdClass;
         $allObj->value = VirtueMartModelZasilkovna_orders::NOT_EXPORTED;
-        $allObj->text = "Nevyexportováno";
+        $allObj->text = JTEXT::_('PLG_VMSHIPMENT_ZASILKOVNA_NOT_EXPORTED');
         $objList[] = $allObj;
         $zasObj = new stdClass;
         $zasObj->value = VirtueMartModelZasilkovna_orders::EXPORTED;
-        $zasObj->text = "Vyexportováno";
+        $zasObj->text = JTEXT::_('PLG_VMSHIPMENT_ZASILKOVNA_EXPORTED2');
         $objList[] = $zasObj;
 
         return VmHTML::select('order_exported', $objList, $selected_shipment, 'class="inputbox" onchange="resetTaskAndSubmitForm(this.form);"');
@@ -252,7 +252,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
     function generateBranchOptions($branches, $selected_branch_id = 0) {
         $ret = "";
 
-        $ret .= "<option value='-1' " . ((-1 == $selected_branch_id ? 'selected' : '')) . "  >Není vybrána doprava.</option>";
+        $ret .= "<option value='-1' " . ((-1 == $selected_branch_id ? 'selected' : '')) . " ><?php echo JTEXT::_('PLG_VMSHIPMENT_ZASILKOVNA_SHIPMENT_NOT_SELECTED'); ?></option>";
 
         foreach(VirtueMartModelZasilkovna::$_couriers_to_address as $id => $courier_name) {
             $ret .= "<option value=" . $id . " " . ($selected_branch_id == $id ? " selected " : " ") . " >" . $courier_name . "</option>";
