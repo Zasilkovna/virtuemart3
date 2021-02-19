@@ -95,7 +95,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         foreach($ordersForExport as $order) {
             try {
                 if(isset($order['zasilkovna_packet_id']) && ($order['zasilkovna_packet_id'] != 0)) {//some better check?
-                    throw new Exception("Objednávka již byla podána na Zásilkovně. Nejprve zrušte číslo zásilky v administraci.");
+                    throw new Exception(JTEXT::_('PLG_VMSHIPMENT_ZASILKOVNA_ALREADY_SUBMITTED'));
                 }
                 $attributes = array(
                     'number' => $order['order_number'],

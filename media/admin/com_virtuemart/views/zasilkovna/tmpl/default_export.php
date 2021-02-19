@@ -199,15 +199,18 @@
     <p>
         <label for="print_type"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_TYPE') ?>: </label>
         <select name="print_type" id="print_type" style="font-size: 10px; " onchange="document.cookie = 'print_type_sel=' + this.value + '; expires=' + (new Date(2014, 2, 3)).toUTCString() + '; path=/';">
-            <option value="A7_on_A4" selected><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A7_ON_A4'); ?></.option>
-            <option value="A6_on_A4">štítky, 1/4 A4, tisk na A4, tj. 4ks/stránka</.option>
-			<option value="A6_on_A6">štítky, 1/4 A4, přímý tisk, tj. 1ks/stránka</.option>
-            <option value="A7_on_A7">štítky, 1/8 A4, přímý tisk, tj. 1ks/stránka</.option>
-            <option value="A8_on_A8">štítky, 1/16 A4, přímý tisk, tj. 1ks/stránka</option>
-            <option value="105x35mm_on_A4">štítek 105x35 A4, tisk na A4, tj. 16ks/stránka</option>
+            <option value="A7_on_A4" selected><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A7_ON_A4'); ?></option>
+            <option value="A6_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A6_ON_A4'); ?></option>
+			<option value="A6_on_A6"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A6_ON_A6'); ?></option>
+            <option value="A7_on_A7"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A7_ON_A7'); ?></option>
+            <option value="A8_on_A8"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A8_ON_A8'); ?></option>
+            <option value="105x35mm_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_105X35MM_ON_A4'); ?></option>
         </select>
         <br>
-        <label for="label_first_page_skip"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_OFFSET') ?>: </label> <input type="text" id="label_first_page_skip" style="width: 30px; font-size: 9px; " name="label_first_page_skip" value="0">polí (<a href="http://www.zasilkovna.cz/print-help/" target="_blank"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_HELP') ?></a>)
+        <label for="label_first_page_skip"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_OFFSET') ?>: </label>
+        <input type="text" id="label_first_page_skip" style="width: 30px; font-size: 9px; " name="label_first_page_skip" value="0">
+        <?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_FIELDS') ?>
+        (<a href="http://www.zasilkovna.cz/print-help/" target="_blank"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_HELP') ?></a>)
     </p>
 
     <!-- Hidden Fields -->
