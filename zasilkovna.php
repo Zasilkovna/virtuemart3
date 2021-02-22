@@ -57,6 +57,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             'branch_id' => 'decimal(10,0)',
             'branch_currency' => 'char(5)',
             'branch_name_street' => 'varchar(500)',
+            'is_carrier' => 'smallint(1)',
+            'carrier_pickup_point' => 'varchar(40)',
             'email' => 'varchar(255)',
             'phone' => 'varchar(255)',
             'first_name' => 'varchar(255)',
@@ -106,6 +108,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $session->set('branch_currency', JRequest::getVar('branch_currency', ''));
             $session->set('branch_name_street', JRequest::getVar('branch_name_street', ''));
             $session->set('branch_country', JRequest::getVar('branch_country', ''));
+            $session->set('branch_carrier_id', JRequest::getVar('branch_carrier_id', ''));
+            $session->set('branch_carrier_pickup_point', JRequest::getVar('branch_carrier_pickup_point', ''));
         }
     }
 
@@ -130,9 +134,13 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $session = JFactory::getSession();
         $branch_id = $session->get('branch_id', 0);
         $branch_name_street = $session->get('branch_name_street', '');
+        $branch_carrier_id = $session->get('branch_carrier_id', null);
+        $branch_carrier_pickup_point = $session->get('branch_carrier_pickup_point', null);
 
         $session->clear('branch_id');
         $session->clear('branch_name_street');
+        $session->clear('branch_carrier_id');
+        $session->clear('branch_carrier_pickup_pont');
 
         $codSettings = $this->model->getConfig('zasilkovna_payment_method_'.$cart->virtuemart_paymentmethod_id, 0);
 
@@ -168,6 +176,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $details = $billing;
         }
 
+        // external pickup point support
+        if (empty($branch_carrier_id)) {
+            $is_carrier = 0;
+            $branch_carrier_pickup_point = ''; // VirtueMart is unable to handle null values
+        } else {
+            $branch_id = $branch_carrier_id;
+            $is_carrier = 1;
+        }
+
         $values['virtuemart_order_id'] = $details->virtuemart_order_id;
         $values['virtuemart_shipmentmethod_id'] = $details->virtuemart_shipmentmethod_id;
         $values['order_number'] = $details->order_number;
@@ -176,6 +193,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['branch_id'] = $branch_id;
         $values['branch_currency'] = $currency;
         $values['branch_name_street'] = $branch_name_street;
+        $values['is_carrier'] = $is_carrier;
+        $values['carrier_pickup_point'] = $branch_carrier_pickup_point;
         $values['email'] = $email;
         $values['phone'] = $phone_1 ? $phone_1 : $phone_2;
         $values['first_name'] = $details->first_name;
@@ -559,6 +578,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $session->clear('branch_id');
             $session->clear('branch_name_street');
             $session->clear('branch_country');
+            $session->clear('branch_courier_id');
+            $session->clear('branch_courier_pickup_point');
         }
 
         // COUNTRY/LANG ARRAY
@@ -572,8 +593,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
         else
         {
-            // If country code not among allowed codes, Zasilkovna will not be displayed as a shipping option
-            return FALSE;
+            $options = $opt[$code] = [
+                'country' => $code,
+                'address' => ''
+            ];
         }
 
         if( isset( $address['address_1'] ) && isset( $address['city'] )  )
@@ -604,12 +627,14 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             var version = '{$this->getVersionString()}';
             var countrySelected = '{$countrySelected}';
         </script>";
-        $js_html .= '<script src="https://widget.packeta.com/www/js/library.js"></script>';
+        $js_html .= '<script src="https://widget.packeta.com/v6/www/js/library.js"></script>';
         $js_html .= '<script src="media/com_zasilkovna/media/js/widget.js?v=' . filemtime(__DIR__ . '/../../../media/com_zasilkovna/media/js/widget.js') . '"></script>';
 
         $js_html .= "<div class='zasilkovna_box'>";
         $js_html .= ('<input type="hidden" name="branch_id" id="branch_id" value="'. $session->get('branch_id', 0) .'" >');
         $js_html .= ('<input type="hidden" name="branch_name_street" id="branch_name_street" value="'. $session->get('branch_name_street', '') .'" >');
+        $js_html .= ('<input type="hidden" name="branch_carrier_id" id="branch_carrier_id" value="'. $session->get('branch_carrier_id', '') .'" >');
+        $js_html .= ('<input type="hidden" name="branch_carrier_pickup_point" id="branch_carrier_pickup_point" value="'. $session->get('branch_carrier_pickup_point', '') .'" >');
         $js_html .= ('<input type="hidden" name="branch_country" id="branch_country" value="'. $session->get('branch_country', '') .'" >');
         $jsHtmlIsSet = false;
 
@@ -655,7 +680,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 $html[$key] .= '<div id="zasilkovna_div" name="helper_div">';//this div packs the select box with radio input - helps js easily find the radio
                 $methodSalesPrice = $this->calculateSalesPrice($cart, $method, $cart->pricesUnformatted);
                 $method->$method_name = $this->renderPluginName($method);
-                $method->$method_name .= ' - ' . JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SHIPPING_TO_' . strtoupper($options['country']));
                 $html[$key] .= $this->getPluginHtml($method, $selected, $methodSalesPrice);
                 $selected_id_attr = 'selected-id=' . $_SESSION['branch_id'];
 

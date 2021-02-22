@@ -30,6 +30,8 @@ window.initializePacketaWidget = function(){
 			jQuery("#branch_currency").val(pickupPoint.currency);
 			jQuery("#branch_name_street").val(pickupPoint.nameStreet + ", " + pickupPoint.zip);
 			jQuery("#branch_country").val(pickupPoint.country);
+			jQuery("#branch_carrier_id").val(pickupPoint.carrierId ? pickupPoint.carrierId : '');
+			jQuery("#branch_carrier_pickup_point").val(pickupPoint.carrierPickupPointId ? pickupPoint.carrierPickupPointId : '');
 
 			jQuery("#picked-delivery-place").html(pickupPoint.nameStreet + ", " + pickupPoint.zip);
 			toggleShipmentSaveButton();

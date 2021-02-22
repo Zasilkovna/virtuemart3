@@ -121,6 +121,8 @@ class plgVmShipmentZasilkovnaInstallerScript {
 							  `branch_id` decimal(10,0) DEFAULT NULL,
 							  `branch_currency` char(5) DEFAULT NULL,
 							  `branch_name_street` varchar(500) DEFAULT NULL,
+							  `is_carrier` smallint(1) NOT NULL DEFAULT '0',
+							  `carrier_pickup_point` varchar(40) DEFAULT NULL,
 							  `email` varchar(255) DEFAULT NULL,
 							  `phone` varchar(255) DEFAULT NULL,
 							  `first_name` varchar(255) DEFAULT NULL,
