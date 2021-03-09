@@ -57,8 +57,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             'branch_id' => 'decimal(10,0)',
             'branch_currency' => 'char(5)',
             'branch_name_street' => 'varchar(500)',
-            'is_carrier' => 'smallint(1)',
-            'carrier_pickup_point' => 'varchar(40)',
+            'is_carrier' => 'smallint(1) NOT NULL DEFAULT 0',
+            'carrier_pickup_point' => 'varchar(40) DEFAULT NULL',
             'email' => 'varchar(255)',
             'phone' => 'varchar(255)',
             'first_name' => 'varchar(255)',
@@ -582,28 +582,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $session->clear('branch_courier_pickup_point');
         }
 
-        // COUNTRY/LANG ARRAY
-        $opt = $this->model->getCountries();
-
-        // DECLARE JAVASCRIPT VARIABLES
-        if (isset($opt[$code]))
-        {
-            // Set the country code
-            $options = $opt[$code];
-        }
-        else
-        {
-            $options = $opt[$code] = [
-                'country' => $code,
-                'address' => ''
-            ];
-        }
-
-        if( isset( $address['address_1'] ) && isset( $address['city'] )  )
-        {
-            $options['address'] = $address['address_1'] . '' . $address['city'];
-        }
-
         $countrySelected = isset( $address['virtuemart_country_id'] );
 
         $lang = JFactory::getLanguage();
@@ -621,9 +599,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         // ADD WIDGET JAVASCRIPT AND HIDDEN FIELDS
         $js_html .= "<script type=\"text/javascript\">
             var packetaApiKey = '{$this->model->api_key}';
-            var country = '{$options['country']}';
+            var country = '{$code}';
             var language = '{$langCode}';
-            var address = '{$options['address']}';
             var version = '{$this->getVersionString()}';
             var countrySelected = '{$countrySelected}';
         </script>";

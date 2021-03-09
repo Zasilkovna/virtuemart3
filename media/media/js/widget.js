@@ -13,9 +13,7 @@ window.initializePacketaWidget = function(){
 	opts = {
 		appIdentity: version,
 		country: country,
-		language: language,
-		address: address,
-		version: 4
+		language: language
 	};
 
 	document.getElementById('open-packeta-widget').addEventListener('click', function (e) {
