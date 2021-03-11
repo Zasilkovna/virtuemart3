@@ -11,7 +11,7 @@
     <copyright>(c) 2020 Zásilkovna s.r.o.</copyright>
     <license>License Info with link</license>
     <!--  The version string is recorded in the components table -->
-    <version>1.1.8</version>
+    <version>1.1.9</version>
     <!--  The date for the actual version release -->
     <releaseDate>2020-04-14</releaseDate>
     <!--  Type of release: Bug fix, Security Fix, Minor update, Major update -->

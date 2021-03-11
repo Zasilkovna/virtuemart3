@@ -14,7 +14,7 @@ if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmod
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.1.8';
+    const VERSION = '1.1.9';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
@@ -23,8 +23,6 @@ class VirtueMartModelZasilkovna extends VmModel
 
     public $warnings = array();
     public $api_key;
-
-    static $_couriers_to_address = array(13 => 'Česká pošta', 106 => 'Doručení na adresu ČR', 16 => 'Slovenská pošta');
 
     protected $config;
 

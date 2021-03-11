@@ -50,7 +50,7 @@
             <th></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_ADULT_CONTENT'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_RECEIVER_NAME'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_POINT_ADDRESS'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_ADDRESS'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PAYMENT_METHOD'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_CREATED_ON'); ?></th>
@@ -65,8 +65,7 @@
 
             $keyword = JRequest::getWord('keyword');
             foreach($this->orderslist as $key => $order) {
-				$branchesAndCarriers = array_merge(array_column($this->branches, 'id'), array_keys(VirtueMartModelZasilkovna::$_couriers_to_address));
-				$existBranchOrCarrier = in_array($order->branch_id, $branchesAndCarriers);
+				$existBranchOrCarrier = !empty($order->branch_id);
 				$disabled = "";
 				$submitted = false;
 				if(isset($order->zasilkovna_packet_id) && $order->zasilkovna_packet_id != 0) {
@@ -152,11 +151,7 @@
                     <td><?php echo $order->order_name; ?></td>
                     <!-- branch id -->
                     <td>
-                        <?php
-                        echo '<select style="width:210px" name="orders[' . $key . '][branch_id]" class="inputbox" size="1"' . $disabled . '>';
-                        echo $this->generateBranchOptions($this->branches, $order->branch_id);
-                        ?>
-                        </select>
+                        <?php echo $order->name_street; ?>
                     </td>
 
                     <!-- adresa prijemce -->

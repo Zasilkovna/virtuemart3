@@ -248,26 +248,4 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
         return VmHTML::select('order_exported', $objList, $selected_shipment, 'class="inputbox" onchange="resetTaskAndSubmitForm(this.form);"');
     }
-
-    function generateBranchOptions($branches, $selected_branch_id = 0) {
-        $ret = "";
-
-        $ret .= "<option value='-1' " . ((-1 == $selected_branch_id ? 'selected' : '')) . " ><?php echo JTEXT::_('PLG_VMSHIPMENT_ZASILKOVNA_SHIPMENT_NOT_SELECTED'); ?></option>";
-
-        foreach(VirtueMartModelZasilkovna::$_couriers_to_address as $id => $courier_name) {
-            $ret .= "<option value=" . $id . " " . ($selected_branch_id == $id ? " selected " : " ") . " >" . $courier_name . "</option>";
-        }
-
-        foreach($branches as $branch) {
-            $selected = "";
-            if($selected_branch_id == $branch->id) {
-                $selected = " selected ";
-            }
-            $ret .= "<option value=" . $branch->id . "$selected >" . $branch->name_street . "</option>";
-        }
-
-
-        return $ret;
-    }
-
 }
