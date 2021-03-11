@@ -24,8 +24,6 @@ class VirtueMartModelZasilkovna extends VmModel
     public $warnings = array();
     public $api_key;
 
-    static $_couriers_to_address = array(13 => 'Česká pošta', 106 => 'Doručení na adresu ČR', 16 => 'Slovenská pošta');
-
     protected $config;
 
     public $_zas_url = "http://www.zasilkovna.cz/";

@@ -111,13 +111,6 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     'adultContent' => ($order['adult_content'] == 1 ? true : false)
                 );
 
-                if(array_key_exists($order['point_id'], VirtueMartModelZasilkovna::$_couriers_to_address)) {
-                    $attributes['street'] = $order['recipient_street'];
-                    $attributes['houseNumber'] = $order['recipient_house_number'];
-                    $attributes['city'] = $order['recipient_city'];
-                    $attributes['zip'] = $order['recipient_zip'];
-                }
-
                 if (!empty($order['carrier_point'])) {
                     $attributes['carrierPickupPoint'] = $order['carrier_point'];
                 }
