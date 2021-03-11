@@ -658,22 +658,21 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 $methodSalesPrice = $this->calculateSalesPrice($cart, $method, $cart->pricesUnformatted);
                 $method->$method_name = $this->renderPluginName($method);
                 $html[$key] .= $this->getPluginHtml($method, $selected, $methodSalesPrice);
-                $selected_id_attr = 'selected-id=' . $_SESSION['branch_id'];
 
-                $html[$key] .= '<div class="zas-box"> ';
-                if( isset( $address['virtuemart_country_id'] ) ){
+                if(!empty($address['virtuemart_country_id'])){
+                    $html[$key] .= '<div class="zas-box"> ';
                     $html[$key] .= ('
                         <div class="zasilkovna-logo"></div>
                         <a href="javascript:void(0)" id="open-packeta-widget">'. JText::_('PLG_VMSHIPMENT_ZASILKOVNA_WIDGET_SELECT_POINT') .'</a>
                         <iframe sandbox="allow-scripts allow-same-origin" allow="geolocation" id="packeta-widget"></iframe>
                         <br>
                         <ul><li>'. JText::_('PLG_VMSHIPMENT_ZASILKOVNA_WIDGET_SELECTED_POINT') .': <span id="picked-delivery-place">'.$session->get('branch_name_street', '').'</span></li></ul>');
+                    $html[$key] .= '</div>';
                 }else{
                     $html[$key] .= '<ul><li>'. JText::_('PLG_VMSHIPMENT_ZASILKOVNA_WIDGET_ENTER_ADDRESS') .'</li></ul>';
                 }
-                $html[$key] .= '</div>';
 
-                $html[$key] .= '</select></div>';
+                $html[$key] .= '</div>';
             }
         }
 

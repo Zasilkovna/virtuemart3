@@ -151,7 +151,7 @@
                     <td><?php echo $order->order_name; ?></td>
                     <!-- branch id -->
                     <td>
-                        <?php echo $order->branch_id; ?>
+                        <?php echo $order->name_street; ?>
                     </td>
 
                     <!-- adresa prijemce -->
