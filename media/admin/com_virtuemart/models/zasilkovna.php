@@ -250,7 +250,7 @@ class VirtueMartModelZasilkovna extends VmModel
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
             curl_setopt($ch, CURLOPT_AUTOREFERER, false);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
             curl_setopt($ch, CURLOPT_TIMEOUT, 20);
             $body = curl_exec($ch);
             if(curl_errno($ch) > 0) {
@@ -263,7 +263,7 @@ class VirtueMartModelZasilkovna extends VmModel
             if(function_exists('stream_context_create')) {
                 $ctx = stream_context_create(array(
                     'http' => array(
-                        'timeout' => 3
+                        'timeout' => 20
                     )
                 ));
 
