@@ -30,6 +30,8 @@ To install the plug-in, you need to do the following:
 
 ##### General rules
 
+Since version 1.1.10 pricing rules have been moved to shipping method configuration
+
 - **default price** - the shipping price applies if the country-specific default price is not filled
 - **Maximum weight** - for orders with a larger weight, the Packeta shipping method will not be offered in the cart
 - **free shipping** - if the order price is higher, free shipping
@@ -112,6 +114,8 @@ Pro instalaci plug-inu je potřeba provést následující kroky:
 
 
 ##### Obecná pravidla 
+
+Od verze 1.1.10 se cenová pravidla konfigurují v detailu způsobu dopravy 
 
 - **Výchozí cena** - cena za přepravu se použije v případě, že není vyplněna výchozí cena u konkrétní země
 - **Maximální váha** - u objednávek s větší hmotnostní nebude v košíku přepravní metoda Zásilkovna nabízena

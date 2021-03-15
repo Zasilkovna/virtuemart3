@@ -86,8 +86,8 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	 */
 	public function postflight($route, JAdapterInstance $adapter) {
 		$vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
+        $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna' . DS;
 		if($route == "install") {
-			$media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna' . DS;
 			recurse_copy($media_path . 'admin' . DS . 'com_virtuemart' . DS, $vm_admin_path . DS);
 
             $files = scandir($media_path . 'admin' . DS);
@@ -160,6 +160,33 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 		}
 	}
 
+	public function __destruct()
+    {
+        $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna' . DS;
+        if (is_dir($media_path . 'admin')) {
+            self::deleteDir($media_path . 'admin');
+        }
+    }
+
+    private static function deleteDir($dirPath)
+    {
+        if (!is_dir($dirPath)) {
+            throw new InvalidArgumentException("$dirPath must be a directory");
+        }
+        if (substr($dirPath, strlen($dirPath) - 1, 1) != '/') {
+            $dirPath .= '/';
+        }
+        $files = glob($dirPath . '*', GLOB_MARK);
+        foreach ($files as $file) {
+            if (is_dir($file)) {
+                self::deleteDir($file);
+            } else {
+                unlink($file);
+            }
+        }
+        rmdir($dirPath);
+    }
+
 	/**
 	 * Called on installation
 	 *
@@ -195,7 +222,136 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
             }
         }
 
+        $this->migratePricingRules();
 	}
+
+	private $migratingPricingRules = false;
+
+    private function migratePricingRules()
+    {
+        require_once JPATH_ADMINISTRATOR . '/components/com_virtuemart/install/script.virtuemart.php';
+        $vmInstall = new \com_virtuemartInstallerScript();
+        $vmInstall->loadVm(false);
+
+        require_once __DIR__ . '/zasilkovna.php';
+
+        /** @var \VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $config = $model->loadConfig();
+        if ($this->migratingPricingRules || empty($config) || isset($config['pricing_rules_migration_completed_at'])) {
+            return;
+        }
+
+        $this->migratingPricingRules = true;
+        echo 'migrating pricing rules<br>';
+
+        /** @var \VirtueMartModelShipmentmethod $shipmentmethodModel */
+        $shipmentmethodModel = VmModel::getModel('shipmentmethod');
+
+        $globalMaxWeight = $model->getConfig('global/values/maximum_weight', '');
+        $globalShipmentCost = $model->getConfig('global/values/default_price', '');
+        $globalFreeShipment = $model->getConfig('global/values/free_shipping', '');
+
+        if (empty($globalShipmentCost)) {
+            return;
+        }
+
+        $pricingRules = [];
+        $countries = ['cz', 'sk', 'hu', 'ro', 'pl'];
+        $countriesWithOther = array_merge([\plgVmShipmentZasilkovna::OTHER_CONFIG_CODE], $countries); // is used to search in config
+        $countryIds = [];
+
+        foreach ($countries as $country) {
+            /** @var VmTable $countryObject */
+            $countryObject = \VirtueMartModelCountry::getCountry(strtoupper($country), 'country_2_code');
+            $countryIds[$country] = $countryObject->virtuemart_country_id;
+        }
+
+        $pricingRulesCount = 0;
+        foreach ($countriesWithOther as $country) {
+            $countryDefaultPrice = $model->getConfig($country. '/values/default_price', '');
+            $countryFreeShipment = $model->getConfig($country. '/values/free_shipping', '');
+
+            $countryWeightRules = $model->getConfig($country) ?: [];
+            unset($countryWeightRules['values']);
+
+            $lastCountryWeightRule = null;
+            $countryWeightRulesTransformed = [];
+            $weightRulesCount = 0;
+            foreach ($countryWeightRules as $countryWeightRule) {
+                $key = 'weightRules' . $weightRulesCount;
+                if (!empty($countryWeightRule['weight_from']) && $lastCountryWeightRule && $lastCountryWeightRule['weight_to'] != $countryWeightRule['weight_from']) {
+                    $countryWeightRulesTransformed[$key] = [
+                        'maxWeightKg' => $countryWeightRule['weight_from'],
+                        'price' => $countryDefaultPrice ?: $globalShipmentCost,
+                    ];
+                }
+
+                if (!empty($countryWeightRule['weight_to'])) {
+                    $countryWeightRulesTransformed[$key] = [
+                        'maxWeightKg' => $countryWeightRule['weight_to'],
+                        'price' => ($countryWeightRule['price'] ?: $countryDefaultPrice) ?: $globalShipmentCost,
+                    ];
+                }
+
+                $lastCountryWeightRule = $countryWeightRule;
+                $weightRulesCount++;
+            }
+
+            if (!is_numeric($countryDefaultPrice) && !is_numeric($countryFreeShipment) && empty($countryWeightRulesTransformed)) {
+                continue; // no usable data to migrate
+            }
+
+            $pricingRules['pricingRules' . $pricingRulesCount] = [
+                'country' => $country === \plgVmShipmentZasilkovna::OTHER_CONFIG_CODE ? \plgVmShipmentZasilkovna::OTHER_CONFIG_CODE : $countryIds[$country], // todo properly migrate other country data
+                'shipment_cost' => $countryDefaultPrice,
+                'free_shipping' => $countryFreeShipment,
+                'weightRules' => $countryWeightRulesTransformed
+            ];
+
+            $pricingRulesCount++;
+        }
+
+        $shipmentMethodIds = $model->getShipmentMethodIds();
+        $model->publishShipmentMethods($shipmentMethodIds, 0);
+        echo 'All packetery methods were unpublished. Please check them and publish them again.<br>';
+
+        $pricingRulesEncoded = json_encode($pricingRules);
+        $params = [
+            "maxWeight=\"$globalMaxWeight\"",
+            "shipment_cost=\"$globalShipmentCost\"",
+            "free_shipment=\"$globalFreeShipment\"",
+            "pricingRules=$pricingRulesEncoded"
+        ];
+
+        $data = [
+            'shipment_name' => 'Packeta PP',
+            'shipment_desc' => '',
+            'shipment_element' => VirtueMartModelZasilkovna::PLG_NAME,
+            'shipment_jplugin_id' => $model->getExtensionId(),
+            'shipment_params' => implode('|', $params),
+            'published' => 0,
+        ];
+
+        $table = $shipmentmethodModel->getTable('shipmentmethods');
+        $table->bindChecknStore($data);
+
+        $xrefTable = $shipmentmethodModel->getTable('shipmentmethod_shoppergroups');
+        $xrefTable->bindChecknStore($data);
+
+        $id = $data['virtuemart_shipmentmethod_id'];
+
+        $db =& JFactory::getDBO();
+        $q = "UPDATE #__virtuemart_shipmentmethods SET shipment_params='" . $data['shipment_params'] . "' WHERE virtuemart_shipmentmethod_id='{$id}'";
+        $db->setQuery($q);
+        $db->execute();
+
+        $config = $model->loadConfig();
+        $config['pricing_rules_migration_completed_at'] = (new \DateTime())->format(\DateTime::ISO8601);
+        $model->updateConfig($config);
+
+        $this->migratingPricingRules = false;
+    }
 
 	/**
 	 * Called on uninstallation

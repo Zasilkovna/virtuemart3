@@ -1,8 +1,7 @@
 <?php
 
-use Joomla\CMS\Version;
-
 defined('_JEXEC') or die('Restricted access');
+defined('PACKETERY_MEDIA_DIR') || define('PACKETERY_MEDIA_DIR', __DIR__ . '/../../../media/com_zasilkovna/media');
 
 if(!class_exists('vmPSPlugin'))
     require(JPATH_VM_PLUGINS . DS . 'vmpsplugin.php');
@@ -16,6 +15,8 @@ if(!class_exists('VirtueMartModelVendor')) {
     require(JPATH_VM_ADMINISTRATOR . DS . 'models' . DS . 'vendor.php');
 }
 
+require_once VMPATH_ADMIN . '/models/zasilkovna_shipment_method.php';
+require_once VMPATH_ADMIN . '/fields/vmzasilkovnacountries.php';
 
 class plgVmShipmentZasilkovna extends vmPSPlugin
 {
@@ -32,7 +33,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $this->_loggable = true;
         $this->tableFields = array_keys($this->getTableSQLFields());
         $varsToPush = $this->getVarsToPush();
+        $this->addVarsToPushCore($varsToPush,0);
         $this->setConfigParameterable($this->_configTableFieldName, $varsToPush);
+        $this->setConvertable(
+            [
+                'min_amount',
+                'max_amount',
+                'shipment_cost' // see convertToVendorCurrency method
+            ]
+        );
         $this->model = VmModel::getModel('zasilkovna');
         $this->handleSessionOnShipmentSubmit();
     }
@@ -57,8 +66,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             'branch_id' => 'decimal(10,0)',
             'branch_currency' => 'char(5)',
             'branch_name_street' => 'varchar(500)',
-            'is_carrier' => 'smallint(1) NOT NULL DEFAULT 0',
-            'carrier_pickup_point' => 'varchar(40) DEFAULT NULL',
+            'is_carrier' => 'smallint(1) NOT NULL DEFAULT \'0\'',
+            'carrier_pickup_point' => 'varchar(40)',
             'email' => 'varchar(255)',
             'phone' => 'varchar(255)',
             'first_name' => 'varchar(255)',
@@ -207,48 +216,40 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['is_cod'] = $codSettings; //depends on actual settings of COD payments until its set manually in administration
         $values['exported'] = 0;
         $values['shipment_name'] = $method->shipment_name;
-        $values['shipment_cost'] = $this->getCosts($cart, $method, "");
+        $values['shipment_cost'] = $this->getCosts($cart, VirtueMartModelZasilkovna_shipment_method::fromRandom($method), "");
         $values['tax_id'] = $method->tax_id;
         $this->storePSPluginInternalData($values);
 
         return true;
     }
 
+    function convertToVendorCurrency(&$method){
+        if(!isset($method->converted)){
+            $currencyId = $method->currency_id;
+            $method->min_amount = $this->convertValueToVendorCurrency($method->min_amount, $currencyId);
+            $method->max_amount = $this->convertValueToVendorCurrency($method->max_amount, $currencyId);
+            $method->shipment_cost = $this->convertValueToVendorCurrency($method->shipment_cost, $currencyId);
 
-    /**
-     * calculateSalesPrice
-     * overrides default function to remove currency conversion
-     *
-     * @author Zasilkovna
-     */
-    function calculateSalesPrice($cart, $method, $cart_prices) {
-        $value = $this->getCosts($cart, $method, $cart_prices);
+            foreach ($method->pricingRules as &$pricingRule) {
+                $pricingRule->shipment_cost = $this->convertValueToVendorCurrency($pricingRule->shipment_cost, $currencyId);
 
-        $tax_id = @$method->tax_id;
+                foreach ($pricingRule->weightRules as &$weightRule) {
+                    $weightRule->price = $this->convertValueToVendorCurrency($weightRule->price, $currencyId);
+                }
+            }
 
+            $method->converted = 1;
+        }
+    }
 
-        $vendor_id = 1;
-        $vendor_currency = VirtueMartModelVendor::getVendorCurrency($vendor_id);
-
-        $db = JFactory::getDBO();
-        $calculator = calculationHelper::getInstance();
-        $currency = CurrencyDisplay::getInstance();
-
-        $taxrules = array();
-        if(!empty($tax_id)) {
-            $q = 'SELECT * FROM #__virtuemart_calcs WHERE `virtuemart_calc_id`="' . $tax_id . '" ';
-            $db->setQuery($q);
-            $taxrules = $db->loadAssocList();
+    function convertValueToVendorCurrency($value, $currency_id)
+    {
+        $calculator = calculationHelper::getInstance ();
+        if(!empty($value)){
+            return $calculator->_currencyDisplay->convertCurrencyTo($currency_id, $value, true);
         }
 
-        if(count($taxrules) > 0) {
-            $salesPrice = $calculator->roundInternal($calculator->executeCalculation($taxrules, $value));
-        }
-        else {
-            $salesPrice = $value;
-        }
-
-        return $salesPrice;
+        return $value;
     }
 
     /**
@@ -294,40 +295,36 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
     /**
      * Return delivery price for weight, NULL if none found.
-     * @param array $config
+     * @param int $countryId
+     * @param $method
      * @param $weight
      * @return float|null
      */
-    protected function getRatePriceFromConfig(array $config, $weight)
+    protected function getRatePriceFromConfig($countryId, VirtueMartModelZasilkovna_shipment_method $method, $weight)
     {
         // Load default price from configuration.
-        $defaultPrice = (isset($config['values']) && isset($config['values']['default_price']) && is_numeric($config['values']['default_price']))
-            ? (float) $config['values']['default_price']
-            : NULL;
+        $defaultPrice = $method->getCountryDefaultPrice($countryId);
+        if ($defaultPrice === null) {
+            $defaultPrice = $method->getGlobalDefaultPrice();
+        }
 
         // Remove default price settings from configuration.
-        unset($config['values']);
 
-        // Search for satisfying weight range.
-        foreach ($config as $weightRate)
-        {
-            if ($weight >= round($weightRate['weight_from'],2) && $weight < round($weightRate['weight_to'],2) && is_numeric($weightRate['price']))
-            {
-                return (float) $weightRate['price'];
-            }
+        $config = $method->getCountryWeightRule($countryId, $weight);
+        if ($config) {
+            return (float) $config->price;
         }
 
         // Return default delivery price value or NULL if no definition found.
         return $defaultPrice;
     }
 
-
     /**
      * Return country code from order billing address.
      * @param VirtueMartCart $cart
      * @return string|null
      */
-    protected function getOrderBillingAddressCountryCode(VirtueMartCart $cart)
+    protected function getOrderBillingAddressCountryId(VirtueMartCart $cart)
     {
         // If user set Shipping address same as Billing we take the billing address
         // (shipping address may contain other data but that is discarded)
@@ -342,65 +339,59 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         // Get country code.
         $cid  = $address['virtuemart_country_id'];
-        $code = strtolower(ShopFunctions::getCountryByID($cid, 'country_2_code'));
 
         // Return country code.
-        return $code ? $code : NULL;
+        return $cid ? $cid : NULL;
     }
-
 
     /**
      * Check if order has available free shipping.
+     *
      * @param VirtueMartCart $cart
      * @param $cart_prices
+     * @param VirtueMartModelZasilkovna_shipment_method $method
      * @return bool
      */
-    protected function isFreeShippingActive(VirtueMartCart $cart, $cart_prices)
+    protected function isFreeShippingActive(VirtueMartCart $cart, $cart_prices, VirtueMartModelZasilkovna_shipment_method $method)
     {
         // Billing address country code is required to free shipping.
-        $countryCode = $this->getOrderBillingAddressCountryCode($cart);
+        $countryId = $this->getOrderBillingAddressCountryId($cart);
 
-        if ($countryCode === NULL)
-        {
+        if ($countryId === NULL) {
             return FALSE;
         }
 
         // Load order price.
-        if (empty($cart_prices['salesPrice']) || !is_numeric($cart_prices['salesPrice']))
-        {
+        if (empty($cart_prices['salesPrice']) || !is_numeric($cart_prices['salesPrice'])) {
             return FALSE;
         }
 
-        $orderPrice = (float) $cart_prices['salesPrice'];
+        $orderPrice = (float)$cart_prices['salesPrice'];
 
         // 1) Check if country free shipping criteria is met.
-        $countryLimit = $this->model->getConfig($countryCode . '/values/free_shipping');
+        $countryLimit = $method->getCountryFreeShipping($countryId);
 
-        if (is_numeric($countryLimit) && $orderPrice >= (float) $countryLimit)
-        {
+        if (is_numeric($countryLimit) && $orderPrice >= (float)$countryLimit) {
             return TRUE;
         }
 
         // 2) Check if "other country" free shipping criteria is met.
-        $otherCountryLimit = $this->model->getConfig(self::OTHER_CONFIG_CODE . '/values/free_shipping');
-
+        $otherCountryLimit = $method->getCountryFreeShipping(self::OTHER_CONFIG_CODE);
         if (is_numeric($otherCountryLimit) && $orderPrice >= (float) $otherCountryLimit)
         {
             return TRUE;
         }
 
         // 3) Check if default free shipping criteria is met.
-        $defaultLimit = $this->model->getConfig('global/values/free_shipping');
+        $defaultLimit = $method->getGlobalFreeShipping();
 
-        if (is_numeric($defaultLimit) && $orderPrice >= (float) $defaultLimit)
-        {
+        if (is_numeric($defaultLimit) && $orderPrice >= (float)$defaultLimit) {
             return TRUE;
         }
 
         // 4) Free shipping is not available.
         return FALSE;
     }
-
 
     /**
      * Get Zasilkovna delivery price.
@@ -411,8 +402,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     function getCosts(VirtueMartCart $cart, $method, $cart_prices)
     {
+        $method = VirtueMartModelZasilkovna_shipment_method::fromRandom($method);
+        $defaultPrice = $method->getGlobalDefaultPrice();
         // Load default price from global config.
-        $defaultPrice = $this->model->getConfig('global/values/default_price');
 
         if (!$defaultPrice || !is_numeric($defaultPrice))
         {
@@ -427,7 +419,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         // Load order billing address country code.
-        $code = $this->getOrderBillingAddressCountryCode($cart);
+        $code = $this->getOrderBillingAddressCountryId($cart);
 
         // If no code (address) is set return global default price or 0.
         if ($code === NULL)
@@ -439,23 +431,21 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $totalWeight = round($this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT),2);
 
         // 1) Check if is free shipping criteria meet.
-        if ($this->isFreeShippingActive($cart, $cart_prices))
+        if ($this->isFreeShippingActive($cart, $cart_prices, $method))
         {
             return 0.0;
         }
 
         // 2) Try calculate country delivery price for weight.
-        $langConfig = $this->model->getConfig($code, array());
-        $langPrice  = $this->getRatePriceFromConfig($langConfig, $totalWeight);
+        $weightPrice = $this->getRatePriceFromConfig($code, $method, $totalWeight);
 
-        if ($langPrice !== NULL)
+        if ($weightPrice !== NULL)
         {
-            return $langPrice;
+            return $weightPrice;
         }
 
         // 3) Try calculate delivery price for weight from "other country" definition.
-        $otherConfig = $this->model->getConfig(self::OTHER_CONFIG_CODE, array());
-        $otherPrice  = $this->getRatePriceFromConfig($otherConfig, $totalWeight);
+        $otherPrice = $this->getRatePriceFromConfig(self::OTHER_CONFIG_CODE, $method, $totalWeight);
 
         if ($otherPrice !== NULL)
         {
@@ -470,14 +460,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /**
      * Is delivery available?
      * @param VirtueMartCart $cart
-     * @param int $method
+     * @param $method
      * @param array $cart_prices
      * @return bool
      */
     protected function checkConditions($cart, $method, $cart_prices)
     {
+        $method = VirtueMartModelZasilkovna_shipment_method::fromRandom($method);
         // Check order max weight (TODO: duplicate with plgVmDisplayListFEShipment).
-        $orderMaxWeight = $this->model->getConfig('global/values/max_weight', VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT);
+        $orderMaxWeight = $method->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT;
         $orderActualWeight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
 
         if($orderActualWeight > $orderMaxWeight)
@@ -486,7 +477,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         // intentionally ==
-        return !($this->getCosts($cart, $method, $cart_prices) == 0 && !$this->isFreeShippingActive($cart, $cart_prices));
+        return !($this->getCosts($cart, $method, $cart_prices) == 0 && !$this->isFreeShippingActive($cart, $cart_prices, $method));
     }
 
 
@@ -547,7 +538,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         // DO NOT DISPLAY OPTION IF CART WEIGHT OVER GLOBAL LIMIT
         $weight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
-        $maxWeight = $this->model->getConfig('global/values/max_weight', VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT);
+
+        $zasMethod = $this->getVmPluginMethod($cart->virtuemart_shipmentmethod_id);
+        $zasMethod = VirtueMartModelZasilkovna_shipment_method::fromRandom($zasMethod);
+        $maxWeight = $zasMethod->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT;
 
         if($weight > $maxWeight)
         {
@@ -607,7 +601,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $js_html .= '<script src="https://widget.packeta.com/v6/www/js/library.js"></script>';
         $js_html .= '<script src="media/com_zasilkovna/media/js/widget.js?v=' . filemtime(__DIR__ . '/../../../media/com_zasilkovna/media/js/widget.js') . '"></script>';
 
-        $js_html .= "<div class='zasilkovna_box'>";
         $js_html .= ('<input type="hidden" name="branch_id" id="branch_id" value="'. $session->get('branch_id', 0) .'" >');
         $js_html .= ('<input type="hidden" name="branch_name_street" id="branch_name_street" value="'. $session->get('branch_name_street', '') .'" >');
         $js_html .= ('<input type="hidden" name="branch_carrier_id" id="branch_carrier_id" value="'. $session->get('branch_carrier_id', '') .'" >');
@@ -651,9 +644,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 //}
             }
 
-            $country = $method->country;
-
             if($this->checkConditions($cart, $method, $cart->pricesUnformatted)) {
+                $html[$key] .= "<div class='zasilkovna_box'>";
                 $html[$key] .= '<div id="zasilkovna_div" name="helper_div">';//this div packs the select box with radio input - helps js easily find the radio
                 $methodSalesPrice = $this->calculateSalesPrice($cart, $method, $cart->pricesUnformatted);
                 $method->$method_name = $this->renderPluginName($method);
@@ -667,12 +659,13 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                         <iframe sandbox="allow-scripts allow-same-origin" allow="geolocation" id="packeta-widget"></iframe>
                         <br>
                         <ul><li>'. JText::_('PLG_VMSHIPMENT_ZASILKOVNA_WIDGET_SELECTED_POINT') .': <span id="picked-delivery-place">'.$session->get('branch_name_street', '').'</span></li></ul>');
-                    $html[$key] .= '</div>';
+                    $html[$key] .= '</div>';  // zas-box
                 }else{
                     $html[$key] .= '<ul><li>'. JText::_('PLG_VMSHIPMENT_ZASILKOVNA_WIDGET_ENTER_ADDRESS') .'</li></ul>';
                 }
 
-                $html[$key] .= '</div>';
+                $html[$key] .= '</div>'; // zasilkovna_div
+                $html[$key] .= '</div>'; // zasilkovna_box
             }
         }
 
@@ -789,7 +782,39 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return $this->setOnTablePluginParams($name, $id, $table);
     }
 
-    function plgVmDeclarePluginParamsShipmentVM3(&$data) {
+    /**
+     * @param $data
+     * @param \TableShipmentmethods $table
+     * @return void
+     */
+    function plgVmSetOnTablePluginShipment(&$data, &$table)
+    {
+        if (empty($data)) {
+            return;
+        }
+
+        $method = VirtueMartModelZasilkovna_shipment_method::fromRandom($data);
+        $report = $method->validate();
+
+        if ($report->isValid() === false) {
+            foreach ($report->getErrors() as $error) {
+                vmError(JText::_($error->translationCode));
+            }
+
+            $app = JFactory::getApplication();
+            $app->redirect(JRoute::_('index.php?option=com_virtuemart&view=shipmentmethod&task=edit&cid[]=' . $data['virtuemart_shipmentmethod_id'], false)); // calls exit
+        }
+    }
+
+    /**
+     * @param \TableShipmentmethods $data
+     * @return mixed
+     */
+    function plgVmDeclarePluginParamsShipmentVM3(&$data)
+    {
+        $document = JFactory::getDocument();
+        $document->addStyleSheet(JUri::root() . 'media/com_zasilkovna/media/css/shipping-method.css?v=' . filemtime(PACKETERY_MEDIA_DIR . '/css/shipping-method.css'));
+
         return $this->declarePluginParams('shipment', $data);
     }
 

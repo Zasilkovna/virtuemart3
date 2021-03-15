@@ -14,7 +14,7 @@ if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmod
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.1.9';
+    const VERSION = '1.1.10';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
@@ -70,7 +70,7 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function getConfig($path, $default = NULL){
         $path = explode('/', $path);
-        if( count($path) < 1 )return NULL;
+        if( count($path) < 1 ) return NULL;
         $conf = $this->config;
         foreach ($path as $s){
             if( isset( $conf[$s] ) )$conf = $conf[$s];
@@ -94,6 +94,32 @@ class VirtueMartModelZasilkovna extends VmModel
         return unserialize($obj->custom_data);
     }
 
+    /**
+     * @param array $data
+     */
+    public function updateConfig($data)
+    {
+        $db =& JFactory::getDBO();
+        $q = "UPDATE #__extensions SET custom_data='" . serialize($data) . "' WHERE element='zasilkovna'";
+        $db->setQuery($q);
+        $db->query();
+    }
+
+    /**
+     * @return null|int
+     */
+    public function getExtensionId()
+    {
+        $q = "SELECT MAX(extension_id) as extension_id FROM #__extensions WHERE element='zasilkovna'";
+        $db = JFactory::getDBO();
+        $db->setQuery($q);
+        $obj = $db->loadObject();
+        if (empty($obj)) {
+            return null;
+        }
+
+        return $obj->extension_id;
+    }
 
     /**
      * Returns list of supported countries, parameters 'country' and 'lang' are used in the widget
@@ -155,6 +181,16 @@ class VirtueMartModelZasilkovna extends VmModel
         }
 
         return $list;
+    }
+
+    public function publishShipmentMethods($ids, $value = 1)
+    {
+        $value = (int) $value;
+        $imploded = implode(',', $ids);
+        $q = "UPDATE #__virtuemart_shipmentmethods SET published = $value WHERE virtuemart_shipmentmethod_id IN ($imploded)";
+        $db = JFactory::getDBO();
+        $db->setQuery($q);
+        $db->execute();
     }
 
     public function getBranches() {
@@ -241,40 +277,25 @@ class VirtueMartModelZasilkovna extends VmModel
 
     }
 
-
     private function fetch($url)
     {
-        if(extension_loaded('curl')) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
-            curl_setopt($ch, CURLOPT_AUTOREFERER, false);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 20);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-            $body = curl_exec($ch);
-            if(curl_errno($ch) > 0) {
-                return false;
-            }
-
-            return $body;
-        }
-        elseif(ini_get('allow_url_fopen')) {
-            if(function_exists('stream_context_create')) {
-                $ctx = stream_context_create(array(
-                    'http' => array(
-                        'timeout' => 20
+        if (ini_get('allow_url_fopen')) {
+            if (function_exists('stream_context_create')) {
+                $ctx = stream_context_create(
+                    array(
+                        'http' => array(
+                            'timeout' => 20
+                        )
                     )
-                ));
+                );
 
                 return file_get_contents($url, 0, $ctx);
-            }
-            else {
+            } else {
                 return file_get_contents($url);
             }
-        }
-        else
+        } else {
             return false;
+        }
     }
 
     /*

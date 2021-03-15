@@ -22,9 +22,9 @@
 
 
     // INCLUDE JS AND CSS
-    $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/admin.css?v=' . filemtime(__DIR__ . '/../../../media/com_zasilkovna/media/css/admin.css'));
-    $document->addScript(JUri::root()."media/com_zasilkovna/media/js/repeater.js?v=" . filemtime(__DIR__ . '/../../../media/com_zasilkovna/media/js/repeater.js'));
-    $document->addScript(JUri::root()."media/com_zasilkovna/media/js/admin.js?v=" . filemtime(__DIR__ . '/../../../media/com_zasilkovna/media/js/admin.js'));
+    $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/admin.css?v=' . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css'));
+    $document->addScript(JUri::root()."media/com_zasilkovna/media/js/repeater.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/repeater.js'));
+    $document->addScript(JUri::root()."media/com_zasilkovna/media/js/admin.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/admin.js'));
 ?>
 <form action="index.php" method="post" name="adminForm" id="adminForm">
     <?php // Loading Templates in Tabs
