@@ -280,21 +280,24 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
             $countryWeightRulesTransformed = [];
             $weightRulesCount = 0;
             foreach ($countryWeightRules as $countryWeightRule) {
-                $key = 'weightRules' . $weightRulesCount;
 
-                $addWeightRule = function (&$countryWeightRulesTransformed) use ($countryWeightRule, $lastCountryWeightRule, $key, $countryDefaultPrice, $globalShipmentCost) {
+                $addWeightRule = function (&$countryWeightRulesTransformed) use ($countryWeightRule, $lastCountryWeightRule, &$weightRulesCount, $countryDefaultPrice, $globalShipmentCost) {
                     if (!empty($countryWeightRule['weight_from']) && $lastCountryWeightRule && $lastCountryWeightRule['weight_to'] != $countryWeightRule['weight_from']) {
+                        $key = 'weightRules' . $weightRulesCount;
                         $countryWeightRulesTransformed[$key] = [
                             'maxWeightKg' => $countryWeightRule['weight_from'],
                             'price' => $countryDefaultPrice ?: $globalShipmentCost,
                         ];
+                        $weightRulesCount++;
                     }
 
                     if (!empty($countryWeightRule['weight_to'])) {
+                        $key = 'weightRules' . $weightRulesCount;
                         $countryWeightRulesTransformed[$key] = [
                             'maxWeightKg' => $countryWeightRule['weight_to'],
                             'price' => ($countryWeightRule['price'] ?: $countryDefaultPrice) ?: $globalShipmentCost,
                         ];
+                        $weightRulesCount++;
                     }
                 };
 
@@ -305,7 +308,6 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
                 }
 
                 $lastCountryWeightRule = $countryWeightRule;
-                $weightRulesCount++;
             }
 
             if (!is_numeric($countryDefaultPrice) && !is_numeric($countryFreeShipment) && empty($countryWeightRulesTransformed)) {
