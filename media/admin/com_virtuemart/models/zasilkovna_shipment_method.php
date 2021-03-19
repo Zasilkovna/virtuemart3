@@ -27,6 +27,64 @@ class VirtueMartModelZasilkovna_shipment_method
         return new self($method);
     }
 
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        return json_decode(json_encode($this->method), true);
+    }
+
+    /**
+     * @return \VirtueMartModelZasilkovna_shipment_method
+     */
+    public function getResortedClone()
+    {
+        $method = clone $this->getParams();
+
+        if (!empty($method->globalWeightRules)) {
+            $globalWeightRules = (array) $method->globalWeightRules;
+            usort($globalWeightRules, function ($globalWeightRule, $globalWeightRuleAfter) {
+                if ($globalWeightRule->maxWeightKg == $globalWeightRuleAfter->maxWeightKg) {
+                    return 0;
+                }
+
+                return $globalWeightRule->maxWeightKg > $globalWeightRuleAfter->maxWeightKg ? 1 : -1;
+            });
+
+            foreach ($globalWeightRules as $key => $globalWeightRule) {
+                $globalWeightRules['globalWeightRules' . $key] = $globalWeightRule;
+                unset($globalWeightRules[$key]);
+            }
+
+            $method->globalWeightRules = (object) $globalWeightRules;
+        }
+
+        foreach ($method->pricingRules as &$pricingRule) {
+            if (empty($pricingRule->weightRules)) {
+                continue;
+            }
+
+            $weightRules = (array) $pricingRule->weightRules;
+            usort($weightRules, function ($weightRule, $weightRuleAfter) {
+                if ($weightRule->maxWeightKg == $weightRuleAfter->maxWeightKg) {
+                    return 0;
+                }
+
+                return $weightRule->maxWeightKg > $weightRuleAfter->maxWeightKg ? 1 : -1;
+            });
+
+            foreach ($weightRules as $key => $weightRule) {
+                $weightRules['weightRules' . $key] = $weightRule;
+                unset($weightRules[$key]);
+            }
+
+            $pricingRule->weightRules = (object) $weightRules;
+        }
+
+        return new self($method);
+    }
+
     private function validateWeightRule($weightRule)
     {
         $weightRulesReport = new PacketeryValidationReport();

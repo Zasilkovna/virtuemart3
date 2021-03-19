@@ -792,6 +792,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
             $app = JFactory::getApplication();
             $app->redirect(JRoute::_('index.php?option=com_virtuemart&view=shipmentmethod&task=edit&cid[]=' . $data['virtuemart_shipmentmethod_id'], false)); // calls exit
+        } else {
+            $resortedClone = $method->getResortedClone();
+            $data = $resortedClone->toArray();
         }
     }
 
