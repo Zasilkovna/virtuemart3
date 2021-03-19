@@ -43,6 +43,24 @@
 
                 <field name="tax_id" type="vmtaxes" scope="com_virtuemart" label="VMSHIPMENT_WEIGHT_COUNTRIES_TAX"
                        description="VMSHIPMENT_WEIGHT_COUNTRIES_TAX_DESC" default="0"/>
+
+                <field
+                        name="globalWeightRules"
+                        type="subform"
+                        label="PLG_VMSHIPMENT_ZASILKOVNA_GLOBAL_WEIGHT_RULES"
+                        description="PLG_VMSHIPMENT_ZASILKOVNA_GLOBAL_WEIGHT_RULES_LABEL"
+                        multiple="true"
+                        min="0">
+                    <form>
+                        <field name="maxWeightKg" type="number" step="0.001"
+                               label="PLG_VMSHIPMENT_ZASILKOVNA_CONFIG_WEIGHT_TO"
+                               size="30" required="true"/>
+
+                        <field name="price" type="number" step="0.01"
+                               label="PLG_VMSHIPMENT_ZASILKOVNA_CONFIG_PRICE"
+                               size="30" required="true"/>
+                    </form>
+                </field>
             </fieldset>
 
             <fieldset name="restrictions">

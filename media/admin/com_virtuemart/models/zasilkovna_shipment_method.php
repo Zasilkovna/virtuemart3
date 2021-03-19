@@ -27,6 +27,29 @@ class VirtueMartModelZasilkovna_shipment_method
         return new self($method);
     }
 
+    private function validateWeightRule($weightRule)
+    {
+        $weightRulesReport = new PacketeryValidationReport();
+
+        if (empty($weightRule->price) && !is_numeric($weightRule->price)) {
+            $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_WEIGHT_PRICE_MISSING);
+        } else {
+            if (!is_numeric($weightRule->price)) {
+                $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_INVALID_TYPE);
+            }
+        }
+
+        if (empty($weightRule->maxWeightKg) && !is_numeric($weightRule->maxWeightKg)) {
+            $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_WEIGHT_MISSING);
+        } else {
+            if (!is_numeric($weightRule->maxWeightKg)) {
+                $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_INVALID_TYPE);
+            }
+        }
+
+        return $weightRulesReport;
+    }
+
     /**
      * @return PacketeryValidationReport
      */
@@ -52,6 +75,15 @@ class VirtueMartModelZasilkovna_shipment_method
             }
         }
 
+        foreach ($this->getGlobalWeightRules() ?: [] as $weightRule) {
+            $weightRulesReport = $this->validateWeightRule($weightRule);
+
+            if ($weightRulesReport->isValid() === false) {
+                $report->merge($weightRulesReport);
+                break;
+            }
+        }
+
         $rules = $this->getPricingRules();
         $countries = [];
 
@@ -64,23 +96,7 @@ class VirtueMartModelZasilkovna_shipment_method
             $countries[$countryRule->country] = $countryRule->country;
 
             foreach ($this->getCountryWeightRules($countryRule->country) ?: [] as $weightRule) {
-                $weightRulesReport = new PacketeryValidationReport();
-
-                if (empty($weightRule->price) && !is_numeric($weightRule->price)) {
-                    $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_WEIGHT_PRICE_MISSING);
-                } else {
-                    if (!is_numeric($weightRule->price)) {
-                        $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_INVALID_TYPE);
-                    }
-                }
-
-                if (empty($weightRule->maxWeightKg) && !is_numeric($weightRule->maxWeightKg)) {
-                    $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_WEIGHT_MISSING);
-                } else {
-                    if (!is_numeric($weightRule->maxWeightKg)) {
-                        $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_INVALID_TYPE);
-                    }
-                }
+                $weightRulesReport = $this->validateWeightRule($weightRule);
 
                 if ($weightRulesReport->isValid() === false) {
                     $report->merge($weightRulesReport);
@@ -88,14 +104,6 @@ class VirtueMartModelZasilkovna_shipment_method
                 }
             }
         }
-
-        // do not use "other" country in following checks
-        $countries = array_filter(
-            $countries,
-            function ($country) {
-                return $country !== plgVmShipmentZasilkovna::OTHER_CONFIG_CODE;
-            }
-        );
 
         $blockingCountries = $this->getBlockingCountries() ?: [];
         $allowedCountries = $this->getAllowedCountries() ?: [];
@@ -175,13 +183,18 @@ class VirtueMartModelZasilkovna_shipment_method
     }
 
     /**
-     * @param int $countryId
+     * @param int|null $countryId
      * @param float $weight
      * @return \sdtClass|null
      */
     public function getCountryWeightRule($countryId, $weight)
     {
-        $weightRules = $this->getCountryWeightRules($countryId);
+        if ($countryId === null) {
+            $weightRules = $this->getGlobalWeightRules();
+        } else {
+            $weightRules = $this->getCountryWeightRules($countryId);
+        }
+
         $minWeight = null;
 
         $finalWeightRule = null;
@@ -210,6 +223,14 @@ class VirtueMartModelZasilkovna_shipment_method
     public function getGlobalMaxWeight()
     {
         return $this->getParams()->maxWeight;
+    }
+
+    /** Global weight rules are ment for unspecified countries
+     * @return iterable|null
+     */
+    public function getGlobalWeightRules()
+    {
+        return $this->getParams()->globalWeightRules;
     }
 
     private function getPricingRuleForCountry($countryId)

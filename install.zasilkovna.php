@@ -248,6 +248,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         /** @var \VirtueMartModelShipmentmethod $shipmentmethodModel */
         $shipmentmethodModel = VmModel::getModel('shipmentmethod');
 
+        $globalWeightRules = [];
         $globalMaxWeight = $model->getConfig('global/values/maximum_weight', '');
         $globalShipmentCost = $model->getConfig('global/values/default_price', '');
         $globalFreeShipment = $model->getConfig('global/values/free_shipping', '');
@@ -258,7 +259,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
         $pricingRules = [];
         $countries = ['cz', 'sk', 'hu', 'ro', 'pl'];
-        $countriesWithOther = array_merge([\plgVmShipmentZasilkovna::OTHER_CONFIG_CODE], $countries); // is used to search in config
+        $countriesWithOther = array_merge(['other'], $countries); // is used to search in config
         $countryIds = [];
 
         foreach ($countries as $country) {
@@ -280,18 +281,27 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
             $weightRulesCount = 0;
             foreach ($countryWeightRules as $countryWeightRule) {
                 $key = 'weightRules' . $weightRulesCount;
-                if (!empty($countryWeightRule['weight_from']) && $lastCountryWeightRule && $lastCountryWeightRule['weight_to'] != $countryWeightRule['weight_from']) {
-                    $countryWeightRulesTransformed[$key] = [
-                        'maxWeightKg' => $countryWeightRule['weight_from'],
-                        'price' => $countryDefaultPrice ?: $globalShipmentCost,
-                    ];
-                }
 
-                if (!empty($countryWeightRule['weight_to'])) {
-                    $countryWeightRulesTransformed[$key] = [
-                        'maxWeightKg' => $countryWeightRule['weight_to'],
-                        'price' => ($countryWeightRule['price'] ?: $countryDefaultPrice) ?: $globalShipmentCost,
-                    ];
+                $addWeightRule = function (&$countryWeightRulesTransformed) use ($countryWeightRule, $lastCountryWeightRule, $key, $countryDefaultPrice, $globalShipmentCost) {
+                    if (!empty($countryWeightRule['weight_from']) && $lastCountryWeightRule && $lastCountryWeightRule['weight_to'] != $countryWeightRule['weight_from']) {
+                        $countryWeightRulesTransformed[$key] = [
+                            'maxWeightKg' => $countryWeightRule['weight_from'],
+                            'price' => $countryDefaultPrice ?: $globalShipmentCost,
+                        ];
+                    }
+
+                    if (!empty($countryWeightRule['weight_to'])) {
+                        $countryWeightRulesTransformed[$key] = [
+                            'maxWeightKg' => $countryWeightRule['weight_to'],
+                            'price' => ($countryWeightRule['price'] ?: $countryDefaultPrice) ?: $globalShipmentCost,
+                        ];
+                    }
+                };
+
+                if ($country === 'other') {
+                    $addWeightRule($globalWeightRules);
+                } else {
+                    $addWeightRule($countryWeightRulesTransformed);
                 }
 
                 $lastCountryWeightRule = $countryWeightRule;
@@ -302,8 +312,12 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
                 continue; // no usable data to migrate
             }
 
+            if ($country === 'other') {
+                continue; // other country default price and free shipping will be lost
+            }
+
             $pricingRules['pricingRules' . $pricingRulesCount] = [
-                'country' => $country === \plgVmShipmentZasilkovna::OTHER_CONFIG_CODE ? \plgVmShipmentZasilkovna::OTHER_CONFIG_CODE : $countryIds[$country], // todo properly migrate other country data
+                'country' => $countryIds[$country],
                 'shipment_cost' => $countryDefaultPrice,
                 'free_shipping' => $countryFreeShipment,
                 'weightRules' => $countryWeightRulesTransformed
@@ -317,10 +331,12 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         echo 'All packetery methods were unpublished. Please check them and publish them again.<br>';
 
         $pricingRulesEncoded = json_encode($pricingRules);
+        $globalWeightRulesEncoded = json_encode($globalWeightRules);
         $params = [
             "maxWeight=\"$globalMaxWeight\"",
             "shipment_cost=\"$globalShipmentCost\"",
             "free_shipment=\"$globalFreeShipment\"",
+            "globalWeightRules=$globalWeightRulesEncoded",
             "pricingRules=$pricingRulesEncoded"
         ];
 

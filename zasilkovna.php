@@ -21,7 +21,6 @@ require_once VMPATH_ADMIN . '/fields/vmzasilkovnacountries.php';
 class plgVmShipmentZasilkovna extends vmPSPlugin
 {
     const DEFAULT_WEIGHT_UNIT = 'KG';
-    const OTHER_CONFIG_CODE = 'other';
 
     public static $_this = false;
     /** @var VirtueMartModelZasilkovna */
@@ -308,14 +307,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $defaultPrice = $method->getGlobalDefaultPrice();
         }
 
-        // Remove default price settings from configuration.
-
         $config = $method->getCountryWeightRule($countryId, $weight);
         if ($config) {
             return (float) $config->price;
         }
 
-        // Return default delivery price value or NULL if no definition found.
         return $defaultPrice;
     }
 
@@ -372,13 +368,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $countryLimit = $method->getCountryFreeShipping($countryId);
 
         if (is_numeric($countryLimit) && $orderPrice >= (float)$countryLimit) {
-            return TRUE;
-        }
-
-        // 2) Check if "other country" free shipping criteria is met.
-        $otherCountryLimit = $method->getCountryFreeShipping(self::OTHER_CONFIG_CODE);
-        if (is_numeric($otherCountryLimit) && $orderPrice >= (float) $otherCountryLimit)
-        {
             return TRUE;
         }
 
@@ -445,7 +434,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         // 3) Try calculate delivery price for weight from "other country" definition.
-        $otherPrice = $this->getRatePriceFromConfig(self::OTHER_CONFIG_CODE, $method, $totalWeight);
+        $otherPrice = $this->getRatePriceFromConfig(null, $method, $totalWeight);
 
         if ($otherPrice !== NULL)
         {

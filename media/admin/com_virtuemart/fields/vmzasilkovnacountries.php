@@ -36,8 +36,6 @@ class JFormFieldVmZasilkovnaCountries extends JFormFieldList {
         $countryModel = VmModel::getModel('country');
         $countries = $countryModel->getCountries(TRUE, TRUE, FALSE);
 
-        $fields[] = JHtml::_('select.option', 'other', JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SHIPPING_OTHER_COUNTRY'));
-
         foreach ($countries as $country) {
             $fields[] = JHtml::_('select.option', $country->virtuemart_country_id, $country->country_name);
         }
