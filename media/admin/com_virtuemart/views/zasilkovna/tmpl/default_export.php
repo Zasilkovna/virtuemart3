@@ -74,7 +74,7 @@
 				}
 				$disabledForNotSubmitted = (!$submitted) ? 'disabled' : ' ';
 				$disabledExport = (!$existBranchOrCarrier ? 'disabled' : '');
-				$checkBox = '<input type="checkbox" id="cbExport" name="exportOrders[]" value="' . $order->order_number . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . ($order->exported || !$existBranchOrCarrier ? '' : 'checked') . ' ' .$disabledExport . ' >';
+				$checkBox = '<input type="checkbox" id="cbExport" name="exportOrders[]" value="' . htmlentities($order->order_number) . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . ($order->exported || !$existBranchOrCarrier ? '' : 'checked') . ' ' .$disabledExport . ' >';
 			 	$class = ($existBranchOrCarrier ? "row" . $key % 2 : "error");
 				if (!$existBranchOrCarrier) {
 					$warningMesage = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_MISSING_BRANCH_ORDER');
@@ -84,15 +84,15 @@
                 <tr class="<?php echo $class; ?>">
                     <!-- Checkbox -->
                     <td><?php echo $checkBox;
-                        echo '<input type="hidden" name="orders[' . $key . '][order_number]" value="' . $order->order_number . '">';
+                        echo '<input type="hidden" name="orders[' . $key . '][order_number]" value="' . htmlentities($order->order_number) . '">';
                         $submittedVal = ($submitted == true) ? '1' : '0';
                         echo '<input type="hidden" name="orders[' . $key . '][submitted]" value="' . $submittedVal . '">';
                         ?>
                     </td>
 
                     <!-- Order id -->
-                    <td><?php $link = 'index.php?option=com_virtuemart&view=orders&task=edit&virtuemart_order_id=' . $order->virtuemart_order_id;
-                        echo JHTML::_('link', JRoute::_($link), $order->order_number, array('target' => '_blank', 'title' => JText::_('COM_VIRTUEMART_ORDER_EDIT_ORDER_NUMBER') . ' ' . $order->order_number)); ?>
+                    <td><?php $link = 'index.php?option=com_virtuemart&view=orders&task=edit&virtuemart_order_id=' . htmlentities($order->virtuemart_order_id);
+                        echo JHTML::_('link', JRoute::_($link), htmlentities($order->order_number), array('target' => '_blank', 'title' => JText::_('COM_VIRTUEMART_ORDER_EDIT_ORDER_NUMBER') . ' ' . htmlentities($order->order_number))); ?>
                     </td>
                     <!-- exported -->
 
@@ -106,14 +106,14 @@
                     if($order->zasilkovna_packet_id && $order->printed_label == 0) {
                         $checked = " checked ";
                     }
-                    $checkBox = '<input type="checkbox" id="cbPrint" name="printLabels[]" value="' . $order->zasilkovna_packet_id . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . $checked . ' ' . $disabledForNotSubmitted . '>';
+                    $checkBox = '<input type="checkbox" id="cbPrint" name="printLabels[]" value="' . htmlentities($order->zasilkovna_packet_id) . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . $checked . ' ' . $disabledForNotSubmitted . '>';
                     ?>
                     <td><?php echo $checkBox; ?></td>
 
                     <!-- is cod -->
                     <td><?php
 						$cod = $order->packet_cod;
-						echo '<input size="8" type="input" name="orders[' . $key . '][packet_cod]" value="' . $cod . '"' . $disabled . '> ';
+						echo '<input size="8" type="input" name="orders[' . $key . '][packet_cod]" value="' . htmlentities($cod) . '"' . $disabled . '> ';
                         ?>
                     </td>
                     <!-- email -->
@@ -124,54 +124,54 @@
                         else{
                             $email = $order->billing_email;
                         }
-					    echo $email;
+					    echo htmlentities($email);
                         ?>
                     </td>
                     <!-- phone -->
-                    <td><?php echo $order->phone; ?></td>
+                    <td><?php echo htmlentities($order->phone); ?></td>
                     <!-- packet price -->
-                    <td><?php echo '<input size="8" type="input" name="orders[' . $key . '][zasilkovna_packet_price]" value="' . $order->zasilkovna_packet_price . '"' . $disabled . '> ' . $order->branch_currency; ?></td>
+                    <td><?php echo '<input size="8" type="input" name="orders[' . $key . '][zasilkovna_packet_price]" value="' . htmlentities($order->zasilkovna_packet_price) . '"' . $disabled . '> ' . htmlentities($order->branch_currency); ?></td>
                     <!-- packet id -->
                     <td>
 					<?php
 					$packetId = "";
 					if($order->zasilkovna_packet_id !== "0") {
 					?>
-						<a href="https://tracking.packeta.com/cs/?id=<?php echo $order->zasilkovna_packet_id; ?>" target="_blank"><?php echo $order->zasilkovna_packet_id; ?></a>
+						<a href="https://tracking.packeta.com/cs/?id=<?php echo htmlentities($order->zasilkovna_packet_id); ?>" target="_blank"><?php echo htmlentities($order->zasilkovna_packet_id); ?></a>
 					<?php } ?>
 					</td>
                     <!--  cancel packet id button -->
                     <?php
-                    $link = 'index.php?option=com_virtuemart&view=zasilkovna&task=cancelOrderSubmitToZasilkovna&cancel_order_id=' . $order->virtuemart_order_id;
+                    $link = 'index.php?option=com_virtuemart&view=zasilkovna&task=cancelOrderSubmitToZasilkovna&cancel_order_id=' . htmlentities($order->virtuemart_order_id);
                     ?>
-                    <td><?php if($disabled) { ?><a href="<?php echo JRoute::_($link); ?>" title="<?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_CANCEL_ORDER_SUBMIT_BUTTON'); ?>" ><img width="16" height="16" src="<?php echo $this->media_url; ?>/img/cancel-icon.png"></a><?php } ?></td>
+                    <td><?php if($disabled) { ?><a href="<?php echo JRoute::_($link); ?>" title="<?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_CANCEL_ORDER_SUBMIT_BUTTON'); ?>" ><img width="16" height="16" src="<?php echo htmlentities($this->media_url); ?>/img/cancel-icon.png"></a><?php } ?></td>
                     <!-- 18+ -->
                     <td><input type="checkbox" name="orders[<?php echo $key; ?>][adult_content]" <?php echo ($order->adult_content == 1) ? 'checked' : ''; ?>  ></td>
                     <!-- order name -->
-                    <td><?php echo $order->order_name; ?></td>
+                    <td><?php echo htmlentities($order->order_name); ?></td>
                     <!-- branch id -->
                     <td>
-                        <?php echo $order->name_street; ?>
+                        <?php echo htmlentities($order->name_street); ?>
                     </td>
 
                     <!-- adresa prijemce -->
                     <td>
-                        <?php echo $order->address; ?><br />
-                        <?php echo $order->city; ?><br />
-                        <?php echo $order->zip_code; ?><br />
+                        <?php echo htmlentities($order->address); ?><br />
+                        <?php echo htmlentities($order->city); ?><br />
+                        <?php echo htmlentities($order->zip_code); ?><br />
                     </td>
 
                     <!-- Payment method -->
-                    <td><?php echo $order->payment_method; ?></td>
+                    <td><?php echo htmlentities($order->payment_method); ?></td>
                     <!-- Order date -->
-                    <td><?php echo vmJsApi::date($order->created_on, 'LC4', true); ?></td>
+                    <td><?php echo vmJsApi::date(htmlentities($order->created_on), 'LC4', true); ?></td>
                     <!-- Status -->
                     <td style="position:relative;">
-                        <?php echo $order->order_status; ?>
+                        <?php echo htmlentities($order->order_status); ?>
                     </td>
 
                     <!-- Total -->
-                    <td><?php echo $order->order_total; ?></td>
+                    <td><?php echo htmlentities($order->order_total); ?></td>
 
                 </tr>
                 <?php

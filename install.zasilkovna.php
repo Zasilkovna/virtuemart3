@@ -45,6 +45,9 @@ function recurse_delete($dir) {
 }
 
 class plgVmShipmentZasilkovnaInstallerScript {
+
+    private $migratingPricingRules = false;
+
 	/**
 	 * Constructor
 	 *
@@ -225,8 +228,6 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         $this->migratePricingRules();
 	}
 
-	private $migratingPricingRules = false;
-
     private function migratePricingRules()
     {
         require_once JPATH_ADMINISTRATOR . '/components/com_virtuemart/install/script.virtuemart.php';
@@ -385,6 +386,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 		$vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
 		recurse_delete($vm_admin_path . DS . 'models' . DS . 'zasilkovna.php');
 		recurse_delete($vm_admin_path . DS . 'models' . DS . 'zasilkovna_orders.php');
+		recurse_delete($vm_admin_path . DS . 'models' . DS . 'zasilkovna_src' . DS);
 		recurse_delete($vm_admin_path . DS . 'views' . DS . 'zasilkovna' . DS);
 		recurse_delete($vm_admin_path . DS . 'controllers' . DS . 'zasilkovna.php');
 		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'en-GB' . DS . 'en-GB.plg_vmshipment_zasilkovna.ini');

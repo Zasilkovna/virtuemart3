@@ -1,6 +1,8 @@
 <?php
 
-class VirtueMartModelZasilkovna_shipment_method
+namespace VirtueMartModelZasilkovna;
+
+class ShipmentMethod
 {
     /** @var \stdClass */
     private $method;
@@ -36,28 +38,31 @@ class VirtueMartModelZasilkovna_shipment_method
     }
 
     /**
-     * @return \VirtueMartModelZasilkovna_shipment_method
+     * @return \VirtueMartModelZasilkovna\ShipmentMethod
      */
     public function getResortedClone()
     {
         $method = clone $this->getParams();
 
         if (!empty($method->globalWeightRules)) {
-            $globalWeightRules = (array) $method->globalWeightRules;
-            usort($globalWeightRules, function ($globalWeightRule, $globalWeightRuleAfter) {
-                if ($globalWeightRule->maxWeightKg == $globalWeightRuleAfter->maxWeightKg) {
-                    return 0;
-                }
+            $globalWeightRules = (array)$method->globalWeightRules;
+            usort(
+                $globalWeightRules,
+                function ($globalWeightRule, $globalWeightRuleAfter) {
+                    if ($globalWeightRule->maxWeightKg == $globalWeightRuleAfter->maxWeightKg) {
+                        return 0;
+                    }
 
-                return $globalWeightRule->maxWeightKg > $globalWeightRuleAfter->maxWeightKg ? 1 : -1;
-            });
+                    return $globalWeightRule->maxWeightKg > $globalWeightRuleAfter->maxWeightKg ? 1 : -1;
+                }
+            );
 
             foreach ($globalWeightRules as $key => $globalWeightRule) {
                 $globalWeightRules['globalWeightRules' . $key] = $globalWeightRule;
                 unset($globalWeightRules[$key]);
             }
 
-            $method->globalWeightRules = (object) $globalWeightRules;
+            $method->globalWeightRules = (object)$globalWeightRules;
         }
 
         foreach ($method->pricingRules as &$pricingRule) {
@@ -65,21 +70,24 @@ class VirtueMartModelZasilkovna_shipment_method
                 continue;
             }
 
-            $weightRules = (array) $pricingRule->weightRules;
-            usort($weightRules, function ($weightRule, $weightRuleAfter) {
-                if ($weightRule->maxWeightKg == $weightRuleAfter->maxWeightKg) {
-                    return 0;
-                }
+            $weightRules = (array)$pricingRule->weightRules;
+            usort(
+                $weightRules,
+                function ($weightRule, $weightRuleAfter) {
+                    if ($weightRule->maxWeightKg == $weightRuleAfter->maxWeightKg) {
+                        return 0;
+                    }
 
-                return $weightRule->maxWeightKg > $weightRuleAfter->maxWeightKg ? 1 : -1;
-            });
+                    return $weightRule->maxWeightKg > $weightRuleAfter->maxWeightKg ? 1 : -1;
+                }
+            );
 
             foreach ($weightRules as $key => $weightRule) {
                 $weightRules['weightRules' . $key] = $weightRule;
                 unset($weightRules[$key]);
             }
 
-            $pricingRule->weightRules = (object) $weightRules;
+            $pricingRule->weightRules = (object)$weightRules;
         }
 
         return new self($method);
@@ -87,21 +95,21 @@ class VirtueMartModelZasilkovna_shipment_method
 
     private function validateWeightRule($weightRule)
     {
-        $weightRulesReport = new PacketeryValidationReport();
+        $weightRulesReport = new ShipmentValidationReport();
 
         if (empty($weightRule->price) && !is_numeric($weightRule->price)) {
-            $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_WEIGHT_PRICE_MISSING);
+            $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_WEIGHT_PRICE_MISSING);
         } else {
             if (!is_numeric($weightRule->price)) {
-                $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_INVALID_TYPE);
+                $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
             }
         }
 
         if (empty($weightRule->maxWeightKg) && !is_numeric($weightRule->maxWeightKg)) {
-            $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_WEIGHT_MISSING);
+            $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_WEIGHT_MISSING);
         } else {
             if (!is_numeric($weightRule->maxWeightKg)) {
-                $weightRulesReport->addError(PacketeryValidationReport::ERROR_CODE_INVALID_TYPE);
+                $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
             }
         }
 
@@ -109,27 +117,27 @@ class VirtueMartModelZasilkovna_shipment_method
     }
 
     /**
-     * @return PacketeryValidationReport
+     * @return ShipmentValidationReport
      */
     public function validate()
     {
-        $report = new PacketeryValidationReport();
+        $report = new ShipmentValidationReport();
 
         $globalDefaultPrice = $this->getGlobalDefaultPrice();
         if (empty($globalDefaultPrice) && !is_numeric($globalDefaultPrice)) {
-            $report->addError(PacketeryValidationReport::ERROR_CODE_GLOBAL_DEFAULT_PRICE_MISSING);
+            $report->addError(ShipmentValidationReport::ERROR_CODE_GLOBAL_DEFAULT_PRICE_MISSING);
         } else {
             if (!is_numeric($globalDefaultPrice)) {
-                $report->addError(PacketeryValidationReport::ERROR_CODE_INVALID_TYPE);
+                $report->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
             }
         }
 
         $globalMaxWeight = $this->getGlobalMaxWeight();
         if (empty($globalMaxWeight) && !is_numeric($globalMaxWeight)) {
-            $report->addError(PacketeryValidationReport::ERROR_CODE_GLOBAL_MAX_WEIGHT_MISSING);
+            $report->addError(ShipmentValidationReport::ERROR_CODE_GLOBAL_MAX_WEIGHT_MISSING);
         } else {
             if (!is_numeric($globalMaxWeight)) {
-                $report->addError(PacketeryValidationReport::ERROR_CODE_INVALID_TYPE);
+                $report->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
             }
         }
 
@@ -147,7 +155,7 @@ class VirtueMartModelZasilkovna_shipment_method
 
         foreach ($rules ?: [] as $countryRule) {
             if (array_key_exists($countryRule->country, $countries)) {
-                $report->addError(PacketeryValidationReport::ERROR_CODE_DUPLICATE_COUNTRIES); // multiple country definitions not allowed
+                $report->addError(ShipmentValidationReport::ERROR_CODE_DUPLICATE_COUNTRIES); // multiple country definitions not allowed
                 break;
             }
 
@@ -172,14 +180,14 @@ class VirtueMartModelZasilkovna_shipment_method
         if (!empty($allowedCountries)) {
             $diff = array_diff($countries, $allowedCountries);
             if (!empty($diff)) {
-                $report->addError(PacketeryValidationReport::ERROR_CODE_ALLOWED_COUNTRIES_ONLY);
+                $report->addError(ShipmentValidationReport::ERROR_CODE_ALLOWED_COUNTRIES_ONLY);
             }
         }
 
         if (!empty($blockingCountries)) {
             $diff = array_diff($countries, $blockingCountries);
             if (count($diff) !== count($countries)) {
-                $report->addError(PacketeryValidationReport::ERROR_CODE_NO_BLOCKED_COUNTRY);
+                $report->addError(ShipmentValidationReport::ERROR_CODE_NO_BLOCKED_COUNTRY);
             }
         }
 
@@ -284,6 +292,7 @@ class VirtueMartModelZasilkovna_shipment_method
     }
 
     /** Global weight rules are ment for unspecified countries
+     *
      * @return iterable|null
      */
     public function getGlobalWeightRules()
@@ -322,63 +331,3 @@ class VirtueMartModelZasilkovna_shipment_method
     }
 }
 
-class PacketeryValidationReport
-{
-    const ERROR_CODE_INVALID_TYPE = 'INVALID_TYPE'; // when number contains characters
-    const ERROR_CODE_WEIGHT_PRICE_MISSING = 'WEIGHT_PRICE_MISSING';
-    const ERROR_CODE_WEIGHT_MISSING = 'WEIGHT_MISSING';
-    const ERROR_CODE_GLOBAL_DEFAULT_PRICE_MISSING = 'GLOBAL_DEFAULT_PRICE_MISSING';
-    const ERROR_CODE_GLOBAL_MAX_WEIGHT_MISSING = 'GLOBAL_MAX_WEIGHT_MISSING';
-    const ERROR_CODE_DUPLICATE_COUNTRIES = 'DUPLICATE_COUNTRIES';
-    const ERROR_CODE_ALLOWED_COUNTRIES_ONLY = 'ALLOWED_COUNTRIES_ONLY';
-    const ERROR_CODE_NO_BLOCKED_COUNTRY = 'NO_BLOCKED_COUNTRY';
-
-    /** @var array */
-    private $errors = [];
-
-    function getErrors()
-    {
-        return $this->errors;
-    }
-
-    /**
-     * @return bool
-     */
-    public function isValid()
-    {
-        return empty($this->errors);
-    }
-
-    public function addError($code)
-    {
-        $this->errors[] = (object)[
-            'code' => $code,
-            'translationCode' => $this->getTranslationCode($code),
-        ];
-    }
-
-    /**
-     * @return string[]
-     */
-    public function getErrorCodes()
-    {
-        return array_map(
-            function ($error) {
-                return $error->code;
-            },
-            $this->errors
-        );
-    }
-
-    private function getTranslationCode($code)
-    {
-        return 'PLG_VMSHIPMENT_ZASILKOVNA_SHIPPING_ERROR_' . $code;
-    }
-
-    public function merge(PacketeryValidationReport $report)
-    {
-        $this->errors = array_merge($this->errors, $report->getErrors());
-    }
-}
-
-;

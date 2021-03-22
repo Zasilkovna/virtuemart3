@@ -4,7 +4,7 @@
 
 ### Download module
 
-[Actual version 1.1.8](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.8.zip)
+[Actual version 1.1.9](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.9.zip)
 
 ### Installation
 
@@ -30,7 +30,7 @@ To install the plug-in, you need to do the following:
 
 ##### General rules
 
-Since version 1.1.10 pricing rules have been moved to shipping method configuration
+Since version 1.1.9 pricing rules have been moved to shipping method configuration
 
 - **default price** - the shipping price applies if the country-specific default price is not filled
 - **Maximum weight** - for orders with a larger weight, the Packeta shipping method will not be offered in the cart
@@ -89,7 +89,7 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 
 ### Stažení modulu
 
-[Aktuální verze 1.1.8](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.8.zip)
+[Aktuální verze 1.1.9](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.9.zip)
 
 ### Instalace
 
@@ -115,7 +115,7 @@ Pro instalaci plug-inu je potřeba provést následující kroky:
 
 ##### Obecná pravidla 
 
-Od verze 1.1.10 se cenová pravidla konfigurují v detailu způsobu dopravy 
+Od verze 1.1.9 se cenová pravidla konfigurují v detailu způsobu dopravy 
 
 - **Výchozí cena** - cena za přepravu se použije v případě, že není vyplněna výchozí cena u konkrétní země
 - **Maximální váha** - u objednávek s větší hmotnostní nebude v košíku přepravní metoda Zásilkovna nabízena
