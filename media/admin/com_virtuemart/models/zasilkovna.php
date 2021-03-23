@@ -18,7 +18,6 @@ class VirtueMartModelZasilkovna extends VmModel
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
-    const FREE_SHIPPING_DEFAULT = FALSE; // disabled
     const PRICE_DEFAULT = 100;
 
     public $warnings = array();

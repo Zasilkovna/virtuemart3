@@ -93,7 +93,7 @@ class ShipmentMethod
         return new self($method);
     }
 
-    private function validateWeightRule($weightRule)
+    private function validateWeightRule($weightRule, $maxWeight)
     {
         $weightRulesReport = new ShipmentValidationReport();
 
@@ -110,6 +110,10 @@ class ShipmentMethod
         } else {
             if (!is_numeric($weightRule->maxWeightKg)) {
                 $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
+            } else {
+                if ($weightRule->maxWeightKg > $maxWeight) {
+                    $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_WEIGHT_EXCEEDED);
+                }
             }
         }
 
@@ -142,7 +146,7 @@ class ShipmentMethod
         }
 
         foreach ($this->getGlobalWeightRules() ?: [] as $weightRule) {
-            $weightRulesReport = $this->validateWeightRule($weightRule);
+            $weightRulesReport = $this->validateWeightRule($weightRule, $globalMaxWeight);
 
             if ($weightRulesReport->isValid() === false) {
                 $report->merge($weightRulesReport);
@@ -162,7 +166,7 @@ class ShipmentMethod
             $countries[$countryRule->country] = $countryRule->country;
 
             foreach ($this->getCountryWeightRules($countryRule->country) ?: [] as $weightRule) {
-                $weightRulesReport = $this->validateWeightRule($weightRule);
+                $weightRulesReport = $this->validateWeightRule($weightRule, $globalMaxWeight);
 
                 if ($weightRulesReport->isValid() === false) {
                     $report->merge($weightRulesReport);

@@ -798,6 +798,29 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return;
         }
 
+        $isBeingCreated = empty($data['virtuemart_shipmentmethod_id']);
+        $isZasilkovna = isset($data['shipment_element']) && $data['shipment_element'] === VirtueMartModelZasilkovna::PLG_NAME;
+
+        // clones have data already set
+        if ($isZasilkovna && $isBeingCreated) {
+            // do not override values of clones
+            if (empty($data['shipment_cost'])) {
+                $data['shipment_cost'] = VirtueMartModelZasilkovna::PRICE_DEFAULT;
+            }
+
+            if (empty($data['maxWeight'])) {
+                $data['maxWeight'] = VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT;
+            }
+
+            // clones can contain invalid data from previous releases
+            $data['published'] = '0'; // user must configure the method
+            vmWarn(JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SHIPPING_WARNING'));
+        }
+
+        if (!$isZasilkovna || $isBeingCreated) {
+            return; // method must be saved to show plugin specific configuration
+        }
+
         $method = ShipmentMethod::fromRandom($data);
         $report = $method->validate();
 
