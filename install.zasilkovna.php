@@ -27,7 +27,7 @@ function recurse_copy($src, $dst) {
 	}
 }
 
-function recurse_delete($dir) {
+function recurse_delete($dir, $ignore = false) {
 	echo "deleting: " . $dir . "<br>";
 
 	if(is_dir($dir)) {
@@ -40,7 +40,11 @@ function recurse_delete($dir) {
 		rmdir($dir);
 	}
 	else {
-		unlink($dir);
+        if ($ignore) {
+            @unlink($dir);
+        } else {
+            unlink($dir);
+        }
 	}
 }
 
@@ -322,7 +326,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
             $pricingRules['pricingRules' . $pricingRulesCount] = [
                 'country' => $countryIds[$country],
                 'shipment_cost' => $countryDefaultPrice,
-                'free_shipping' => $countryFreeShipment,
+                'free_shipment' => $countryFreeShipment,
                 'weightRules' => $countryWeightRulesTransformed
             ];
 
@@ -365,6 +369,8 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         $db->setQuery($q);
         $db->execute();
 
+        echo 'New shipment method with migrated rules was created.<br>';
+
         $config = $model->loadConfig();
         $config['pricing_rules_migration_completed_at'] = (new \DateTime())->format(\DateTime::ISO8601);
         $model->updateConfig($config);
@@ -391,10 +397,10 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 		recurse_delete($vm_admin_path . DS . 'controllers' . DS . 'zasilkovna.php');
 		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'en-GB' . DS . 'en-GB.plg_vmshipment_zasilkovna.ini');
 		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'cs-CZ' . DS . 'cs-CZ.plg_vmshipment_zasilkovna.ini');
-		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'sk-SK' . DS . 'sk-SK.plg_vmshipment_zasilkovna.ini');
-		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'pl-PL' . DS . 'pl-PL.plg_vmshipment_zasilkovna.ini');
-		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'hu-HU' . DS . 'hu-HU.plg_vmshipment_zasilkovna.ini');
-		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'ro-RO' . DS . 'ro-RO.plg_vmshipment_zasilkovna.ini');                                
+		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'sk-SK' . DS . 'sk-SK.plg_vmshipment_zasilkovna.ini', true);
+		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'pl-PL' . DS . 'pl-PL.plg_vmshipment_zasilkovna.ini', true);
+		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'hu-HU' . DS . 'hu-HU.plg_vmshipment_zasilkovna.ini', true);
+		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'ro-RO' . DS . 'ro-RO.plg_vmshipment_zasilkovna.ini', true);
 	}
 
 }

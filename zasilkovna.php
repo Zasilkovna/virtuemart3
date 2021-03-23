@@ -240,6 +240,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $method->min_amount = $this->convertValueToVendorCurrency($method->min_amount, $currencyId);
             $method->max_amount = $this->convertValueToVendorCurrency($method->max_amount, $currencyId);
             $method->shipment_cost = $this->convertValueToVendorCurrency($method->shipment_cost, $currencyId);
+            $method->free_shipment = $this->convertValueToVendorCurrency($method->free_shipment, $currencyId);
 
             foreach ($method->globalWeightRules ?: [] as &$globalWeightRule) {
                 $globalWeightRule->price = $this->convertValueToVendorCurrency($globalWeightRule->price, $currencyId);
@@ -247,6 +248,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
             foreach ($method->pricingRules ?: [] as &$pricingRule) {
                 $pricingRule->shipment_cost = $this->convertValueToVendorCurrency($pricingRule->shipment_cost, $currencyId);
+                $pricingRule->free_shipment = $this->convertValueToVendorCurrency($pricingRule->free_shipment, $currencyId);
 
                 foreach ($pricingRule->weightRules ?: [] as &$weightRule) {
                     $weightRule->price = $this->convertValueToVendorCurrency($weightRule->price, $currencyId);
@@ -315,15 +317,17 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @param $weight
      * @return float|null
      */
-    protected function getRatePriceFromConfig($countryId, ShipmentMethod $method, $weight)
+    protected function getCountryPrice($countryId, ShipmentMethod $method, $weight)
     {
         // Load default price from configuration.
         $defaultPrice = $method->getCountryDefaultPrice($countryId);
-        if ($defaultPrice === null) {
-            $defaultPrice = $method->getGlobalDefaultPrice();
-        }
 
         $config = $method->getCountryWeightRule($countryId, $weight);
+        if ($config) {
+            return (float) $config->price;
+        }
+
+        $config = $method->getCountryWeightRule(null, $weight);
         if ($config) {
             return (float) $config->price;
         }
@@ -383,8 +387,13 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         // 1) Check if country free shipping criteria is met.
         $countryLimit = $method->getCountryFreeShipping($countryId);
 
-        if (is_numeric($countryLimit) && $orderPrice >= (float)$countryLimit) {
-            return TRUE;
+        // if country limit then override global free shipment
+        if ($countryLimit !== null) {
+            if (is_numeric($countryLimit) && $orderPrice >= (float)$countryLimit) {
+                return true;
+            }
+
+            return false;
         }
 
         // 3) Check if default free shipping criteria is met.
@@ -407,6 +416,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     function getCosts(VirtueMartCart $cart, $method, $cart_prices)
     {
+        $this->convertToVendorCurrency($method);
         $method = ShipmentMethod::fromRandom($method);
         $defaultPrice = $method->getGlobalDefaultPrice();
         // Load default price from global config.
@@ -442,19 +452,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         // 2) Try calculate country delivery price for weight.
-        $weightPrice = $this->getRatePriceFromConfig($code, $method, $totalWeight);
+        $weightPrice = $this->getCountryPrice($code, $method, $totalWeight);
 
         if ($weightPrice !== NULL)
         {
             return $weightPrice;
-        }
-
-        // 3) Try calculate delivery price for weight from "other country" definition.
-        $otherPrice = $this->getRatePriceFromConfig(null, $method, $totalWeight);
-
-        if ($otherPrice !== NULL)
-        {
-            return $otherPrice;
         }
 
         // 4) Return default delivery price.
@@ -471,6 +473,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     protected function checkConditions($cart, $method, $cart_prices)
     {
+        $this->convertToVendorCurrency($method);
         $method = ShipmentMethod::fromRandom($method);
         // Check order max weight (TODO: duplicate with plgVmDisplayListFEShipment).
         $orderMaxWeight = $method->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT;
@@ -544,15 +547,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         // DO NOT DISPLAY OPTION IF CART WEIGHT OVER GLOBAL LIMIT
         $weight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
 
-        $zasMethod = $this->getVmPluginMethod($cart->virtuemart_shipmentmethod_id);
-        $zasMethod = ShipmentMethod::fromRandom($zasMethod);
-        $maxWeight = $zasMethod->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT;
-
-        if($weight > $maxWeight)
-        {
-            return FALSE;
-        }
-
         $document = JFactory::getDocument();
 
         $document->addStyleSheet('media/com_zasilkovna/media/css/packetery.css?v=' . filemtime(__DIR__ . '/../../../media/com_zasilkovna/media/css/packetery.css'));
@@ -620,6 +614,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
 
         foreach($this->methods as $key => $method) {
+
+            $zasMethod = ShipmentMethod::fromRandom($method);
+            $maxWeight = $zasMethod->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT;
+
+            if($weight > $maxWeight)
+            {
+                continue;
+            }
+
             $countries = array();
             if(!empty($method->countries)) {
                 if(!is_array($method->countries)) {
@@ -800,9 +803,17 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         $isBeingCreated = empty($data['virtuemart_shipmentmethod_id']);
         $isZasilkovna = isset($data['shipment_element']) && $data['shipment_element'] === VirtueMartModelZasilkovna::PLG_NAME;
+        $wasZasilkovna = null;
+        $persistedMethod = null;
+        if (!$isBeingCreated) {
+            $persistedMethod = $this->getPluginMethod($data['virtuemart_shipmentmethod_id']);
+            if ($persistedMethod) {
+                $wasZasilkovna = $persistedMethod->shipment_element === VirtueMartModelZasilkovna::PLG_NAME;
+            }
+        }
 
         // clones have data already set
-        if ($isZasilkovna && $isBeingCreated) {
+        if (($isZasilkovna && $isBeingCreated) || ($wasZasilkovna === false && $isZasilkovna)) {
             // do not override values of clones
             if (empty($data['shipment_cost'])) {
                 $data['shipment_cost'] = VirtueMartModelZasilkovna::PRICE_DEFAULT;
@@ -815,6 +826,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             // clones can contain invalid data from previous releases
             $data['published'] = '0'; // user must configure the method
             vmWarn(JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SHIPPING_WARNING'));
+            return;
         }
 
         if (!$isZasilkovna || $isBeingCreated) {

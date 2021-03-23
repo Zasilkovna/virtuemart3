@@ -1,3 +1,7 @@
 .subform-repeatable-wrapper .subform-repeatable-group .control-group {
     display: flex;
 }
+
+.virtuemart-admin-area .control-field {
+    padding: 5px;
+}
