@@ -248,7 +248,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         }
 
         $this->migratingPricingRules = true;
-        echo 'migrating pricing rules<br>';
+        echo 'Migrating pricing rules.<br>';
 
         /** @var \VirtueMartModelShipmentmethod $shipmentmethodModel */
         $shipmentmethodModel = VmModel::getModel('shipmentmethod');
@@ -258,7 +258,12 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         $globalShipmentCost = $model->getConfig('global/values/default_price', '');
         $globalFreeShipment = $model->getConfig('global/values/free_shipping', '');
 
-        if (empty($globalShipmentCost)) {
+        if (!is_numeric($globalShipmentCost)) {
+            echo 'Global configuration not found. Migration stopped.<br>';
+
+            $config = $model->loadConfig();
+            $config['pricing_rules_migration_completed_at'] = (new \DateTime())->format(\DateTime::ISO8601);
+            $model->updateConfig($config);
             return;
         }
 
@@ -287,6 +292,15 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
             foreach ($countryWeightRules as $countryWeightRule) {
 
                 $addWeightRule = function (&$countryWeightRulesTransformed) use ($countryWeightRule, $lastCountryWeightRule, &$weightRulesCount, $countryDefaultPrice, $globalShipmentCost) {
+                    if ($lastCountryWeightRule === null && $countryWeightRule['weight_from'] > 0) {
+                        $key = 'weightRules' . $weightRulesCount;
+                        $countryWeightRulesTransformed[$key] = [
+                            'maxWeightKg' => $countryWeightRule['weight_from'],
+                            'price' => $countryDefaultPrice ?: $globalShipmentCost,
+                        ];
+                        $weightRulesCount++;
+                    }
+
                     if (!empty($countryWeightRule['weight_from']) && $lastCountryWeightRule && $lastCountryWeightRule['weight_to'] != $countryWeightRule['weight_from']) {
                         $key = 'weightRules' . $weightRulesCount;
                         $countryWeightRulesTransformed[$key] = [
@@ -336,6 +350,16 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         $shipmentMethodIds = $model->getShipmentMethodIds();
         $model->publishShipmentMethods($shipmentMethodIds, 0);
         echo 'All packetery methods were unpublished. Please check them and publish them again.<br>';
+
+        $packetaMethod = \VirtueMartModelZasilkovna\ShipmentMethod::fromRandom(
+            [
+                'globalWeightRules' => $globalWeightRules,
+                'pricingRules' => $pricingRules
+            ]
+        );
+        $sortedMethod = $packetaMethod->getResortedClone()->toArray();
+        $globalWeightRules = $sortedMethod['globalWeightRules'];
+        $pricingRules = $sortedMethod['pricingRules'];
 
         $pricingRulesEncoded = json_encode($pricingRules);
         $globalWeightRulesEncoded = json_encode($globalWeightRules);
