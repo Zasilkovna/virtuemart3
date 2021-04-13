@@ -286,6 +286,14 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
             $countryWeightRules = $model->getConfig($country) ?: [];
             unset($countryWeightRules['values']);
 
+            usort($countryWeightRules, function ($countryWeightRulesA, $countryWeightRuleB) {
+                if ($countryWeightRulesA['weight_from'] === $countryWeightRuleB['weight_from']) {
+                    return 0;
+                }
+
+                return $countryWeightRulesA['weight_from'] > $countryWeightRuleB['weight_from'] ? 1 : -1;
+            });
+
             $lastCountryWeightRule = null;
             $countryWeightRulesTransformed = [];
             $weightRulesCount = 0;
