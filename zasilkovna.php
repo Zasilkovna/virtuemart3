@@ -680,13 +680,13 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                     $html[$key] .= '<div class="zas-box"> ';
                     $html[$key] .= ('
                         <div class="zasilkovna-logo"></div>
-                        <a href="javascript:void(0)" id="open-packeta-widget">'. JText::_('PLG_VMSHIPMENT_ZASILKOVNA_WIDGET_SELECT_POINT') .'</a>
+                        <a href="javascript:void(0)" id="open-packeta-widget">'. JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_SELECT_POINT') .'</a>
                         <iframe sandbox="allow-scripts allow-same-origin" allow="geolocation" id="packeta-widget"></iframe>
                         <br>
-                        <ul><li>'. JText::_('PLG_VMSHIPMENT_ZASILKOVNA_WIDGET_SELECTED_POINT') .': <span id="picked-delivery-place">'.$session->get('branch_name_street', '').'</span></li></ul>');
+                        <ul><li>'. JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_SELECTED_POINT') .': <span id="picked-delivery-place">'.$session->get('branch_name_street', '').'</span></li></ul>');
                     $html[$key] .= '</div>';  // zas-box
                 }else{
-                    $html[$key] .= '<ul><li>'. JText::_('PLG_VMSHIPMENT_ZASILKOVNA_WIDGET_ENTER_ADDRESS') .'</li></ul>';
+                    $html[$key] .= '<ul><li>'. JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_ENTER_ADDRESS') .'</li></ul>';
                 }
 
                 $html[$key] .= '</div>'; // zasilkovna_div
@@ -753,8 +753,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $html = '<table class="adminlist">' . "\n";
 
         JFactory::getLanguage()->load('plg_vmshipment_zasilkovna');
-        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_ZASILKOVNA_SHIPPING_NAME', $shipinfo->shipment_name);
-        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH', $shipinfo->branch_name_street);
+        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_SHIPPING_NAME', $shipinfo->shipment_name);
+        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_BRANCH', $shipinfo->branch_name_street);
         $html .= $this->getHtmlRowBE('COM_VIRTUEMART_CURRENCY', $shipinfo->branch_currency);
 
         $html .= '</table>' . "\n";
@@ -860,7 +860,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
             // clones can contain invalid data from previous releases
             $data['published'] = '0'; // user must configure the method
-            vmWarn(JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SHIPPING_WARNING'));
+            vmWarn(JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPPING_WARNING'));
             return;
         }
 

@@ -141,7 +141,7 @@ class VirtuemartControllerZasilkovna extends VmController
 
         if($this->setRedirect($this->redirectPath))
         {
-            $msg = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_ORDER_SUBMIT_CANCELED');//"Všechny objednávky byly přidány do systému Zásilkovny.";
+            $msg = JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_SUBMIT_CANCELED');//"Všechny objednávky byly přidány do systému Zásilkovny.";
         }
 
         $this->setRedirect($this->redirectPath, $msg, 'message');
@@ -154,15 +154,15 @@ class VirtuemartControllerZasilkovna extends VmController
         $exportedOrders = $result['exported'];
         $failedOrders = $result['failed'];
         if(count($_POST['exportOrders']) == 0) {
-            $msg = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_NO_ORDERS_SELECTED');//"Žádné objednávky nebyly vybrány k odeslání.";
+            $msg = JText::_('PLG_VMSHIPMENT_PACKETERY_NO_ORDERS_SELECTED');//"Žádné objednávky nebyly vybrány k odeslání.";
             $type = 'error';
         }
         else if(count($_POST['exportOrders']) == count($exportedOrders)) {
-            $msg = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_ALL_ORDERS_SUBMITTED');//"Všechny objednávky byly přidány do systému Zásilkovny.";
+            $msg = JText::_('PLG_VMSHIPMENT_PACKETERY_ALL_ORDERS_SUBMITTED');//"Všechny objednávky byly přidány do systému Zásilkovny.";
             $type = 'message';
         }
         else {
-            JError::raiseWarning(100, JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SUBMITTED_ORDERS') . ": " . count($exportedOrders) . ". " . JText::_('PLG_VMSHIPMENT_ZASILKOVNA_NOT_SUBMITTED_ORDERS') . ": (" . count($failedOrders) . "):");
+            JError::raiseWarning(100, JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMITTED_ORDERS') . ": " . count($exportedOrders) . ". " . JText::_('PLG_VMSHIPMENT_PACKETERY_NOT_SUBMITTED_ORDERS') . ": (" . count($failedOrders) . "):");
             foreach($failedOrders as $failedOrder) {
                 JError::raiseWarning(100, $failedOrder['order_number'] . ": " . $failedOrder['message']);
             }

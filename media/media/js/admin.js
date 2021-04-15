@@ -31,7 +31,7 @@ function validateForm()
 		if ($standardErrorMessage.length > 0)
 		{
 			$standardErrorMessage.html(
-				'<strong>' + Joomla.JText._('PLG_VMSHIPMENT_ZASILKOVNA_CONFIG_VALIDATION_GLOBAL_ERROR') + '</strong> <br />'
+				'<strong>' + Joomla.JText._('PLG_VMSHIPMENT_PACKETERY_CONFIG_VALIDATION_GLOBAL_ERROR') + '</strong> <br />'
 				+ errorMessages.join('</br>')
 			);
 		}
@@ -39,7 +39,7 @@ function validateForm()
 		{
 			jQuery("#zasilkovna-messages")
 				.html('<div class="alert alert-error">'
-					+ '<strong>' + Joomla.JText._('PLG_VMSHIPMENT_ZASILKOVNA_CONFIG_VALIDATION_GLOBAL_ERROR') + '</strong> <br />'
+					+ '<strong>' + Joomla.JText._('PLG_VMSHIPMENT_PACKETERY_CONFIG_VALIDATION_GLOBAL_ERROR') + '</strong> <br />'
 					+ errorMessages.join('</br>')
 					+ '</div>');
 		}

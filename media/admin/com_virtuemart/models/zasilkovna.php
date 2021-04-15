@@ -248,10 +248,10 @@ class VirtueMartModelZasilkovna extends VmModel
             $lg =& JFactory::getLanguage();
             $lang = substr($lg->getTag(), 0, 2);
 
-            return JText::_('PLG_VMSHIPMENT_ZASILKOVNA_NEW_VERSION') . ": " . $data->message->$lang;
+            return JText::_('PLG_VMSHIPMENT_PACKETERY_NEW_VERSION') . ": " . $data->message->$lang;
         }
         else {
-            return JText::_('PLG_VMSHIPMENT_ZASILKOVNA_VERSION_IS_NEWEST') . " - " . self::VERSION;
+            return JText::_('PLG_VMSHIPMENT_PACKETERY_VERSION_IS_NEWEST') . " - " . self::VERSION;
         }
     }
 
@@ -266,7 +266,7 @@ class VirtueMartModelZasilkovna extends VmModel
         $testUrl = $this->_zas_url . "api/v3/$key/test";
 
         if(!$key) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_API_KEY_NOT_SET');
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_API_KEY_NOT_SET');
             $this->config_ok = false;
 
             return false;
@@ -278,7 +278,7 @@ class VirtueMartModelZasilkovna extends VmModel
             return false;
         }
         if($this->fetch($testUrl) != 1) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_API_KEY_NOT_VERIFIED');
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_API_KEY_NOT_VERIFIED');
         }
         $this->config_ok = true;
 
@@ -336,7 +336,7 @@ class VirtueMartModelZasilkovna extends VmModel
                 //updating file failed
                 if(!$this->isFileUsable($js_path)) {
                     // if file is older than 5 days
-                    $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_UPDATE_ERROR');
+                    $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_UPDATE_ERROR');
 
                     return false;
                 }
@@ -361,7 +361,7 @@ class VirtueMartModelZasilkovna extends VmModel
                 //failed updating
                 if(!$this->isFileUsable($localFilePath)) {
                     //file is older than 5 days and thus not usable
-                    $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_UPDATE_ERROR');
+                    $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_UPDATE_ERROR');
 
 					return false;
                 }
@@ -369,7 +369,7 @@ class VirtueMartModelZasilkovna extends VmModel
             else {
                 //updating succeeded, update mysql db
                 if(!$this->saveBranchesXmlToDb($localFilePath)) {
-                    $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_XML_ERROR');
+                    $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_XML_ERROR');
 
                     return false;
                 }
@@ -489,7 +489,7 @@ class VirtueMartModelZasilkovna extends VmModel
         if(is_writable($filepath)) {
             return true;
         }
-        $this->errors[] = $filepath . " " . JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_NOT_WRITABLE');
+        $this->errors[] = $filepath . " " . JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_NOT_WRITABLE');
 
         return false;
     }

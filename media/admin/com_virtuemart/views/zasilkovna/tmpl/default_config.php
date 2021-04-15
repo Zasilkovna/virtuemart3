@@ -13,24 +13,24 @@
 <!-- base configuration part -->
 <fieldset>
     <legend>
-        <?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SETTINGS') ?>
+        <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_SETTINGS') ?>
     </legend>
     <table class="admintable">
         <tr>
-            <?php echo VmHTML::row('input', 'PLG_VMSHIPMENT_ZASILKOVNA_API_PASS', 'zasilkovna_api_pass', $model->getConfig('zasilkovna_api_pass')); ?>
+            <?php echo VmHTML::row('input', 'PLG_VMSHIPMENT_PACKETERY_API_PASS', 'zasilkovna_api_pass', $model->getConfig('zasilkovna_api_pass')); ?>
         </tr>
         <tr>
-            <?php echo VmHTML::row('input', 'PLG_VMSHIPMENT_ZASILKOVNA_ESHOP_LABEL', 'zasilkovna_eshop_label', $model->getConfig('zasilkovna_eshop_label')); ?>
+            <?php echo VmHTML::row('input', 'PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL', 'zasilkovna_eshop_label', $model->getConfig('zasilkovna_eshop_label')); ?>
         </tr>
         <tr>
-            <?php echo VmHTML::row('value', 'PLG_VMSHIPMENT_ZASILKOVNA_VERSION', $this->moduleVersion); ?>
+            <?php echo VmHTML::row('value', 'PLG_VMSHIPMENT_PACKETERY_VERSION', $this->moduleVersion); ?>
         </tr>
     </table>
 </fieldset>
 
 <fieldset>
     <legend>
-        <?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_COD') ?>
+        <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_COD') ?>
     </legend>
     <table class="admintable">
         <?php foreach($this->paymentMethods as $paymentMethod) : ?>
@@ -49,12 +49,12 @@
 <!-- shipment and payment restrictions part -->
 <fieldset>
     <legend>
-        <?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PAYMENT_SHIPMENT_RESTRICTION'); ?>
+        <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION'); ?>
     </legend>
         <?php if($this->restrictionInstalled): ?>
-            <span><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PAYMENT_SHIPMENT_RESTRICTION_INSTALLED');?></span>
+            <span><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_INSTALLED');?></span>
         <?php else: ?>
-            <span style='color:red;font-weight:bold;'><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PAYMENT_SHIPMENT_RESTRICTION_NOT_INSTALLED');?></span>
+            <span style='color:red;font-weight:bold;'><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_NOT_INSTALLED');?></span>
         <?php endif; ?>
     <table class="adminlist jgrid table table-striped" cellspacing="0" cellpadding="0">
         <thead>
@@ -82,8 +82,8 @@
     </table>
 
 
-    <p><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PAYMENT_SHIPMENT_RESTRICTION_INSTALL');?></p>
-    <p><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PAYMENT_SHIPMENT_RESTRICTION_WHERE');?></p>
+    <p><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_INSTALL');?></p>
+    <p><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_WHERE');?></p>
 
     <textarea onfocus="this.select();" onclick="this.select();" readonly="" rows="3" cols="80">
 foreach ($paymentplugin_payments as $paymentplugin_payment) {
@@ -91,7 +91,7 @@ foreach ($paymentplugin_payments as $paymentplugin_payment) {
 }
     </textarea>
 
-    <p style="clear:both;"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PAYMENT_SHIPMENT_RESTRICTION_REPLACE');?></p>
+    <p style="clear:both;"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_REPLACE');?></p>
 
     <textarea onfocus="this.select();" onclick="this.select();" readonly="" rows="13" cols="130">
 // ZASILKOVNA - payment-shipment combination restriction.

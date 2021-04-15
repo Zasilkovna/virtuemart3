@@ -29,8 +29,8 @@
 <form action="index.php" method="post" name="adminForm" id="adminForm">
     <?php // Loading Templates in Tabs
         AdminUIHelper::buildTabs($this, array(
-            'export' => JText::_('PLG_VMSHIPMENT_ZASILKOVNA_ORDERS_TAB'),
-            'config' => JText::_('PLG_VMSHIPMENT_ZASILKOVNA_CONFIG_TAB'),
+            'export' => JText::_('PLG_VMSHIPMENT_PACKETERY_ORDERS_TAB'),
+            'config' => JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_TAB'),
         ));
     ?>
     <!-- Hidden Fields -->

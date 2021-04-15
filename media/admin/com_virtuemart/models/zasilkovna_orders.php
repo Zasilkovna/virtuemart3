@@ -51,7 +51,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 
         $errors = array();
         if(sizeof($orders_id_arr) == 0) {
-            $errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_NO_PACKET_TO_PRINT');
+            $errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_PRINT');
 
             return $errors;
         }
@@ -95,7 +95,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         foreach($ordersForExport as $order) {
             try {
                 if(isset($order['zasilkovna_packet_id']) && ($order['zasilkovna_packet_id'] != 0)) {//some better check?
-                    throw new Exception(JTEXT::_('PLG_VMSHIPMENT_ZASILKOVNA_ALREADY_SUBMITTED'));
+                    throw new Exception(JTEXT::_('PLG_VMSHIPMENT_PACKETERY_ALREADY_SUBMITTED'));
                 }
                 $attributes = array(
                     'number' => $order['order_number'],
@@ -182,7 +182,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 
     public function exportToCSV($orders_id_arr) {
         if(sizeof($orders_id_arr) == 0) {
-            JError::raiseWarning(100, JTEXT::_('PLG_VMSHIPMENT_ZASILKOVNA_NO_PACKET_TO_CSV'));
+            JError::raiseWarning(100, JTEXT::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_CSV'));
 
             return;
         }
@@ -200,7 +200,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
 
         if (!empty($unusableOrders)) {
-            $warningMesage = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_MISSING_BRANCH_CSV_EXPORT')
+            $warningMesage = JText::_('PLG_VMSHIPMENT_PACKETERY_MISSING_BRANCH_CSV_EXPORT')
                 . implode(',', $unusableOrders);
 			\Joomla\CMS\Factory::getApplication()->enqueueMessage($warningMesage, 'warning');
             return;

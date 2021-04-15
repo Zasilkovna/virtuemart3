@@ -27,7 +27,7 @@
                 <tr>
                     <td align="left" width="100%"><?php
                         echo JText::_('COM_VIRTUEMART_ORDERSTATUS') . ':' . $this->lists['state_list']; ?><br>
-                        <?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_EXPORT_STATUS') . ':';
+                        <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_EXPORT_STATUS') . ':';
                         echo $this->shipmentSelect; ?>
                     </td>
                 </tr>
@@ -38,24 +38,24 @@
     <table class="adminlist jgrid table table-striped zasilkovna" cellspacing="0" cellpadding="0">
         <thead>
         <tr>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_SUBMIT'); ?><br><input type="checkbox" name="cbExport" id="cbExport" value="" onclick="zasilkovnaCheckAll(this);" /></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_ORDER_NUMBER'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_EXPORTED'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PRINT_LABELS'); ?><br><input type="checkbox" name="cbPrint" id="cbPrint" value="" onclick="zasilkovnaCheckAll(this);" /></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_COD'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_EMAIL'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PHONE'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PACKET_PRICE'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PACKET_ID'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT'); ?><br><input type="checkbox" name="cbExport" id="cbExport" value="" onclick="zasilkovnaCheckAll(this);" /></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_NUMBER'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_EXPORTED'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PRINT_LABELS'); ?><br><input type="checkbox" name="cbPrint" id="cbPrint" value="" onclick="zasilkovnaCheckAll(this);" /></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_COD'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_EMAIL'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PHONE'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PACKET_ID'); ?></th>
             <th></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_ADULT_CONTENT'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_RECEIVER_NAME'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_ADDRESS'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_PAYMENT_METHOD'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_CREATED_ON'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_ORDER_STATUS'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_ORDER_TOTAL'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_RECEIVER_NAME'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ADDRESS'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_METHOD'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CREATED_ON'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_STATUS'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_TOTAL'); ?></th>
 
         </tr>
         </thead>
@@ -77,7 +77,7 @@
 				$checkBox = '<input type="checkbox" id="cbExport" name="exportOrders[]" value="' . htmlentities($order->order_number) . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . ($order->exported || !$existBranchOrCarrier ? '' : 'checked') . ' ' .$disabledExport . ' >';
 			 	$class = ($existBranchOrCarrier ? "row" . $key % 2 : "error");
 				if (!$existBranchOrCarrier) {
-					$warningMesage = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_MISSING_BRANCH_ORDER');
+					$warningMesage = JText::_('PLG_VMSHIPMENT_PACKETERY_MISSING_BRANCH_ORDER');
 					\Joomla\CMS\Factory::getApplication()->enqueueMessage($warningMesage, 'warning');
 				}
                 ?>
@@ -96,7 +96,7 @@
                     </td>
                     <!-- exported -->
 
-                    <td><?php echo($order->exported ? (JText::_('PLG_VMSHIPMENT_ZASILKOVNA_YES')) : JText::_('PLG_VMSHIPMENT_ZASILKOVNA_NO')); ?></td>
+                    <td><?php echo($order->exported ? (JText::_('PLG_VMSHIPMENT_PACKETERY_YES')) : JText::_('PLG_VMSHIPMENT_PACKETERY_NO')); ?></td>
 
                     <!-- tisk stitku checkbox -->
 
@@ -144,7 +144,7 @@
                     <?php
                     $link = 'index.php?option=com_virtuemart&view=zasilkovna&task=cancelOrderSubmitToZasilkovna&cancel_order_id=' . htmlentities($order->virtuemart_order_id);
                     ?>
-                    <td><?php if($disabled) { ?><a href="<?php echo JRoute::_($link); ?>" title="<?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_CANCEL_ORDER_SUBMIT_BUTTON'); ?>" ><img width="16" height="16" src="<?php echo htmlentities($this->media_url); ?>/img/cancel-icon.png"></a><?php } ?></td>
+                    <td><?php if($disabled) { ?><a href="<?php echo JRoute::_($link); ?>" title="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CANCEL_ORDER_SUBMIT_BUTTON'); ?>" ><img width="16" height="16" src="<?php echo htmlentities($this->media_url); ?>/img/cancel-icon.png"></a><?php } ?></td>
                     <!-- 18+ -->
                     <td><input type="checkbox" name="orders[<?php echo $key; ?>][adult_content]" <?php echo ($order->adult_content == 1) ? 'checked' : ''; ?>  ></td>
                     <!-- order name -->
@@ -190,22 +190,22 @@
         </tfoot>
     </table>
 
-    <h3><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT') ?></h3>
+    <h3><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT') ?></h3>
     <p>
-        <label for="print_type"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_TYPE') ?>: </label>
+        <label for="print_type"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_TYPE') ?>: </label>
         <select name="print_type" id="print_type" style="font-size: 10px; " onchange="document.cookie = 'print_type_sel=' + this.value + '; expires=' + (new Date(2014, 2, 3)).toUTCString() + '; path=/';">
-            <option value="A7_on_A4" selected><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A7_ON_A4'); ?></option>
-            <option value="A6_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A6_ON_A4'); ?></option>
-			<option value="A6_on_A6"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A6_ON_A6'); ?></option>
-            <option value="A7_on_A7"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A7_ON_A7'); ?></option>
-            <option value="A8_on_A8"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_A8_ON_A8'); ?></option>
-            <option value="105x35mm_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_105X35MM_ON_A4'); ?></option>
+            <option value="A7_on_A4" selected><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A7_ON_A4'); ?></option>
+            <option value="A6_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A6_ON_A4'); ?></option>
+			<option value="A6_on_A6"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A6_ON_A6'); ?></option>
+            <option value="A7_on_A7"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A7_ON_A7'); ?></option>
+            <option value="A8_on_A8"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A8_ON_A8'); ?></option>
+            <option value="105x35mm_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_105X35MM_ON_A4'); ?></option>
         </select>
         <br>
-        <label for="label_first_page_skip"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_LABELS_PRINT_OFFSET') ?>: </label>
+        <label for="label_first_page_skip"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_OFFSET') ?>: </label>
         <input type="text" id="label_first_page_skip" style="width: 30px; font-size: 9px; " name="label_first_page_skip" value="0">
-        <?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_FIELDS') ?>
-        (<a href="http://www.zasilkovna.cz/print-help/" target="_blank"><?php echo JText::_('PLG_VMSHIPMENT_ZASILKOVNA_HELP') ?></a>)
+        <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_FIELDS') ?>
+        (<a href="http://www.zasilkovna.cz/print-help/" target="_blank"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_HELP') ?></a>)
     </p>
 
     <!-- Hidden Fields -->

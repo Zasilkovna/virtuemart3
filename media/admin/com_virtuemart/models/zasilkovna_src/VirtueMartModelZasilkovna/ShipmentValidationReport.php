@@ -63,7 +63,7 @@ class ShipmentValidationReport
      */
     private function getTranslationCode($code)
     {
-        return 'PLG_VMSHIPMENT_ZASILKOVNA_SHIPPING_ERROR_' . $code;
+        return 'PLG_VMSHIPMENT_PACKETERY_SHIPPING_ERROR_' . $code;
     }
 
     /**
