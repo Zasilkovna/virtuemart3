@@ -29,6 +29,9 @@ class JFormFieldVmZasilkovnaCountries extends JFormFieldList {
 	 */
 	var $type = 'vmZasilkovnaCountries';
 
+    /**
+     * @return array
+     */
     protected function getOptions() {
         $fields = [];
 

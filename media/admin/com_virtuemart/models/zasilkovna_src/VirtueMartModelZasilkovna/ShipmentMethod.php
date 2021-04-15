@@ -12,6 +12,10 @@ class ShipmentMethod
         $this->method = $method;
     }
 
+    /**
+     * @param $method
+     * @return \VirtueMartModelZasilkovna\ShipmentMethod
+     */
     public static function fromRandom($method)
     {
         if ($method instanceof self) {
@@ -93,6 +97,11 @@ class ShipmentMethod
         return new self($method);
     }
 
+    /**
+     * @param $weightRule
+     * @param $maxWeight
+     * @return \VirtueMartModelZasilkovna\ShipmentValidationReport
+     */
     private function validateWeightRule($weightRule, $maxWeight)
     {
         $weightRulesReport = new ShipmentValidationReport();
@@ -198,11 +207,17 @@ class ShipmentMethod
         return $report;
     }
 
+    /**
+     * @return mixed
+     */
     public function getAllowedCountries()
     {
         return $this->method->countries;
     }
 
+    /**
+     * @return mixed
+     */
     public function getBlockingCountries()
     {
         return $this->method->blocking_countries;
@@ -224,6 +239,10 @@ class ShipmentMethod
         return $freeShipping;
     }
 
+    /**
+     * @param $countryId
+     * @return float|null
+     */
     public function getCountryDefaultPrice($countryId)
     {
         $countryRule = $this->getPricingRuleForCountry($countryId);
@@ -280,16 +299,25 @@ class ShipmentMethod
         return $finalWeightRule;
     }
 
+    /**
+     * @return mixed
+     */
     public function getGlobalFreeShipping()
     {
         return $this->getParams()->free_shipment;
     }
 
+    /**
+     * @return mixed
+     */
     public function getGlobalDefaultPrice()
     {
         return $this->getParams()->shipment_cost;
     }
 
+    /**
+     * @return mixed
+     */
     public function getGlobalMaxWeight()
     {
         return $this->getParams()->maxWeight;
@@ -304,12 +332,20 @@ class ShipmentMethod
         return $this->getParams()->globalWeightRules;
     }
 
+    /**
+     * @param $countryId
+     * @return mixed
+     */
     private function getPricingRuleForCountry($countryId)
     {
         $rules = $this->getPricingRulesForCountry($countryId);
         return array_pop($rules);
     }
 
+    /**
+     * @param $countryId
+     * @return array
+     */
     private function getPricingRulesForCountry($countryId)
     {
         $rules = $this->getPricingRules();
@@ -324,11 +360,17 @@ class ShipmentMethod
         return $countryRules;
     }
 
+    /**
+     * @return mixed
+     */
     private function getPricingRules()
     {
         return $this->getParams()->pricingRules;
     }
 
+    /**
+     * @return \stdClass
+     */
     private function getParams()
     {
         return $this->method;

@@ -4,6 +4,10 @@
 defined('_JEXEC') or die('Restricted access');
 defined('DS') or define('DS', DIRECTORY_SEPARATOR);
 
+/**
+ * @param $src
+ * @param $dst
+ */
 function recurse_copy($src, $dst) {
 	if(is_dir($src)) {
 		$dir = opendir($src);
@@ -27,6 +31,10 @@ function recurse_copy($src, $dst) {
 	}
 }
 
+/**
+ * @param $dir
+ * @param false $ignore
+ */
 function recurse_delete($dir, $ignore = false) {
 	echo "deleting: " . $dir . "<br>";
 
@@ -48,6 +56,9 @@ function recurse_delete($dir, $ignore = false) {
 	}
 }
 
+/**
+ * Class plgVmShipmentZasilkovnaInstallerScript
+ */
 class plgVmShipmentZasilkovnaInstallerScript {
 
     private $migratingPricingRules = false;
@@ -73,6 +84,11 @@ class plgVmShipmentZasilkovnaInstallerScript {
 
 	}
 
+    /**
+     * @param $haystack
+     * @param $needle
+     * @return bool
+     */
     function endsWith($haystack, $needle)
     {
         $length = strlen($needle);
@@ -167,16 +183,10 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 		}
 	}
 
-	public function __destruct()
-    {
-        $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna' . DS;
-        if (is_dir($media_path . 'admin')) {
-            self::deleteDir($media_path . 'admin');
-        }
-    }
-
-    private static function deleteDir($dirPath)
-    {
+    /**
+     * @param $dirPath
+     */
+    private static function deleteDir($dirPath) {
         if (!is_dir($dirPath)) {
             throw new InvalidArgumentException("$dirPath must be a directory");
         }
@@ -232,8 +242,10 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         $this->migratePricingRules();
 	}
 
-    private function migratePricingRules()
-    {
+    /**
+     *  migrates price rules
+     */
+    private function migratePricingRules() {
         require_once JPATH_ADMINISTRATOR . '/components/com_virtuemart/install/script.virtuemart.php';
         $vmInstall = new \com_virtuemartInstallerScript();
         $vmInstall->loadVm(false);

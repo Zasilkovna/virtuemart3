@@ -17,6 +17,9 @@ class ShipmentValidationReport
     /** @var array */
     private $errors = [];
 
+    /**
+     * @return array
+     */
     function getErrors()
     {
         return $this->errors;
@@ -30,6 +33,9 @@ class ShipmentValidationReport
         return empty($this->errors);
     }
 
+    /**
+     * @param $code
+     */
     public function addError($code)
     {
         $this->errors[] = (object)[
@@ -51,11 +57,18 @@ class ShipmentValidationReport
         );
     }
 
+    /**
+     * @param $code
+     * @return string
+     */
     private function getTranslationCode($code)
     {
         return 'PLG_VMSHIPMENT_ZASILKOVNA_SHIPPING_ERROR_' . $code;
     }
 
+    /**
+     * @param \VirtueMartModelZasilkovna\ShipmentValidationReport $report
+     */
     public function merge(ShipmentValidationReport $report)
     {
         $this->errors = array_merge($this->errors, $report->getErrors());

@@ -38,6 +38,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /** @var VirtueMartModelZasilkovna */
     protected $model;
 
+    /**
+     * plgVmShipmentZasilkovna constructor.
+     *
+     * @param $subject
+     * @param $config
+     */
     function __construct(&$subject, $config) {
         parent::__construct($subject, $config);
 
@@ -66,6 +72,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return $this->createTableSQL('zasilkovna');
     }
 
+    /**
+     * @return string[]
+     */
     function getTableSQLFields() {
         $SQLfields = array(
             'id' => 'int(1) UNSIGNED NOT NULL AUTO_INCREMENT',
@@ -234,6 +243,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return true;
     }
 
+    /**
+     * @param $method
+     */
     function convertToVendorCurrency(&$method){
         if(!isset($method->converted)){
             $currencyId = $method->currency_id;
@@ -259,6 +271,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
     }
 
+    /**
+     * @param $value
+     * @param $currency_id
+     * @return mixed
+     */
     function convertValueToVendorCurrency($value, $currency_id)
     {
         $calculator = calculationHelper::getInstance ();
@@ -745,6 +762,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return $html;
     }
 
+    /**
+     * @param \VirtueMartCart $cart
+     * @param array $cart_prices
+     * @param $cart_prices_name
+     * @return mixed
+     */
     public function plgVmonSelectedCalculatePriceShipment(VirtueMartCart $cart, array &$cart_prices, &$cart_prices_name) {
         return $this->onSelectedCalculatePrice($cart, $cart_prices, $cart_prices_name);
     }
@@ -782,10 +805,22 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return $html;
     }
 
+    /**
+     * @param $name
+     * @param $id
+     * @param $data
+     * @return mixed
+     */
     function plgVmDeclarePluginParamsShipment($name, $id, &$data) {
         return $this->declarePluginParams('shipment', $name, $id, $data);
     }
 
+    /**
+     * @param $name
+     * @param $id
+     * @param $table
+     * @return mixed
+     */
     function plgVmSetOnTablePluginParamsShipment($name, $id, &$table) {
         return $this->setOnTablePluginParams($name, $id, $table);
     }

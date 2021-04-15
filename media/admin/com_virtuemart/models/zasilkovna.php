@@ -167,7 +167,9 @@ class VirtueMartModelZasilkovna extends VmModel
         return $this->_db_table_name;
     }
 
-
+    /**
+     * @return array
+     */
     public function getShipmentMethodIds()
     {
         $q = "SELECT virtuemart_shipmentmethod_id FROM #__virtuemart_shipmentmethods WHERE shipment_element = '" . self::PLG_NAME . "'";
@@ -182,6 +184,10 @@ class VirtueMartModelZasilkovna extends VmModel
         return $list;
     }
 
+    /**
+     * @param $ids
+     * @param int $value
+     */
     public function publishShipmentMethods($ids, $value = 1)
     {
         $value = (int) $value;
@@ -192,6 +198,9 @@ class VirtueMartModelZasilkovna extends VmModel
         $db->execute();
     }
 
+    /**
+     * @return mixed
+     */
     public function getBranches() {
         $db = JFactory::getDBO();
         $q = "SELECT * from #__virtuemart_zasilkovna_branches";
@@ -200,6 +209,10 @@ class VirtueMartModelZasilkovna extends VmModel
         return $db->loadObjectList();
     }
 
+    /**
+     * @param $currency_id
+     * @return mixed
+     */
     public function getCurrencyCode($currency_id)
     {
         $vendorId = VirtueMartModelVendor::getLoggedVendor();
@@ -210,7 +223,9 @@ class VirtueMartModelZasilkovna extends VmModel
         return $db->loadResult();
     }
 
-
+    /**
+     * @return bool
+     */
     public function isShipmentPaymentRestrictionInstalled()
     {
         $file = JPATH_SITE . '/components/com_virtuemart/views/cart/tmpl/select_payment.php';
@@ -222,7 +237,9 @@ class VirtueMartModelZasilkovna extends VmModel
         }
     }
 
-
+    /**
+     * @return string
+     */
     public function checkModuleVersion()
     {
         $checkUrl = $this->_zas_url . "api/" . $this->api_key . "/version-check-virtuemart2?my=" . self::VERSION;
@@ -238,7 +255,9 @@ class VirtueMartModelZasilkovna extends VmModel
         }
     }
 
-
+    /**
+     * @return bool
+     */
     public function checkConfiguration()
     {
         if($this->checked_configuration) return $this->config_ok;
@@ -266,7 +285,9 @@ class VirtueMartModelZasilkovna extends VmModel
         return true;
     }
 
-
+    /**
+     * @return bool
+     */
     private function httpAccessMethod()
     {
         if(extension_loaded('curl')) return true;
@@ -276,6 +297,10 @@ class VirtueMartModelZasilkovna extends VmModel
 
     }
 
+    /**
+     * @param $url
+     * @return false|string
+     */
     private function fetch($url)
     {
         if (ini_get('allow_url_fopen')) {
@@ -300,6 +325,9 @@ class VirtueMartModelZasilkovna extends VmModel
     /*
      * Return js api url and if it is needed, updates it
      */
+    /**
+     * @return false|string
+     */
     public function updateJSApi() {
         $js_path = $this->_media_path . 'branch.js';
         if(!$this->is_writable($js_path)) return false;
@@ -321,6 +349,9 @@ class VirtueMartModelZasilkovna extends VmModel
         return $this->_media_url . "branch.js";
     }
 
+    /**
+     * @return bool
+     */
     public function updateBranchesInfo() {
         $localFilePath = $this->_media_path . 'branch.xml';
         if(!$this->is_writable($localFilePath)) return false;
@@ -360,6 +391,10 @@ class VirtueMartModelZasilkovna extends VmModel
         }
     }
 
+    /**
+     * @param $path
+     * @return bool
+     */
     private function saveBranchesXmlToDb($path) {
         $xml = simplexml_load_file($path);
         if($xml) {
@@ -396,6 +431,10 @@ class VirtueMartModelZasilkovna extends VmModel
         return true;
     }
 
+    /**
+     * @param $path
+     * @return bool
+     */
     private function isFileUpToDate($path) {
         if(!file_exists($path)) return false;
         if(filemtime($path) < time() - (60 * 60 * 24)) return false;
@@ -404,6 +443,10 @@ class VirtueMartModelZasilkovna extends VmModel
         return true;
     }
 
+    /**
+     * @param $path
+     * @return bool
+     */
     private function isFileUsable($path)//true if not older than 5 days
     {
         if(!file_exists($path)) return false;
@@ -413,7 +456,11 @@ class VirtueMartModelZasilkovna extends VmModel
         return true;
     }
 
-
+    /**
+     * @param $path
+     * @param $type
+     * @return bool
+     */
     private function updateFile($path, $type) {
         $remote = $this->_zas_url . "api/v3/" . $this->api_key . "/branch." . $type;
         if($type == 'js') {
@@ -431,6 +478,10 @@ class VirtueMartModelZasilkovna extends VmModel
         return true;
     }
 
+    /**
+     * @param $filepath
+     * @return bool
+     */
     private function is_writable($filepath) {
         if(!file_exists($filepath)) {
             @touch($filepath);
@@ -443,6 +494,9 @@ class VirtueMartModelZasilkovna extends VmModel
         return false;
     }
 
+    /**
+     *
+     */
     public function loadLanguage()
     {
         $language = JFactory::getLanguage();
