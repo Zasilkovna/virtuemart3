@@ -254,15 +254,18 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $method->shipment_cost = $this->convertValueToVendorCurrency($method->shipment_cost, $currencyId);
             $method->free_shipment = $this->convertValueToVendorCurrency($method->free_shipment, $currencyId);
 
-            foreach ($method->globalWeightRules ?: [] as &$globalWeightRule) {
+            $rulesFE = ($method->globalWeightRules ?: []);
+            foreach ($rulesFE as &$globalWeightRule) {
                 $globalWeightRule->price = $this->convertValueToVendorCurrency($globalWeightRule->price, $currencyId);
             }
 
-            foreach ($method->pricingRules ?: [] as &$pricingRule) {
+            $rules2FE = ($method->pricingRules ?: []);
+            foreach ($rules2FE as &$pricingRule) {
                 $pricingRule->shipment_cost = $this->convertValueToVendorCurrency($pricingRule->shipment_cost, $currencyId);
                 $pricingRule->free_shipment = $this->convertValueToVendorCurrency($pricingRule->free_shipment, $currencyId);
 
-                foreach ($pricingRule->weightRules ?: [] as &$weightRule) {
+                $rules3 = ($pricingRule->weightRules ?: []);
+                foreach ($rules3 as &$weightRule) {
                     $weightRule->price = $this->convertValueToVendorCurrency($weightRule->price, $currencyId);
                 }
             }
@@ -374,7 +377,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $cid  = $address['virtuemart_country_id'];
 
         // Return country code.
-        return $cid ? $cid : NULL;
+        return ($cid ? $cid : NULL);
     }
 
     /**
@@ -493,7 +496,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $this->convertToVendorCurrency($method);
         $method = ShipmentMethod::fromRandom($method);
         // Check order max weight (TODO: duplicate with plgVmDisplayListFEShipment).
-        $orderMaxWeight = $method->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT;
+        $orderMaxWeight = ($method->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT);
         $orderActualWeight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
 
         if($orderActualWeight > $orderMaxWeight)
@@ -633,7 +636,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         foreach($this->methods as $key => $method) {
 
             $zasMethod = ShipmentMethod::fromRandom($method);
-            $maxWeight = $zasMethod->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT;
+            $maxWeight = ($zasMethod->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT);
 
             if($weight > $maxWeight)
             {

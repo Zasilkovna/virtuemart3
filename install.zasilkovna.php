@@ -295,7 +295,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
             $countryDefaultPrice = $model->getConfig($country. '/values/default_price', '');
             $countryFreeShipment = $model->getConfig($country. '/values/free_shipping', '');
 
-            $countryWeightRules = $model->getConfig($country) ?: [];
+            $countryWeightRules = ($model->getConfig($country) ?: []);
             unset($countryWeightRules['values']);
 
             usort($countryWeightRules, function ($countryWeightRulesA, $countryWeightRuleB) {
@@ -303,7 +303,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
                     return 0;
                 }
 
-                return $countryWeightRulesA['weight_from'] > $countryWeightRuleB['weight_from'] ? 1 : -1;
+                return ($countryWeightRulesA['weight_from'] > $countryWeightRuleB['weight_from'] ? 1 : -1);
             });
 
             $lastCountryWeightRule = null;
@@ -316,7 +316,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
                         $key = 'weightRules' . $weightRulesCount;
                         $countryWeightRulesTransformed[$key] = [
                             'maxWeightKg' => $countryWeightRule['weight_from'],
-                            'price' => $countryDefaultPrice ?: $globalShipmentCost,
+                            'price' => ($countryDefaultPrice ?: $globalShipmentCost),
                         ];
                         $weightRulesCount++;
                     }
@@ -325,7 +325,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
                         $key = 'weightRules' . $weightRulesCount;
                         $countryWeightRulesTransformed[$key] = [
                             'maxWeightKg' => $countryWeightRule['weight_from'],
-                            'price' => $countryDefaultPrice ?: $globalShipmentCost,
+                            'price' => ($countryDefaultPrice ?: $globalShipmentCost),
                         ];
                         $weightRulesCount++;
                     }
@@ -334,7 +334,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
                         $key = 'weightRules' . $weightRulesCount;
                         $countryWeightRulesTransformed[$key] = [
                             'maxWeightKg' => $countryWeightRule['weight_to'],
-                            'price' => ($countryWeightRule['price'] ?: $countryDefaultPrice) ?: $globalShipmentCost,
+                            'price' => (($countryWeightRule['price'] ?: $countryDefaultPrice) ?: $globalShipmentCost),
                         ];
                         $weightRulesCount++;
                     }

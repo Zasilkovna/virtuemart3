@@ -57,7 +57,7 @@ class ShipmentMethod
                         return 0;
                     }
 
-                    return $globalWeightRule->maxWeightKg > $globalWeightRuleAfter->maxWeightKg ? 1 : -1;
+                    return ($globalWeightRule->maxWeightKg > $globalWeightRuleAfter->maxWeightKg ? 1 : -1);
                 }
             );
 
@@ -82,7 +82,7 @@ class ShipmentMethod
                         return 0;
                     }
 
-                    return $weightRule->maxWeightKg > $weightRuleAfter->maxWeightKg ? 1 : -1;
+                    return ($weightRule->maxWeightKg > $weightRuleAfter->maxWeightKg ? 1 : -1);
                 }
             );
 
@@ -154,7 +154,8 @@ class ShipmentMethod
             }
         }
 
-        foreach ($this->getGlobalWeightRules() ?: [] as $weightRule) {
+        $weightsFE = ($this->getGlobalWeightRules() ?: []);
+        foreach ($weightsFE as $weightRule) {
             $weightRulesReport = $this->validateWeightRule($weightRule, $globalMaxWeight);
 
             if ($weightRulesReport->isValid() === false) {
@@ -163,10 +164,10 @@ class ShipmentMethod
             }
         }
 
-        $rules = $this->getPricingRules();
+        $rules = ($this->getPricingRules() ?: []);
         $countries = [];
 
-        foreach ($rules ?: [] as $countryRule) {
+        foreach ($rules as $countryRule) {
             if (array_key_exists($countryRule->country, $countries)) {
                 $report->addError(ShipmentValidationReport::ERROR_CODE_DUPLICATE_COUNTRIES); // multiple country definitions not allowed
                 break;
@@ -174,7 +175,8 @@ class ShipmentMethod
 
             $countries[$countryRule->country] = $countryRule->country;
 
-            foreach ($this->getCountryWeightRules($countryRule->country) ?: [] as $weightRule) {
+            $countryWeightRules = ($this->getCountryWeightRules($countryRule->country) ?: []);
+            foreach ($countryWeightRules as $weightRule) {
                 $weightRulesReport = $this->validateWeightRule($weightRule, $globalMaxWeight);
 
                 if ($weightRulesReport->isValid() === false) {
@@ -184,8 +186,8 @@ class ShipmentMethod
             }
         }
 
-        $blockingCountries = $this->getBlockingCountries() ?: [];
-        $allowedCountries = $this->getAllowedCountries() ?: [];
+        $blockingCountries = ($this->getBlockingCountries() ?: []);
+        $allowedCountries = ($this->getAllowedCountries() ?: []);
 
         $blockingCountries = array_diff($blockingCountries, $allowedCountries); // when user allowes and blocks same countries
         $allowedCountries = array_diff($allowedCountries, $blockingCountries); // when user allowes and blocks same countries
@@ -287,7 +289,8 @@ class ShipmentMethod
         $minWeight = null;
 
         $finalWeightRule = null;
-        foreach ($weightRules ?: [] as $key => $weightRule) {
+        $weightRules = ($weightRules ?: []);
+        foreach ($weightRules as $key => $weightRule) {
             if (is_numeric($weightRule->maxWeightKg) && is_numeric($weightRule->price) && $weight <= $weightRule->maxWeightKg) {
                 if ($minWeight === null || $minWeight > $weightRule->maxWeightKg) {
                     $minWeight = $weightRule->maxWeightKg;
@@ -348,10 +351,10 @@ class ShipmentMethod
      */
     private function getPricingRulesForCountry($countryId)
     {
-        $rules = $this->getPricingRules();
+        $rules = ($this->getPricingRules() ?: []);
         $countryRules = [];
 
-        foreach ($rules ?: [] as $countryRule) {
+        foreach ($rules as $countryRule) {
             if ($countryRule->country == $countryId) {
                 $countryRules[] = $countryRule;
             }
