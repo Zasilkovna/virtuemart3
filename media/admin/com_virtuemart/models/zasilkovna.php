@@ -18,7 +18,6 @@ class VirtueMartModelZasilkovna extends VmModel
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
-    const FREE_SHIPPING_DEFAULT = FALSE; // disabled
     const PRICE_DEFAULT = 100;
 
     public $warnings = array();
@@ -70,7 +69,7 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function getConfig($path, $default = NULL){
         $path = explode('/', $path);
-        if( count($path) < 1 )return NULL;
+        if( count($path) < 1 ) return NULL;
         $conf = $this->config;
         foreach ($path as $s){
             if( isset( $conf[$s] ) )$conf = $conf[$s];
@@ -94,6 +93,32 @@ class VirtueMartModelZasilkovna extends VmModel
         return unserialize($obj->custom_data);
     }
 
+    /**
+     * @param array $data
+     */
+    public function updateConfig($data)
+    {
+        $db =& JFactory::getDBO();
+        $q = "UPDATE #__extensions SET custom_data='" . serialize($data) . "' WHERE element='zasilkovna'";
+        $db->setQuery($q);
+        $db->query();
+    }
+
+    /**
+     * @return null|int
+     */
+    public function getExtensionId()
+    {
+        $q = "SELECT MAX(extension_id) as extension_id FROM #__extensions WHERE element='zasilkovna'";
+        $db = JFactory::getDBO();
+        $db->setQuery($q);
+        $obj = $db->loadObject();
+        if (empty($obj)) {
+            return null;
+        }
+
+        return $obj->extension_id;
+    }
 
     /**
      * Returns list of supported countries, parameters 'country' and 'lang' are used in the widget
@@ -142,7 +167,9 @@ class VirtueMartModelZasilkovna extends VmModel
         return $this->_db_table_name;
     }
 
-
+    /**
+     * @return array
+     */
     public function getShipmentMethodIds()
     {
         $q = "SELECT virtuemart_shipmentmethod_id FROM #__virtuemart_shipmentmethods WHERE shipment_element = '" . self::PLG_NAME . "'";
@@ -157,6 +184,23 @@ class VirtueMartModelZasilkovna extends VmModel
         return $list;
     }
 
+    /**
+     * @param $ids
+     * @param int $value
+     */
+    public function publishShipmentMethods($ids, $value = 1)
+    {
+        $value = (int) $value;
+        $imploded = implode(',', $ids);
+        $q = "UPDATE #__virtuemart_shipmentmethods SET published = $value WHERE virtuemart_shipmentmethod_id IN ($imploded)";
+        $db = JFactory::getDBO();
+        $db->setQuery($q);
+        $db->execute();
+    }
+
+    /**
+     * @return mixed
+     */
     public function getBranches() {
         $db = JFactory::getDBO();
         $q = "SELECT * from #__virtuemart_zasilkovna_branches";
@@ -165,6 +209,10 @@ class VirtueMartModelZasilkovna extends VmModel
         return $db->loadObjectList();
     }
 
+    /**
+     * @param $currency_id
+     * @return mixed
+     */
     public function getCurrencyCode($currency_id)
     {
         $vendorId = VirtueMartModelVendor::getLoggedVendor();
@@ -175,7 +223,9 @@ class VirtueMartModelZasilkovna extends VmModel
         return $db->loadResult();
     }
 
-
+    /**
+     * @return bool
+     */
     public function isShipmentPaymentRestrictionInstalled()
     {
         $file = JPATH_SITE . '/components/com_virtuemart/views/cart/tmpl/select_payment.php';
@@ -187,7 +237,9 @@ class VirtueMartModelZasilkovna extends VmModel
         }
     }
 
-
+    /**
+     * @return string
+     */
     public function checkModuleVersion()
     {
         $checkUrl = $this->_zas_url . "api/" . $this->api_key . "/version-check-virtuemart2?my=" . self::VERSION;
@@ -196,14 +248,16 @@ class VirtueMartModelZasilkovna extends VmModel
             $lg =& JFactory::getLanguage();
             $lang = substr($lg->getTag(), 0, 2);
 
-            return JText::_('PLG_VMSHIPMENT_ZASILKOVNA_NEW_VERSION') . ": " . $data->message->$lang;
+            return JText::_('PLG_VMSHIPMENT_PACKETERY_NEW_VERSION') . ": " . $data->message->$lang;
         }
         else {
-            return JText::_('PLG_VMSHIPMENT_ZASILKOVNA_VERSION_IS_NEWEST') . " - " . self::VERSION;
+            return JText::_('PLG_VMSHIPMENT_PACKETERY_VERSION_IS_NEWEST') . " - " . self::VERSION;
         }
     }
 
-
+    /**
+     * @return bool
+     */
     public function checkConfiguration()
     {
         if($this->checked_configuration) return $this->config_ok;
@@ -212,7 +266,7 @@ class VirtueMartModelZasilkovna extends VmModel
         $testUrl = $this->_zas_url . "api/v3/$key/test";
 
         if(!$key) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_API_KEY_NOT_SET');
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_API_KEY_NOT_SET');
             $this->config_ok = false;
 
             return false;
@@ -224,14 +278,16 @@ class VirtueMartModelZasilkovna extends VmModel
             return false;
         }
         if($this->fetch($testUrl) != 1) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_API_KEY_NOT_VERIFIED');
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_API_KEY_NOT_VERIFIED');
         }
         $this->config_ok = true;
 
         return true;
     }
 
-
+    /**
+     * @return bool
+     */
     private function httpAccessMethod()
     {
         if(extension_loaded('curl')) return true;
@@ -241,44 +297,36 @@ class VirtueMartModelZasilkovna extends VmModel
 
     }
 
-
+    /**
+     * @param $url
+     * @return false|string
+     */
     private function fetch($url)
     {
-        if(extension_loaded('curl')) {
-            $ch = curl_init();
-            curl_setopt($ch, CURLOPT_URL, $url);
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-            curl_setopt($ch, CURLOPT_BINARYTRANSFER, true);
-            curl_setopt($ch, CURLOPT_AUTOREFERER, false);
-            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 5);
-            curl_setopt($ch, CURLOPT_TIMEOUT, 20);
-            $body = curl_exec($ch);
-            if(curl_errno($ch) > 0) {
-                return false;
-            }
-
-            return $body;
-        }
-        elseif(ini_get('allow_url_fopen')) {
-            if(function_exists('stream_context_create')) {
-                $ctx = stream_context_create(array(
-                    'http' => array(
-                        'timeout' => 3
+        if (ini_get('allow_url_fopen')) {
+            if (function_exists('stream_context_create')) {
+                $ctx = stream_context_create(
+                    array(
+                        'http' => array(
+                            'timeout' => 20
+                        )
                     )
-                ));
+                );
 
                 return file_get_contents($url, 0, $ctx);
-            }
-            else {
+            } else {
                 return file_get_contents($url);
             }
-        }
-        else
+        } else {
             return false;
+        }
     }
 
     /*
      * Return js api url and if it is needed, updates it
+     */
+    /**
+     * @return false|string
      */
     public function updateJSApi() {
         $js_path = $this->_media_path . 'branch.js';
@@ -288,7 +336,7 @@ class VirtueMartModelZasilkovna extends VmModel
                 //updating file failed
                 if(!$this->isFileUsable($js_path)) {
                     // if file is older than 5 days
-                    $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_UPDATE_ERROR');
+                    $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_UPDATE_ERROR');
 
                     return false;
                 }
@@ -301,6 +349,9 @@ class VirtueMartModelZasilkovna extends VmModel
         return $this->_media_url . "branch.js";
     }
 
+    /**
+     * @return bool
+     */
     public function updateBranchesInfo() {
         $localFilePath = $this->_media_path . 'branch.xml';
         if(!$this->is_writable($localFilePath)) return false;
@@ -310,7 +361,7 @@ class VirtueMartModelZasilkovna extends VmModel
                 //failed updating
                 if(!$this->isFileUsable($localFilePath)) {
                     //file is older than 5 days and thus not usable
-                    $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_UPDATE_ERROR');
+                    $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_UPDATE_ERROR');
 
 					return false;
                 }
@@ -318,7 +369,7 @@ class VirtueMartModelZasilkovna extends VmModel
             else {
                 //updating succeeded, update mysql db
                 if(!$this->saveBranchesXmlToDb($localFilePath)) {
-                    $this->errors[] = JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_XML_ERROR');
+                    $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_XML_ERROR');
 
                     return false;
                 }
@@ -340,6 +391,10 @@ class VirtueMartModelZasilkovna extends VmModel
         }
     }
 
+    /**
+     * @param $path
+     * @return bool
+     */
     private function saveBranchesXmlToDb($path) {
         $xml = simplexml_load_file($path);
         if($xml) {
@@ -376,6 +431,10 @@ class VirtueMartModelZasilkovna extends VmModel
         return true;
     }
 
+    /**
+     * @param $path
+     * @return bool
+     */
     private function isFileUpToDate($path) {
         if(!file_exists($path)) return false;
         if(filemtime($path) < time() - (60 * 60 * 24)) return false;
@@ -384,6 +443,10 @@ class VirtueMartModelZasilkovna extends VmModel
         return true;
     }
 
+    /**
+     * @param $path
+     * @return bool
+     */
     private function isFileUsable($path)//true if not older than 5 days
     {
         if(!file_exists($path)) return false;
@@ -393,7 +456,11 @@ class VirtueMartModelZasilkovna extends VmModel
         return true;
     }
 
-
+    /**
+     * @param $path
+     * @param $type
+     * @return bool
+     */
     private function updateFile($path, $type) {
         $remote = $this->_zas_url . "api/v3/" . $this->api_key . "/branch." . $type;
         if($type == 'js') {
@@ -411,6 +478,10 @@ class VirtueMartModelZasilkovna extends VmModel
         return true;
     }
 
+    /**
+     * @param $filepath
+     * @return bool
+     */
     private function is_writable($filepath) {
         if(!file_exists($filepath)) {
             @touch($filepath);
@@ -418,11 +489,14 @@ class VirtueMartModelZasilkovna extends VmModel
         if(is_writable($filepath)) {
             return true;
         }
-        $this->errors[] = $filepath . " " . JText::_('PLG_VMSHIPMENT_ZASILKOVNA_BRANCH_NOT_WRITABLE');
+        $this->errors[] = $filepath . " " . JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_NOT_WRITABLE');
 
         return false;
     }
 
+    /**
+     *
+     */
     public function loadLanguage()
     {
         $language = JFactory::getLanguage();

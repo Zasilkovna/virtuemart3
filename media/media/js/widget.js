@@ -5,10 +5,6 @@ window.initializePacketaWidget = function(){
 	if (packetaWidgetInitialized) {
 		return;
 	}
-	// we define id of packeta widget iframe
-	var idPacketaWidget = 'packeta-widget';
-
-	inElement = document.getElementById(idPacketaWidget);
 
 	opts = {
 		appIdentity: version,
@@ -16,7 +12,7 @@ window.initializePacketaWidget = function(){
 		language: language
 	};
 
-	document.getElementById('open-packeta-widget').addEventListener('click', function (e) {
+	jQuery('.zasilkovna_box').on('click', '#open-packeta-widget', function (e) {
 		e.preventDefault();
 		Packeta.Widget.pick(packetaApiKey, function(pickupPoint){
 			if (pickupPoint === null)
@@ -32,7 +28,6 @@ window.initializePacketaWidget = function(){
 			jQuery("#branch_carrier_pickup_point").val(pickupPoint.carrierPickupPointId ? pickupPoint.carrierPickupPointId : '');
 
 			jQuery("#picked-delivery-place").html(pickupPoint.nameStreet + ", " + pickupPoint.zip);
-			toggleShipmentSaveButton();
 
 			// we let customer know, which branch he picked by filling html inputs
 			jQuery("#branch_name_street").html(pickupPoint.name);
@@ -46,30 +41,8 @@ window.initializePacketaWidget = function(){
 };
 
 // togle zasilkovna box visibility
-
-if (jQuery('#shipmentForm').length){
-	jQuery(window).load(function(){
-		toggleZasilkovnaBox();
-	});
-} else {
+jQuery(document).ready(function() {
 	toggleZasilkovnaBox();
-}
-
-
-
-// handle shipment change (wait for window load event
-
-jQuery(window).load(function(){
-
-	jQuery('.vm-shipment-plugin-single input[name="virtuemart_shipmentmethod_id"]:radio').click(function (e) {
-		if(jQuery(this).closest(".zasilkovna_box").length){
-			jQuery(".zas-box").css("display", "block");
-			initializePacketaWidget();
-		} else {
-			jQuery(".zas-box").css("display", "none");
-		}
-		toggleShipmentSaveButton();
-	});
 });
 
 // loop all shipment options and toggle zasilkovna box visibility
@@ -78,34 +51,25 @@ function toggleZasilkovnaBox(){
 	if(countrySelected !== ''){
 		jQuery(function(){
 			jQuery('input[name="virtuemart_shipmentmethod_id"]:radio').each(function(){
-				if(jQuery(this).closest(".zasilkovna_box").length)
-					if(jQuery(this).is(':checked'))
-						jQuery(".zas-box").css("display", "block");
-					else
-						jQuery(".zas-box").css("display", "none");
+				var $target = jQuery(this);
+				var $box = $target.closest(".zasilkovna_box");
+				if($box.length === 0) {
+					return;
+				}
+
+				if($target.is(':checked'))
+					$box.find(".zas-box").css("display", "block");
+				else
+					$box.find(".zas-box").css("display", "none");
 			});
 			initializePacketaWidget();
-	
+
 			jQuery("#checkoutFormSubmit").on('submit', function(e){
 				e.preventDefault();
 			});
-	
 		});
 	}else{
-			jQuery(".zas-box").css("display", "none");
-	}
-	toggleShipmentSaveButton();
-}
-
-// handle "save" butotn in shipment step
-
-function toggleShipmentSaveButton(){
-	if (jQuery('#shipmentForm').length){
-		if (jQuery('#shipment_id_2').is(':checked') && !jQuery('#picked-delivery-place').html()){
-			jQuery('#shipmentForm button[name="updatecart"]').css("display", "none");
-		} else {
-			jQuery('#shipmentForm button[name="updatecart"]').css("display", "inline-block");
-		}
+		jQuery(".zas-box").css("display", "none");
 	}
 }
 

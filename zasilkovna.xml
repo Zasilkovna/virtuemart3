@@ -27,8 +27,83 @@
     </files>
     <vmconfig>
         <fields name="params">
-            <fieldset name="default">
-                <field type="vmtitle" default="" description="PLG_VMSHIPMENT_ZASILKOVNA_SHIPMENT_PAGE_DESCRIPTION"/>
+
+            <fieldset name="global">
+                <field name="maxWeight" type="number" step="0.001" label="PLG_VMSHIPMENT_PACKETERY_CONFIG_MAX_WEIGHT"
+                       required="true"
+                       description="PLG_VMSHIPMENT_PACKETERY_CONFIG_MAX_WEIGHT_LABEL" default="10"/>
+
+                <field name="shipment_cost" type="number" step="0.01"
+                       label="PLG_VMSHIPMENT_PACKETERY_CONFIG_DEFAULT_PRICE" required="true"
+                       description="PLG_VMSHIPMENT_PACKETERY_CONFIG_DEFAULT_PRICE_LABEL" default="100"/>
+
+                <field name="free_shipment" type="number" step="0.01"
+                       label="PLG_VMSHIPMENT_PACKETERY_CONFIG_FREE_SHIPPING"
+                       description="PLG_VMSHIPMENT_PACKETERY_CONFIG_FREE_SHIPPING_LABEL" default=""/>
+
+                <field name="tax_id" type="vmtaxes" scope="com_virtuemart" label="VMSHIPMENT_WEIGHT_COUNTRIES_TAX"
+                       description="VMSHIPMENT_WEIGHT_COUNTRIES_TAX_DESC" default="0"/>
+
+                <field
+                        name="globalWeightRules"
+                        type="subform"
+                        label="PLG_VMSHIPMENT_PACKETERY_GLOBAL_WEIGHT_RULES"
+                        description="PLG_VMSHIPMENT_PACKETERY_GLOBAL_WEIGHT_RULES_LABEL"
+                        multiple="true"
+                        min="0">
+                    <form>
+                        <field name="maxWeightKg" type="number" step="0.001"
+                               label="PLG_VMSHIPMENT_PACKETERY_CONFIG_WEIGHT_TO"
+                               size="30" required="true"/>
+
+                        <field name="price" type="number" step="0.01"
+                               label="PLG_VMSHIPMENT_PACKETERY_CONFIG_PRICE"
+                               size="30" required="true"/>
+                    </form>
+                </field>
+            </fieldset>
+
+            <fieldset name="restrictions">
+                <field name="checkConditionsCore" value="1" default="1" type="hidden"/>
+                <field
+                        name="pricingRules"
+                        class="packetery-pricing-rules"
+                        type="subform"
+                        label="PLG_VMSHIPMENT_PACKETERY_PRICING_RULES"
+                        description="PLG_VMSHIPMENT_PACKETERY_PRICING_RULES_LABEL"
+                        multiple="true"
+                        min="0">
+                    <form>
+                        <field name="country" type="vmzasilkovnacountries" label="PLG_VMSHIPMENT_PACKETERY_COUNTRY"
+                               required="true"/>
+
+                        <field name="shipment_cost" type="number" step="0.01"
+                               label="PLG_VMSHIPMENT_PACKETERY_CONFIG_DEFAULT_PRICE" required="false"
+                               description="PLG_VMSHIPMENT_PACKETERY_CONFIG_DEFAULT_PRICE_LABEL" default=""/>
+
+                        <field name="free_shipment" type="number" step="0.01"
+                               label="PLG_VMSHIPMENT_PACKETERY_CONFIG_FREE_SHIPPING"
+                               description="PLG_VMSHIPMENT_PACKETERY_CONFIG_FREE_SHIPPING_LABEL" default=""/>
+
+                        <field
+                                name="weightRules"
+                                type="subform"
+                                label="PLG_VMSHIPMENT_PACKETERY_WEIGHT_RULES"
+                                description="PLG_VMSHIPMENT_PACKETERY_WEIGHT_RULES_LABEL"
+                                multiple="true"
+                                min="0">
+                            <form>
+                                <field name="maxWeightKg" type="number" step="0.001"
+                                       label="PLG_VMSHIPMENT_PACKETERY_CONFIG_WEIGHT_TO"
+                                       size="30" required="true"/>
+
+                                <field name="price" type="number" step="0.01"
+                                       label="PLG_VMSHIPMENT_PACKETERY_CONFIG_PRICE"
+                                       size="30" required="true"/>
+                            </form>
+                        </field>
+                    </form>
+                </field>
             </fieldset>
         </fields>
     </vmconfig>

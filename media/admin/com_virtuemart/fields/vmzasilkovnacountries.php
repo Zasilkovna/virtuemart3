@@ -29,19 +29,22 @@ class JFormFieldVmZasilkovnaCountries extends JFormFieldList {
 	 */
 	var $type = 'vmZasilkovnaCountries';
 
-	protected function getOptions() {
-		$fields = array();
+    /**
+     * @return array
+     */
+    protected function getOptions() {
+        $fields = [];
 
-		$class = '';
-		$fields[] = JHtml::_('select.option', '', 'Vše');
-		$fields[] = JHtml::_('select.option', 'cz', 'Czech Republic');
-		$fields[] = JHtml::_('select.option', 'sk', 'Slovak Republic');
-		$fields[] = JHtml::_('select.option', 'hu', 'Hungary');
-		$fields[] = JHtml::_('select.option', 'pl', 'Poland');
-		$class = 'size="10"';
+        /** @var VirtueMartModelCountry $countryModel */
+        $countryModel = VmModel::getModel('country');
+        $countries = $countryModel->getCountries(TRUE, TRUE, FALSE);
 
-		$fields = array_merge(parent::getOptions(), $fields);
+        foreach ($countries as $country) {
+            $fields[] = JHtml::_('select.option', $country->virtuemart_country_id, $country->country_name);
+        }
 
-		return $fields;
-	}
+        $fields = array_merge(parent::getOptions(), $fields);
+
+        return $fields;
+    }
 }
