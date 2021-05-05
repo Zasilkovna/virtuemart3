@@ -1,0 +1,19 @@
+<script type="text/javascript">
+
+    window.packetery = (function(){
+        var packetery =  window.packetery || {};
+    
+        packetery.selectionSaveUrl = <?php echo json_encode($packeterySelectionSaveUrl); ?>;
+        packetery.apiKey = <?php echo json_encode($packetaApiKey); ?>;
+        packetery.country = <?php echo json_encode($country); ?>;
+        packetery.language = <?php echo json_encode($language); ?>;
+        packetery.version = <?php echo json_encode($version); ?>;
+        packetery.countrySelected = <?php echo json_encode($countrySelected); ?>;
+        
+       return packetery; 
+    })();
+
+</script>
+<script src="https://widget.packeta.com/v6/www/js/library.js"></script>
+<script src="<?php echo urlencode(htmlentities($baseUrl)); ?>/media/com_zasilkovna/media/js/widget.js?v=<?php echo urlencode(htmlentities($widgetJsVersion)); ?>"></script>
+<script>toggleZasilkovnaBox();</script>

@@ -1,3 +1,5 @@
+1.1.10 - Updated: RuposTel OPC compatibility
+
 1.1.9 - Added: packeta shipping method configuration
       - Added: configuration for other countries than previously specified is now possible
       - Added: data migration from 1.1.8 data structure

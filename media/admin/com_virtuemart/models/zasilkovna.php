@@ -14,7 +14,7 @@ if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmod
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.1.9';
+    const VERSION = '1.1.10';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
@@ -118,6 +118,43 @@ class VirtueMartModelZasilkovna extends VmModel
         }
 
         return $obj->extension_id;
+    }
+
+    /**
+     * @return bool
+     */
+    public function hasRupostelOPCActive()
+    {
+        $q = "SELECT enabled FROM #__extensions WHERE element = 'opc'";
+        $db = JFactory::getDBO();
+        $db->setQuery($q);
+        $obj = $db->loadObject();
+        if (empty($obj)) {
+            return false; // rupostel is not installed
+        }
+
+        if ($obj->enabled !== '1') {
+            return false; // rupostel is installed but extension is not active
+        }
+
+        $prefix = $db->getPrefix(); // prefix is required by Joomla
+        $q = "SELECT 1 FROM information_schema.TABLES WHERE TABLE_NAME = '{$prefix}onepage_config' AND TABLE_SCHEMA IN (SELECT DATABASE())";
+        $db = JFactory::getDBO();
+        $db->setQuery($q);
+        $obj = $db->loadObject();
+        if (empty($obj)) {
+            return false; // unexpected rupostel installation
+        }
+
+        $q = "SELECT 1 FROM #__onepage_config WHERE config_name='opc_vm_config' AND config_subname = 'disable_op'";
+        $db = JFactory::getDBO();
+        $db->setQuery($q);
+        $obj = $db->loadObject();
+        if (!empty($obj)) {
+            return false; // OPC is disabled
+        }
+
+        return true;
     }
 
     /**

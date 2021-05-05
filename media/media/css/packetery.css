@@ -42,15 +42,22 @@ div.packetery-branch-item div.packetery-main p {margin: 0 0 0.25em; }
 div.packetery-branch-item div.packetery-main a {color: black; text-decoration: underline; }
 div.packetery-branch-item div.packetery-main a:hover {text-decoration: none; }
 
-#packeta-widget {
+.packeta-widget {
     position:absolute;
 }
 
+.zasilkovna_base {
+    display: inline-block;
+}
+
+.zas-box {
+    display: flex;
+}
+
 .zasilkovna-logo {
-    float: left;
     background: url("../img/packetery.jpg");
     background-repeat: no-repeat;
-    background-size: auto;
+    background-size: contain;
     margin-right: 15px;
     width: 32px;
     height: 34px;

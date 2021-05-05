@@ -4,7 +4,7 @@
 
 ### Download module
 
-[Actual version 1.1.9](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.9.zip)
+[Actual version 1.1.10](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.10.zip)
 
 ### Installation
 
@@ -89,7 +89,7 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 
 ### Stažení modulu
 
-[Aktuální verze 1.1.9](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.9.zip)
+[Aktuální verze 1.1.10](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.10.zip)
 
 ### Instalace
 
