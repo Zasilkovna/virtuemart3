@@ -17,13 +17,21 @@ class SelectedPointSession
     /** @var string  */
     private $namespace = 'selectedPacketaPoint';
 
+    /** @var array */
+    private $options;
+
+    /** @var string */
+    private $expiresAtKey = 'expiresAt';
+
     /**
      * SelectedPointSession constructor.
      *
-     * @param \VirtueMartModelZasilkovna\Joomla\CMS\Session\Session $session
+     * @param \Joomla\CMS\Session\Session $session
+     * @param array $options
      */
-    public function __construct(\Joomla\CMS\Session\Session $session) {
+    public function __construct(\Joomla\CMS\Session\Session $session, array $options) {
         $this->session = $session;
+        $this->options = $options;
     }
 
     /** Has session branch id selected
@@ -41,12 +49,37 @@ class SelectedPointSession
     }
 
     public function clearPickedDeliveryPoint() {
-        $this->session->clear(self::BRANCH_ID, $this->namespace);
-        $this->session->clear(self::BRANCH_CURRENCY, $this->namespace);
-        $this->session->clear(self::BRANCH_NAME_STREET, $this->namespace);
-        $this->session->clear(self::BRANCH_COUNTRY, $this->namespace);
-        $this->session->clear(self::BRANCH_CARRIER_ID, $this->namespace);
-        $this->session->clear(self::BRANCH_CARRIER_PICKUP_POINT, $this->namespace);
+        $this->clear(self::BRANCH_ID);
+        $this->clear(self::BRANCH_CURRENCY);
+        $this->clear(self::BRANCH_NAME_STREET);
+        $this->clear(self::BRANCH_COUNTRY);
+        $this->clear(self::BRANCH_CARRIER_ID);
+        $this->clear(self::BRANCH_CARRIER_PICKUP_POINT);
+        $this->clear($this->expiresAtKey);
+    }
+
+    private function checkTimers() {
+        $expiresAt = $this->session->get($this->expiresAtKey, null, $this->namespace);
+        if ($expiresAt !== null && $expiresAt <= time()) {
+            $this->clearPickedDeliveryPoint();
+        }
+    }
+
+    public function resetTimers() {
+        $this->clear($this->expiresAtKey);
+
+        $expire = $this->getExpire();
+        if (is_numeric($expire)) {
+            $expiresAt = time() + $expire;
+            $this->set($this->expiresAtKey, $expiresAt);
+        }
+    }
+
+    /**
+     * @return int duration in seconds
+     */
+    private function getExpire() {
+        return $this->options['expire'];
     }
 
     /**
@@ -55,6 +88,7 @@ class SelectedPointSession
      * @return mixed
      */
     public function get($key, $default = null) {
+        $this->checkTimers();
         return $this->session->get($key, $default, $this->namespace);
     }
 

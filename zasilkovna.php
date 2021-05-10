@@ -69,11 +69,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         );
         $this->model = VmModel::getModel('zasilkovna');
         $this->selectedPointSession = new SelectedPointSession(
-            JFactory::getSession(
-                [
-                    'expire' => 0.5 * 60 * 60 // seconds
-                ]
-            )
+            JFactory::getSession(),
+            [
+                'expire' => 0.5 * 60 * 60 // seconds
+            ]
         );
         $this->dispatcher = JDispatcher::getInstance();;
     }
@@ -114,6 +113,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $session->set('branch_country', JRequest::getVar('branch_country', ''));
             $session->set('branch_carrier_id', JRequest::getVar('branch_carrier_id', ''));
             $session->set('branch_carrier_pickup_point', JRequest::getVar('branch_carrier_pickup_point', ''));
+            $session->resetTimers();
         }
 
         $response = (object)[
