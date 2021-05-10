@@ -1,18 +1,16 @@
 // loop all shipment options and toggle zasilkovna box visibility
 function toggleZasilkovnaBox(){
-	jQuery(function(){
-		jQuery('input[name="virtuemart_shipmentmethod_id"]').each(function(){
-			var $target = jQuery(this);
-			var $box = $target.closest(".zasilkovna_box");
-			if($box.length === 0) {
-				return;
-			}
+	jQuery('input[name="virtuemart_shipmentmethod_id"]').each(function(){
+		var $target = jQuery(this);
+		var $box = $target.closest(".zasilkovna_box");
+		if($box.length === 0) {
+			return;
+		}
 
-			if($target.is(':checked'))
-				$box.find(".zas-box").show();
-			else
-				$box.find(".zas-box").hide();
-		});
+		if($target.is(':checked'))
+			$box.find(".zas-box").show();
+		else
+			$box.find(".zas-box").hide();
 	});
 }
 

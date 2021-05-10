@@ -590,12 +590,20 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return false;
     }
 
-    public function plgVmOnCheckoutCheckDataShipment() {
-        if (!$this->selectedPointSession->hasPointSelected()) {
-            return false;
+    public function plgVmOnCheckoutCheckDataShipment($cart) {
+        if(!($method = $this->getVmPluginMethod($cart->virtuemart_shipmentmethod_id))) {
+            return null;
         }
 
-        return true;
+        if ($method->shipment_element === VirtueMartModelZasilkovna::PLG_NAME) {
+            if (!$this->selectedPointSession->hasPointSelected()) {
+                return false;
+            }
+
+            return true;
+        }
+
+        return null;
     }
 
     /**
@@ -763,7 +771,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     public function plgVmOnUpdateCart(\VirtueMartCart $cart) {
         $virtuemartShipmentMethodId = $cart->virtuemart_shipmentmethod_id;
         if (empty($virtuemartShipmentMethodId)) {
-            $this->selectedPointSession->clearPickedDeliveryPoint();
             return null; // shipping method not selected by customer
         }
 
