@@ -1,10 +1,5 @@
 <?php include __DIR__ . '/default.phtml'; ?>
 
-<style>
-    #vmMainPageOPC .zasilkovna-logo {
-        background-image: url(/media/com_zasilkovna/media/img/packetery.jpg);
-    }
-</style>
 <script>
     window.packetery.opcValidationCallback = function() {
         var selectedPoint = jQuery('input[name=virtuemart_shipmentmethod_id]:checked').closest('.zasilkovna_box').find('.picked-delivery-place');

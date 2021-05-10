@@ -55,7 +55,7 @@ div.packetery-branch-item div.packetery-main a:hover {text-decoration: none; }
 }
 
 .zasilkovna-logo {
-    background: url("../img/packetery.jpg");
+    background: url("../img/packetery.jpg") !important;
     background-repeat: no-repeat;
     background-size: contain;
     margin-right: 15px;

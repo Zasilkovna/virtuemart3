@@ -720,6 +720,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         $renderer = new \VirtueMartModelZasilkovna\Box\Renderer('tail-block');
         $template = null;
+        $variables = [];
 
         if ($this->model->hasRupostelOPCActive()) {
             $template = $renderer->getTemplateDirPath() . '/rupostel.phtml';
