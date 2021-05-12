@@ -14,8 +14,18 @@ function toggleZasilkovnaBox(){
 	});
 }
 
-(function() {
-	jQuery('body').on('click', '.zasilkovna_box .open-packeta-widget', function () {
+function isPacketeryShippingSelected() {
+	var selectedPoint = jQuery("input[name=virtuemart_shipmentmethod_id]:checked").closest('.zasilkovna_box');
+	return selectedPoint.length === 1;
+}
+
+function isPacketeryShippingPointSelected() {
+	var selectedPoint = jQuery("input[name=virtuemart_shipmentmethod_id]:checked").closest('.zasilkovna_box').find('.picked-delivery-place');
+	return !!selectedPoint.text();
+}
+
+jQuery(function() {
+	jQuery('body').off('click.packeteryOpenWidget').on('click.packeteryOpenWidget', '.zasilkovna_box .open-packeta-widget', function () {
 		var packetery = window.packetery;
 
 		var opts = {
@@ -53,4 +63,4 @@ function toggleZasilkovnaBox(){
 	}).on('change', 'input[name=virtuemart_shipmentmethod_id]', function(e) {
 		toggleZasilkovnaBox();
 	});
-})();
+});

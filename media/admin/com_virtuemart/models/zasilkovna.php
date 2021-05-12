@@ -121,43 +121,6 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @return bool
-     */
-    public function hasRupostelOPCActive()
-    {
-        $q = "SELECT enabled FROM #__extensions WHERE element = 'opc'";
-        $db = JFactory::getDBO();
-        $db->setQuery($q);
-        $obj = $db->loadObject();
-        if (empty($obj)) {
-            return false; // rupostel is not installed
-        }
-
-        if ($obj->enabled !== '1') {
-            return false; // rupostel is installed but extension is not active
-        }
-
-        $prefix = $db->getPrefix(); // prefix is required by Joomla
-        $q = "SELECT 1 FROM information_schema.TABLES WHERE TABLE_NAME = '{$prefix}onepage_config' AND TABLE_SCHEMA IN (SELECT DATABASE())";
-        $db = JFactory::getDBO();
-        $db->setQuery($q);
-        $obj = $db->loadObject();
-        if (empty($obj)) {
-            return false; // unexpected rupostel installation
-        }
-
-        $q = "SELECT 1 FROM #__onepage_config WHERE config_name='opc_vm_config' AND config_subname = 'disable_op'";
-        $db = JFactory::getDBO();
-        $db->setQuery($q);
-        $obj = $db->loadObject();
-        if (!empty($obj)) {
-            return false; // OPC is disabled
-        }
-
-        return true;
-    }
-
-    /**
      * Returns list of supported countries, parameters 'country' and 'lang' are used in the widget
      * support for new country can be easily added by expanding the array
      *

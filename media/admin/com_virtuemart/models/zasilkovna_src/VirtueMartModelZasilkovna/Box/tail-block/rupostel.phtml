@@ -2,8 +2,7 @@
 
 <script>
     window.packetery.opcValidationCallback = function() {
-        var selectedPoint = jQuery('input[name=virtuemart_shipmentmethod_id]:checked').closest('.zasilkovna_box').find('.picked-delivery-place');
-        if(selectedPoint.length === 1 && !selectedPoint.text()) {
+        if(isPacketeryShippingSelected() && !isPacketeryShippingPointSelected()) {
             alert(<?php echo json_encode($selectPickupPoint); ?>);
             return false;
         }

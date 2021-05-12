@@ -81,7 +81,10 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	 * @return  boolean  True on success
 	 */
 	public function preflight($route, JAdapterInstance $adapter) {
-
+        if ($route === 'update') {
+            $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna';
+            recurse_delete($media_path);
+        }
 	}
 
     /**

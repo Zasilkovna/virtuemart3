@@ -17,3 +17,7 @@
 <script src="https://widget.packeta.com/v6/www/js/library.js"></script>
 <script src="<?php echo $baseUrl; ?>/media/com_zasilkovna/media/js/widget.js?v=<?php echo urlencode(htmlentities($widgetJsVersion)); ?>"></script>
 <script>toggleZasilkovnaBox();</script>
+
+<?php if ($resolvedTemplateJSPath) { ?>
+<script src="<?php echo $baseUrl . $resolvedTemplateJSPath; ?>"></script>
+<?php } ?>
