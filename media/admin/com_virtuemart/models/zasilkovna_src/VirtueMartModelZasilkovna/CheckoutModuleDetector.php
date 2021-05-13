@@ -12,7 +12,7 @@ class CheckoutModuleDetector
             'rupostel' => [ // checkout module custom name
                 'isDefault' => false,
                 'isActive' => function () {
-                    return $this->isModuleEnabled('opc') && $this->isRupostelOnepageEnabled();
+                    return $this->isModuleEnabled('plugin', 'opc') && $this->isModuleEnabled('component', 'com_onepage') && $this->isRupostelOnepageEnabled();
                 },
                 'template' => null, // null => rupostel
                 'tail-block' => null, // null => rupostel
@@ -40,12 +40,13 @@ class CheckoutModuleDetector
     }
 
     /**
+     * @param string $type
      * @param string $element
      * @return bool
      */
-    private function isModuleEnabled($element) {
+    private function isModuleEnabled($type, $element) {
         $db = \JFactory::getDBO();
-        $q = "SELECT enabled FROM #__extensions WHERE element = " . $db->quote($element);
+        $q = "SELECT enabled FROM #__extensions WHERE element = " . $db->quote($element) . " AND type = " . $db->quote($type);
         $db->setQuery($q);
         $obj = $db->loadObject();
         if (empty($obj)) {
