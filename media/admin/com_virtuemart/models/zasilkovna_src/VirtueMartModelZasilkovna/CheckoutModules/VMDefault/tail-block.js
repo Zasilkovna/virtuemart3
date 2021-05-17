@@ -4,10 +4,9 @@ jQuery(function(){
         Virtuemart.bCheckoutButton = function(e) {
             e.preventDefault();
             // If shipping method is Zasilkovna
-            var checkedInput = jQuery(".zasilkovna_div input[type='radio']:checked");
-            if(checkedInput.length === 1){
+            if(isPacketeryShippingSelected()){
                 // Branch must be selected
-                if(checkedInput.closest(".zasilkovna_div").find(".picked-delivery-place").text()){
+                if(isPacketeryShippingPointSelected()){
                     // And user has to agree to the Terms of Service
                     if(jQuery("#tos").is(":checked")){
                         jQuery(this).vm2front("startVmLoading");

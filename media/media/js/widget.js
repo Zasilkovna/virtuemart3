@@ -14,13 +14,17 @@ function toggleZasilkovnaBox(){
 	});
 }
 
+function getSelectedPacketeryBox() {
+	return jQuery("input[name=virtuemart_shipmentmethod_id]:checked").closest('.zasilkovna_box');
+}
+
 function isPacketeryShippingSelected() {
-	var selectedPoint = jQuery("input[name=virtuemart_shipmentmethod_id]:checked").closest('.zasilkovna_box');
-	return selectedPoint.length === 1;
+	var zasilkovnaBox = getSelectedPacketeryBox();
+	return zasilkovnaBox.length === 1;
 }
 
 function isPacketeryShippingPointSelected() {
-	var selectedPoint = jQuery("input[name=virtuemart_shipmentmethod_id]:checked").closest('.zasilkovna_box').find('.picked-delivery-place');
+	var selectedPoint = getSelectedPacketeryBox().find('.picked-delivery-place');
 	return !!selectedPoint.text();
 }
 
@@ -45,7 +49,7 @@ jQuery(function() {
 			Virtuemart.startVmLoading({data: {msg: ''}});
 			jQuery.ajax({
 				type: "POST",
-				url: packetery.selectionSaveUrl,
+				url: packetery.savePickupPointUrl,
 				data: {
 					branch_id: pickupPoint.id,
 					branch_currency: pickupPoint.currency,

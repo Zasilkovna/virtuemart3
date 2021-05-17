@@ -84,14 +84,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $input = $app->input;
         $task = $input->get('task', 'none', 'string');
 
-        $response = null;
         $method = 'handle' . ucfirst($task);
         if (method_exists($this, $method)) {
-            $response = call_user_func_array([$this, $method], []);
-        }
-
-        if ($response instanceof JResponseJson) {
-            $render = (string)$response;
+            $render = call_user_func_array([$this, $method], []);
         }
     }
 
@@ -114,6 +109,24 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         ];
 
         return new JResponseJson($response);
+    }
+
+    public function handleProvideCheckoutModuleJsFile() {
+        /** @var \Joomla\CMS\Application\CMSApplication $app */
+        $app = JFactory::getApplication();
+        $checkoutModuleFile = $app->input->get('checkoutModuleFile', '', 'string');
+
+        $app->setHeader('Content-Type', 'application/javascript', true);
+        $app->sendHeaders();
+
+        $jsFile = $this->checkoutModuleDetector->getCheckoutModulesDir() . '/' . $checkoutModuleFile;
+        if (is_file($jsFile)) {
+            echo file_get_contents($jsFile);
+        } else {
+            http_response_code(404);
+        }
+
+        jExit();
     }
 
     /**
@@ -614,12 +627,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     public function hasPointSelected()
     {
         $branchId = $this->session->get('branch_id', '');
-
-        if (empty($branchId)) {
-            return false;
-        }
-
-        return true;
+        return !empty($branchId);
     }
 
     /**
@@ -665,8 +673,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $this->clearPickedDeliveryPoint();
         }
 
-        $countrySelected = isset( $address['virtuemart_country_id'] );
-
         $lang = JFactory::getLanguage();
         $langCode = substr($lang->getTag(), 0, strpos($lang->getTag(), '-'));
 
@@ -683,6 +689,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $address['virtuemart_country_id'] = 0;
         }
 
+        $activeCheckout = $this->checkoutModuleDetector->getActiveCheckout();
         foreach($this->methods as $key => $method) {
 
             $zasMethod = ShipmentMethod::fromRandom($method);
@@ -713,12 +720,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 $method->$method_name = $this->renderPluginName($method);
                 $baseHtml = $this->getPluginHtml($method, $selected, $methodSalesPrice);
 
-                $renderer = new \VirtueMartModelZasilkovna\Box\Renderer('template');
-                $activeCheckout = $this->checkoutModuleDetector->getActiveCheckoutName();
-                $template = $renderer->createTemplatePath($this->checkoutModuleDetector->getTemplate($activeCheckout));
-                $renderer->setTemplate($template);
+                $renderer = new \VirtueMartModelZasilkovna\Box\Renderer();
+                $renderer->setTemplate($activeCheckout->getTemplate());
 
-                $variables = [];
                 $renderer->setVariables(
                     [
                         'selectPoint' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_SELECT_POINT'),
@@ -727,7 +731,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                         'baseHtml' => $baseHtml,
                         'isCountrySelected' => !empty($address['virtuemart_country_id']),
                         'savedBranchNameStreet' => $session->get('branch_name_street', '')
-                    ] + $variables
+                    ]
                 );
 
                 $html[$key] = $renderer->renderToString();
@@ -738,34 +742,52 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return FALSE;
         }
 
-        $renderer = new \VirtueMartModelZasilkovna\Box\Renderer('tail-block');
-        $activeCheckout = $this->checkoutModuleDetector->getActiveCheckoutName();
-        $template = $renderer->createTemplatePath($this->checkoutModuleDetector->getTailBlock($activeCheckout));
-        $renderer->setTemplate($template);
+        $renderer = new \VirtueMartModelZasilkovna\Box\Renderer();
+        $renderer->setTemplate($activeCheckout->getTailBlock());
 
-        $baseUrl = Juri::base(true);
-        $url = $baseUrl . '/index.php?option=com_virtuemart&view=plugin&type=vmshipment&name=' . VirtueMartModelZasilkovna::PLG_NAME . '&task=saveSelectedPoint';
+        $tailBlockJsPath = null;
+        $jsBlockId = $activeCheckout->getTailBlockJsPublicId();
+        if ($jsBlockId) {
+            $tailBlockJsPath = $this->createSignalUrl(
+                'provideCheckoutModuleJsFile',
+                [
+                    'checkoutModuleFile' => $jsBlockId,
+                    'v' => filemtime($activeCheckout->getTailBlockJs())
+                ]
+            );
+        }
 
-        $variables = [];
         $renderer->setVariables(
             [
-                'packeterySelectionSaveUrl' => $url,
-                'packetaApiKey' => $this->model->api_key,
+                'savePickupPointUrl' => $this->createSignalUrl('saveSelectedPoint'),
+                'apiKey' => $this->model->api_key,
                 'country' => $code,
                 'language' => $langCode,
                 'version' => $this->getVersionString(),
-                'countrySelected' => $countrySelected,
-                'baseUrl' => $baseUrl,
-                'widgetJsVersion' => filemtime(__DIR__ . '/../../../media/com_zasilkovna/media/js/widget.js'),
+                'widgetJsUrl' => $this->model->_media_url . 'js/widget.js?v=' . filemtime($this->model->_media_path . 'js/widget.js'),
                 'selectPickupPoint' => \JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPMENT_NOT_SELECTED'),
-                'resolvedTemplateJSPath' => $renderer->createTemplateJSPath($this->checkoutModuleDetector->getTailBlockJs($activeCheckout))
-            ] + $variables
+                'tailBlockJsPath' => $tailBlockJsPath
+            ]
         );
 
         $html[$key] .= $renderer->renderToString();
         $htmlIn[] = $html;
 
         return TRUE;
+    }
+
+    /**
+     * @param string $task
+     * @param array $params
+     * @return string
+     */
+    protected function createSignalUrl($task, array $params = []) {
+        $params['task'] = $task;
+        $params['option'] = 'com_virtuemart';
+        $params['view'] = 'plugin';
+        $params['type'] = 'vmshipment';
+        $params['name'] = VirtueMartModelZasilkovna::PLG_NAME;
+        return Juri::base(true) . '/index.php?' . http_build_query($params);
     }
 
     /**

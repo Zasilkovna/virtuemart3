@@ -4,112 +4,47 @@ namespace VirtueMartModelZasilkovna;
 
 class CheckoutModuleDetector
 {
-    /** @var array */
-    private $checkoutConfig;
-
-    public function __construct() {
-        $this->checkoutConfig = [
-            'rupostel' => [ // checkout module custom name
-                'isDefault' => false,
-                'isActive' => function () {
-                    return $this->isModuleEnabled('plugin', 'opc') && $this->isModuleEnabled('component', 'com_onepage') && $this->isRupostelOnepageEnabled();
-                },
-                'template' => null, // null => rupostel
-                'tail-block' => null, // null => rupostel
-                'tail-block-js' => null, // null => rupostel. JS file is never resolved to default.
-            ],
-            null => [
-                'isDefault' => true,
-                'template' => 'default',
-                'tail-block' => 'default',
-                'tail-block-js' => 'vm3',
-            ],
-        ];
-    }
-
-    private function isRupostelOnepageEnabled() {
-        $q = "SELECT 1 FROM #__onepage_config WHERE config_name='opc_vm_config' AND config_subname = 'disable_op'";
-        $db = \JFactory::getDBO();
-        $db->setQuery($q);
-        $obj = $db->loadObject();
-        if (!empty($obj)) {
-            return false; // OPC is disabled
-        }
-
-        return true;
+    public function getCheckoutModulesDir() {
+        return __DIR__ . '/CheckoutModules';
     }
 
     /**
-     * @param string $type
-     * @param string $element
-     * @return bool
+     * @return \VirtueMartModelZasilkovna\CheckoutModules\AbstractResolver
      */
-    private function isModuleEnabled($type, $element) {
-        $db = \JFactory::getDBO();
-        $q = "SELECT enabled FROM #__extensions WHERE element = " . $db->quote($element) . " AND type = " . $db->quote($type);
-        $db->setQuery($q);
-        $obj = $db->loadObject();
-        if (empty($obj)) {
-            return false; // rupostel is not installed
-        }
+    public function getActiveCheckout() {
+        $defaultCheckout = null;
+        $activeCheckout = null;
 
-        return $obj->enabled === '1';
-    }
+        $baseDir = $this->getCheckoutModulesDir();
+        $result = scandir($baseDir);
+        foreach ($result as $basename) {
+            $dir = $baseDir . '/' . $basename;
+            if (!is_dir($dir) || $basename === '.' || $basename === '..') {
+                continue;
+            }
 
-    /**
-     * @return string|null
-     */
-    public function getActiveCheckoutName() {
-        foreach ($this->checkoutConfig as $name => $mapping) {
-            if (isset($mapping['isActive']) && $mapping['isDefault'] !== true) {
-                $checker = $mapping['isActive'];
-                $isActiveResult = call_user_func($checker);
-                if ($isActiveResult) {
-                    return $name;
-                }
+            $className = '\\VirtueMartModelZasilkovna\\CheckoutModules\\' . $basename. '\\Resolver';
+            /** @var \VirtueMartModelZasilkovna\CheckoutModules\AbstractResolver $checkoutResolver */
+            $checkoutResolver = new $className();
+
+            $isDefault = $checkoutResolver->isDefault();
+            $isActive = $checkoutResolver->isActive();
+
+            if ($isDefault && $isActive) {
+                $defaultCheckout = $checkoutResolver;
+                continue;
+            }
+
+            if (!$isDefault && $isActive) {
+                $activeCheckout = $checkoutResolver;
+                break;
             }
         }
 
-        return null;
-    }
-
-    /**
-     * @param string|null $checkoutName
-     * @return string
-     */
-    public function getTemplate($checkoutName) {
-        return $this->getConfigValue($checkoutName, 'template', $checkoutName);
-    }
-
-    /**
-     * @param string|null $checkoutName
-     * @return string
-     */
-    public function getTailBlock($checkoutName) {
-        return $this->getConfigValue($checkoutName, 'tail-block', $checkoutName);
-    }
-
-    /**
-     * @param string|null $checkoutName
-     * @return string
-     */
-    public function getTailBlockJs($checkoutName) {
-        return $this->getConfigValue($checkoutName, 'tail-block-js', $checkoutName);
-    }
-
-    /**
-     * @param string|null $checkoutName
-     * @param string $key
-     * @param $default
-     * @return mixed
-     */
-    private function getConfigValue($checkoutName, $key, $default = null) {
-        if (isset($this->checkoutConfig[$checkoutName][$key])) {
-            $template = $this->checkoutConfig[$checkoutName][$key];
-        } else {
-            $template = $default;
+        if ($activeCheckout) {
+            return $activeCheckout;
         }
 
-        return $template;
+        return $defaultCheckout;
     }
 }
