@@ -111,15 +111,14 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return new JResponseJson($response);
     }
 
-    public function handleProvideCheckoutModuleJsFile() {
+    public function handleProvideCheckoutTailBlockJsFile() {
         /** @var \Joomla\CMS\Application\CMSApplication $app */
         $app = JFactory::getApplication();
-        $checkoutModuleFile = $app->input->get('checkoutModuleFile', '', 'string');
-
         $app->setHeader('Content-Type', 'application/javascript', true);
         $app->sendHeaders();
 
-        $jsFile = $this->checkoutModuleDetector->getCheckoutModulesDir() . '/' . $checkoutModuleFile;
+        $activeCheckout = $this->checkoutModuleDetector->getActiveCheckout();
+        $jsFile = $activeCheckout->getTailBlockJs();
         if (is_file($jsFile)) {
             echo file_get_contents($jsFile);
         } else {
@@ -746,12 +745,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $renderer->setTemplate($activeCheckout->getTailBlock());
 
         $tailBlockJsPath = null;
-        $jsBlockId = $activeCheckout->getTailBlockJsPublicId();
-        if ($jsBlockId) {
+        if (is_file($activeCheckout->getTailBlockJs())) {
             $tailBlockJsPath = $this->createSignalUrl(
-                'provideCheckoutModuleJsFile',
+                'provideCheckoutTailBlockJsFile',
                 [
-                    'checkoutModuleFile' => $jsBlockId,
                     'v' => filemtime($activeCheckout->getTailBlockJs())
                 ]
             );

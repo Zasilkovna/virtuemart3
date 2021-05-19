@@ -55,18 +55,6 @@ abstract class AbstractResolver
         return null;
     }
 
-    /** Returns public identificator for JS file provider. Path-like format matters in file search.
-     * @return string|null
-     */
-    public function getTailBlockJsPublicId() {
-        $path = $this->getTailBlockJs();
-        if ($path) {
-            return basename(dirname($path)) . '/' . basename($path);
-        }
-
-        return null;
-    }
-
     /**
      * @param string $type
      * @param string $element
