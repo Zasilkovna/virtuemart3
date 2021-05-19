@@ -604,17 +604,17 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return false;
     }
 
+    /**
+     * @param $cart
+     * @return bool|null
+     */
     public function plgVmOnCheckoutCheckDataShipment($cart) {
         if(!($method = $this->getVmPluginMethod($cart->virtuemart_shipmentmethod_id))) {
             return null;
         }
 
         if ($method->shipment_element === VirtueMartModelZasilkovna::PLG_NAME) {
-            if (!$this->hasPointSelected()) {
-                return false;
-            }
-
-            return true;
+            return $this->hasPointSelected();
         }
 
         return null;
@@ -625,7 +625,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     public function hasPointSelected()
     {
-        $branchId = $this->session->get('branch_id', '');
+        $branchId = $this->session->get('branch_id');
         return !empty($branchId);
     }
 
@@ -650,7 +650,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         $document = JFactory::getDocument();
 
-        $document->addStyleSheet(JUri::root(true) . '/media/com_zasilkovna/media/css/packetery.css?v=' . filemtime(__DIR__ . '/../../../media/com_zasilkovna/media/css/packetery.css'));
+        $document->addStyleSheet($this->model->_media_url . 'css/packetery.css?v=' . filemtime($this->model->_media_path . 'css/packetery.css'));
 
         // If user set Shipping address same as Billing we take the billing address
         // (shipping address may contain other data but that is discarded)
@@ -729,7 +729,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                         'enterAddress' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_ENTER_ADDRESS'),
                         'baseHtml' => $baseHtml,
                         'isCountrySelected' => !empty($address['virtuemart_country_id']),
-                        'savedBranchNameStreet' => $session->get('branch_name_street', '')
+                        'savedBranchNameStreet' => $session->get('branch_name_street', ''),
                     ]
                 );
 
@@ -762,8 +762,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 'language' => $langCode,
                 'version' => $this->getVersionString(),
                 'widgetJsUrl' => $this->model->_media_url . 'js/widget.js?v=' . filemtime($this->model->_media_path . 'js/widget.js'),
-                'selectPickupPoint' => \JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPMENT_NOT_SELECTED'),
-                'tailBlockJsPath' => $tailBlockJsPath
+                'errorPickupPointNotSelected' => \JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPMENT_NOT_SELECTED'),
+                'tailBlockJsPath' => $tailBlockJsPath,
             ]
         );
 

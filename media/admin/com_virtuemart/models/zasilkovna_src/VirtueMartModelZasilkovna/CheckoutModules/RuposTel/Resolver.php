@@ -19,10 +19,6 @@ class Resolver extends AbstractResolver
         $db = \JFactory::getDBO();
         $db->setQuery($q);
         $obj = $db->loadObject();
-        if (!empty($obj)) {
-            return false; // OPC is disabled
-        }
-
-        return true;
+        return empty($obj); // checkbox is not checked, meaning OPC is not disabled
     }
 }
