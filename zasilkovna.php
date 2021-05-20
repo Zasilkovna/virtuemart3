@@ -605,10 +605,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     }
 
     /**
-     * @param $cart
+     * @param VirtueMartCart $cart
      * @return bool|null
      */
-    public function plgVmOnCheckoutCheckDataShipment($cart) {
+    public function plgVmOnCheckoutCheckDataShipment(VirtueMartCart $cart) {
         if(!($method = $this->getVmPluginMethod($cart->virtuemart_shipmentmethod_id))) {
             return null;
         }
@@ -729,7 +729,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                         'enterAddress' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_ENTER_ADDRESS'),
                         'baseHtml' => $baseHtml,
                         'isCountrySelected' => !empty($address['virtuemart_country_id']),
-                        'savedBranchNameStreet' => $session->get('branch_name_street', ''),
+                        'savedBranchNameStreet' => (string)$session->get('branch_name_street'),
                     ]
                 );
 
@@ -788,9 +788,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     }
 
     /**
-     * @param \VirtueMartCart $cart
+     * @param VirtueMartCart $cart
      */
-    public function plgVmOnUpdateCart(\VirtueMartCart $cart) {
+    public function plgVmOnUpdateCart(VirtueMartCart $cart) {
         $virtuemartShipmentMethodId = $cart->virtuemart_shipmentmethod_id;
         if (empty($virtuemartShipmentMethodId)) {
             return null; // shipping method not selected by customer
@@ -809,7 +809,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $code = strtolower(ShopFunctions::getCountryByID($address['virtuemart_country_id'], 'country_2_code'));
-        $sessionCountry = $this->session->get('branch_country', '');
+        $sessionCountry = $this->session->get('branch_country');
         if ($sessionCountry && $code !== $sessionCountry) {
             $this->clearPickedDeliveryPoint();
             $cart->virtuemart_shipmentmethod_id = null; // makes selected shipping method disappear
@@ -876,7 +876,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     }
 
     /**
-     * @param \VirtueMartCart $cart
+     * @param VirtueMartCart $cart
      * @param array $cart_prices
      * @param $cart_prices_name
      * @return mixed
