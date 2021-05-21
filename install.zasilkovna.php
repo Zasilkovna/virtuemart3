@@ -81,7 +81,12 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	 * @return  boolean  True on success
 	 */
 	public function preflight($route, JAdapterInstance $adapter) {
+        if ($route === 'update') {
+            $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna';
+            recurse_delete($media_path);
 
+            $this->removeAdministratorFiles();
+        }
 	}
 
     /**
@@ -412,19 +417,23 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 		$db->setQuery($q);
 		$db->query();
 
-		$vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
-		recurse_delete($vm_admin_path . DS . 'models' . DS . 'zasilkovna.php');
-		recurse_delete($vm_admin_path . DS . 'models' . DS . 'zasilkovna_orders.php');
-		recurse_delete($vm_admin_path . DS . 'models' . DS . 'zasilkovna_src' . DS);
-		recurse_delete($vm_admin_path . DS . 'views' . DS . 'zasilkovna' . DS);
-		recurse_delete($vm_admin_path . DS . 'controllers' . DS . 'zasilkovna.php');
-		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'en-GB' . DS . 'en-GB.plg_vmshipment_zasilkovna.ini');
-		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'cs-CZ' . DS . 'cs-CZ.plg_vmshipment_zasilkovna.ini');
-		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'sk-SK' . DS . 'sk-SK.plg_vmshipment_zasilkovna.ini', true);
-		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'pl-PL' . DS . 'pl-PL.plg_vmshipment_zasilkovna.ini', true);
-		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'hu-HU' . DS . 'hu-HU.plg_vmshipment_zasilkovna.ini', true);
-		recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'ro-RO' . DS . 'ro-RO.plg_vmshipment_zasilkovna.ini', true);
+		$this->removeAdministratorFiles();
 	}
+
+    private function removeAdministratorFiles() {
+        $vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
+        recurse_delete($vm_admin_path . DS . 'models' . DS . 'zasilkovna.php');
+        recurse_delete($vm_admin_path . DS . 'models' . DS . 'zasilkovna_orders.php');
+        recurse_delete($vm_admin_path . DS . 'models' . DS . 'zasilkovna_src' . DS);
+        recurse_delete($vm_admin_path . DS . 'views' . DS . 'zasilkovna' . DS);
+        recurse_delete($vm_admin_path . DS . 'controllers' . DS . 'zasilkovna.php');
+        recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'en-GB' . DS . 'en-GB.plg_vmshipment_zasilkovna.ini');
+        recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'cs-CZ' . DS . 'cs-CZ.plg_vmshipment_zasilkovna.ini');
+        recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'sk-SK' . DS . 'sk-SK.plg_vmshipment_zasilkovna.ini', true);
+        recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'pl-PL' . DS . 'pl-PL.plg_vmshipment_zasilkovna.ini', true);
+        recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'hu-HU' . DS . 'hu-HU.plg_vmshipment_zasilkovna.ini', true);
+        recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'ro-RO' . DS . 'ro-RO.plg_vmshipment_zasilkovna.ini', true);
+    }
 
 }
 

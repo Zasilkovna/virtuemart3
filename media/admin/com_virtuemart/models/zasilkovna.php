@@ -14,7 +14,7 @@ if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmod
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.1.9';
+    const VERSION = '1.1.10';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
