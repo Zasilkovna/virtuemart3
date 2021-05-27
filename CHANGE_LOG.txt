@@ -7,3 +7,4 @@
       - Fixed: quotes fix in translations
       - Updated: translations unification, additions and pruning
       - Updated: RuposTel OPC compatibility
+      - Updated: remembering chosen pickup point for each shipment method separately
