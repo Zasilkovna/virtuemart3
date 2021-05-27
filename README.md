@@ -24,9 +24,8 @@ To install the plug-in, you need to do the following:
 - In the Joomla administration, select in the top menu **VirtueMart** / **Configuration**.
 - Select in the left menu **CONFIGURATION** / **PACKETA**.
 - Go to the ** Configuration ** tab.
-- Fill in **API key** which you can find in the [client section] (https://client.packeta.com/cs/support/) » Client support.
-- Enter ** E-shop ID ** - the sender name you have set in the client section of your [sender] (https://client.packeta.com/cs/senders/).
-
+- Fill in **API key** which you can find in the [client section](https://client.packeta.com/support/) » Client support.
+- Enter ** E-shop ID ** - the sender name you have set in the client section of your [sender](https://client.packeta.com/senders/).
 
 ##### General rules
 
