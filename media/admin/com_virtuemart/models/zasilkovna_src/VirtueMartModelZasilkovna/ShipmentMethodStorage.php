@@ -4,8 +4,7 @@ namespace VirtueMartModelZasilkovna;
 
 class ShipmentMethodStorage
 {
-    const SHIPMENT_METHOD_STORAGE_PREFIX = 'shipmentMethod-';
-    const SESSION_NAMESPACE = 'packetery';
+    private $namespace = 'packeteryShipmentMethods';
 
     /** @var \Joomla\CMS\Session\Session */
     private $session;
@@ -19,48 +18,32 @@ class ShipmentMethodStorage
     }
 
     /**
-     * @param int $methodId
+     * @param string|int $methodId
      * @param string $key
      * @param mixed $default
      * @return mixed
      */
     public function get($methodId, $key, $default = null)
     {
-        $methodStorageId = self::SHIPMENT_METHOD_STORAGE_PREFIX . $methodId;
-        $stored = $this->session->get($methodStorageId, null, self::SESSION_NAMESPACE);
-        if (!is_array($stored) || !isset($stored[$key])) {
-
-            return $default;
-        }
-
-        return $stored[$key];
+        return $this->session->get($methodId . '.' . $key, $default, $this->namespace);
     }
 
     /**
-     * @param int $methodId
+     * @param string|int $methodId
      * @param string $key
      * @param mixed $value
-     * @return mixed
      */
     public function set($methodId, $key, $value)
     {
-        $methodStorageId = self::SHIPMENT_METHOD_STORAGE_PREFIX . $methodId;
-        $stored = $this->session->get($methodStorageId, null, self::SESSION_NAMESPACE);
-        if (!is_array($stored)) {
-            $stored = [];
-        }
-        $stored[$key] = $value;
-
-        return $this->session->set($methodStorageId, $stored, self::SESSION_NAMESPACE);
+        $this->session->set($methodId . '.' . $key, $value, $this->namespace);
     }
 
     /**
-     * @param int $methodId
+     * @param string|int $methodId
      * @param string $key
-     * @return mixed
      */
     public function clear($methodId, $key)
     {
-        return $this->set($methodId, $key, null);
+        $this->session->clear($methodId . '.' . $key);
     }
 }
