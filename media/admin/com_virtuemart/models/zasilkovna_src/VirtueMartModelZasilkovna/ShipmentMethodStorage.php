@@ -4,6 +4,7 @@ namespace VirtueMartModelZasilkovna;
 
 class ShipmentMethodStorage
 {
+    /** @var string */
     private $namespace = 'packeteryShipmentMethods';
 
     /** @var \Joomla\CMS\Session\Session */
@@ -44,6 +45,6 @@ class ShipmentMethodStorage
      */
     public function clear($methodId, $key)
     {
-        $this->session->clear($methodId . '.' . $key);
+        $this->session->clear($methodId . '.' . $key, $this->namespace);
     }
 }
