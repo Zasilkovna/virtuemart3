@@ -228,8 +228,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         // GET PARAMETERS FROM SESSION AND CLEAR
         $branch_id = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_id', 0);
         $branch_name_street = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_name_street', '');
-        $branch_carrier_id = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_carrier_id', null);
-        $branch_carrier_pickup_point = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_carrier_pickup_point', null);
+        $branch_carrier_id = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_carrier_id');
+        $branch_carrier_pickup_point = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_carrier_pickup_point');
 
         $this->clearPickedDeliveryPoint($cart->virtuemart_shipmentmethod_id);
 
@@ -672,10 +672,14 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         // If the country stored in session is different from the one in the address
         // we clear session variables = the pickup point is deselected
-        $countrySession = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_country', '');
-        if ($countrySession !== $code)
-        {
-            $this->clearPickedDeliveryPoint($cart->virtuemart_shipmentmethod_id);
+        $shipmentIds = $this->model->getShipmentMethodIds();
+        if ($shipmentIds) {
+            foreach ($shipmentIds as $shipmentId) {
+                $countrySession = $this->shipmentMethodStorage->get($shipmentId, 'branch_country', '');
+                if ($countrySession !== '' && $countrySession !== $code) {
+                    $this->clearPickedDeliveryPoint($shipmentId);
+                }
+            }
         }
 
         $lang = JFactory::getLanguage();
@@ -736,7 +740,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                         'baseHtml' => $baseHtml,
                         'isCountrySelected' => !empty($address['virtuemart_country_id']),
                         'savedBranchNameStreet' =>
-                            (string)$this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_name_street', ''),
+                            (string)$this->shipmentMethodStorage->get($method->virtuemart_shipmentmethod_id, 'branch_name_street', ''),
                     ]
                 );
 
