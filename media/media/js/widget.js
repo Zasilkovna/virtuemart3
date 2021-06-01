@@ -44,7 +44,8 @@ jQuery(function() {
 			if (!pickupPoint.id)
 				return;
 
-			jQuery(".picked-delivery-place").html(pickupPoint.nameStreet + ", " + pickupPoint.zip);
+			getSelectedPacketeryBox().find('.picked-delivery-place').html(pickupPoint.nameStreet + ', ' + pickupPoint.zip);
+			var selectedShipmentId = jQuery('input[name=virtuemart_shipmentmethod_id]:checked').val();
 
 			Virtuemart.startVmLoading({data: {msg: ''}});
 			jQuery.ajax({
@@ -57,6 +58,7 @@ jQuery(function() {
 					branch_country: pickupPoint.country,
 					branch_carrier_id: pickupPoint.carrierId ? pickupPoint.carrierId : '',
 					branch_carrier_pickup_point: pickupPoint.carrierPickupPointId ? pickupPoint.carrierPickupPointId : '',
+					shipment_id: selectedShipmentId,
 				},
 				complete: function() {
 					Virtuemart.stopVmLoading();
