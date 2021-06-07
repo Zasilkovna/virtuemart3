@@ -8,3 +8,5 @@
       - Updated: translations unification, additions and pruning
       - Updated: RuposTel OPC compatibility
       - Updated: remembering chosen pickup point for each shipment method separately
+      - Fixed: obsolete iframe in cart deleted
+      - Fixed: pickup point choice enabled even for automatically selected shipment

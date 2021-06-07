@@ -893,6 +893,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @return mixed
      */
     public function plgVmonSelectedCalculatePriceShipment(VirtueMartCart $cart, array &$cart_prices, &$cart_prices_name) {
+        $cart->automaticSelectedShipment = false;
         return $this->onSelectedCalculatePrice($cart, $cart_prices, $cart_prices_name);
     }
 
