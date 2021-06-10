@@ -374,7 +374,7 @@ class ShipmentMethod
     /**
      * @return \stdClass
      */
-    private function getParams()
+    public function getParams()
     {
         return $this->method;
     }
