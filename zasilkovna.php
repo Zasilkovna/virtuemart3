@@ -549,7 +549,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /**
      * Is delivery available?
      * @param VirtueMartCart $cart
-     * @param $method
+     * @param TableShipmentmethods $method
      * @param array $cart_prices
      * @return bool
      */
@@ -561,15 +561,18 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $orderMaxWeight = ($method->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT);
         $orderActualWeight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
 
-        if($orderActualWeight > $orderMaxWeight)
-        {
-            return FALSE;
+        if ($orderActualWeight > $orderMaxWeight) {
+            return false;
         }
 
-        // intentionally ==
-        return !($this->getCosts($cart, $method, $cart_prices) == 0 && !$this->isFreeShippingActive($cart, $cart_prices, $method));
-    }
+        $deliveryCost = (int)$this->getCosts($cart, $method, $cart_prices);
+        $isFreeShippingActive = $this->isFreeShippingActive($cart, $cart_prices, $method);
+        if (($deliveryCost === 0 && !$isFreeShippingActive) === true) {
+            return false;
+        }
 
+        return parent::checkConditions($cart, $method->getParams(), $cart_prices);
+    }
 
     /**
      * Create the table for this plugin if it does not yet exist.
