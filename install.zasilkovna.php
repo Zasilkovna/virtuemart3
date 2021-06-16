@@ -230,11 +230,15 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
      *  migrates price rules
      */
     private function migratePricingRules() {
-        require_once JPATH_ADMINISTRATOR . '/components/com_virtuemart/install/script.virtuemart.php';
-        $vmInstall = new \com_virtuemartInstallerScript();
-        $vmInstall->loadVm(false);
+        if (!defined('JPATH_VM_PLUGINS')) {
+            if (!class_exists('VmConfig')) {
+                require(JPATH_ADMINISTRATOR . DIRECTORY_SEPARATOR . 'components' . DIRECTORY_SEPARATOR . 'com_virtuemart' . DIRECTORY_SEPARATOR . 'helpers' . DIRECTORY_SEPARATOR . 'config.php');
+            }
 
-        require_once __DIR__ . '/zasilkovna.php';
+            VmConfig::loadConfig();
+        }
+
+        VmConfig::importVMPlugins('vmshipment', 'zasilkovna');
 
         /** @var \VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
