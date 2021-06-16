@@ -108,6 +108,10 @@
         </fields>
     </vmconfig>
 
+    <updateservers>
+        <server type="extension">http://virtuemart3.dev.vm/update.xml</server>
+    </updateservers>
+
     <media folder="media" destination="com_zasilkovna">
         <folder>admin</folder>
         <folder>media</folder>
