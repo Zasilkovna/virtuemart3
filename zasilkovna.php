@@ -394,8 +394,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /**
      * Return delivery price for weight, NULL if none found.
      * @param int $countryId
-     * @param $method
-     * @param $weight
+     * @param ShipmentMethod $method
+     * @param float $weight
      * @return float|null
      */
     protected function resolveCountryPrice($countryId, ShipmentMethod $method, $weight)
@@ -544,7 +544,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         // 2) Try calculate country delivery price for weight.
         $resolvedPrice = $this->resolveCountryPrice($code, $method, $totalWeight);
 
-        if ($resolvedPrice !== NULL)
+        if ($resolvedPrice !== null)
         {
             return $resolvedPrice;
         }
