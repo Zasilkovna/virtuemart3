@@ -391,30 +391,38 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return implode('-', $versionStrings);
     }
 
-
     /**
      * Return delivery price for weight, NULL if none found.
      * @param int $countryId
-     * @param $method
-     * @param $weight
+     * @param ShipmentMethod $method
+     * @param float $weight
      * @return float|null
      */
-    protected function getCountryPrice($countryId, ShipmentMethod $method, $weight)
+    protected function resolveCountryPrice($countryId, ShipmentMethod $method, $weight)
     {
-        // Load default price from configuration.
-        $defaultPrice = $method->getCountryDefaultPrice($countryId);
+        $hasCountryConfig = $method->hasPricingRuleForCountry($countryId);
 
-        $config = $method->getCountryWeightRule($countryId, $weight);
-        if ($config) {
-            return (float) $config->price;
+        if ($hasCountryConfig) {
+            $weightRules = $method->getCountryWeightRules($countryId);
+            if ($weightRules) {
+                $weightRule = $method->resolveWeightRule($weightRules, $weight);
+                if ($weightRule) {
+                    return (float) $weightRule->price;
+                }
+            }
+
+            return $method->getCountryDefaultPrice($countryId);
         }
 
-        $config = $method->getCountryWeightRule(null, $weight);
-        if ($config) {
-            return (float) $config->price;
+        $weightRules = $method->getGlobalWeightRules();
+        if ($weightRules) {
+            $weightRule = $method->resolveWeightRule($weightRules, $weight);
+            if ($weightRule) {
+                return (float) $weightRule->price;
+            }
         }
 
-        return $defaultPrice;
+        return null;
     }
 
     /**
@@ -534,11 +542,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         // 2) Try calculate country delivery price for weight.
-        $weightPrice = $this->getCountryPrice($code, $method, $totalWeight);
+        $resolvedPrice = $this->resolveCountryPrice($code, $method, $totalWeight);
 
-        if ($weightPrice !== NULL)
+        if ($resolvedPrice !== null)
         {
-            return $weightPrice;
+            return $resolvedPrice;
         }
 
         // 4) Return default delivery price.

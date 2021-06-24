@@ -274,22 +274,15 @@ class ShipmentMethod
     }
 
     /**
-     * @param int|null $countryId
+     * @param iterable $weightRules
      * @param float $weight
-     * @return \sdtClass|null
+     * @return \stdClass|null
      */
-    public function getCountryWeightRule($countryId, $weight)
-    {
-        if ($countryId === null) {
-            $weightRules = $this->getGlobalWeightRules();
-        } else {
-            $weightRules = $this->getCountryWeightRules($countryId);
-        }
-
+    public function resolveWeightRule($weightRules, $weight) {
         $minWeight = null;
-
         $finalWeightRule = null;
         $weightRules = ($weightRules ?: []);
+
         foreach ($weightRules as $key => $weightRule) {
             if (is_numeric($weightRule->maxWeightKg) && is_numeric($weightRule->price) && $weight <= $weightRule->maxWeightKg) {
                 if ($minWeight === null || $minWeight > $weightRule->maxWeightKg) {
@@ -333,6 +326,15 @@ class ShipmentMethod
     public function getGlobalWeightRules()
     {
         return $this->getParams()->globalWeightRules;
+    }
+
+    /**
+     * @param int $countryId
+     * @return bool
+     */
+    public function hasPricingRuleForCountry($countryId) {
+        $rules = $this->getPricingRulesForCountry($countryId);
+        return !empty($rules);
     }
 
     /**
