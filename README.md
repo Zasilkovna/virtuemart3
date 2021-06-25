@@ -8,8 +8,8 @@
 
 ### Installation
 
-The current version of the module is available on the github in the repository https://github.com/Zasilkovna/virtuemart3. 
-To download the module directly as a zip package, click the button **Clone or download** and choose an option **Download ZIP**.
+The current version of the module is available on GitHub in the repository https://github.com/Zasilkovna/virtuemart3. 
+To download the module directly as a zip package, click the button **Clone or download** and choose the option **Download ZIP**.
 
 To install the plug-in, you need to do the following:
 
@@ -50,10 +50,10 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 - In the Joomla administration, select the item in the top menu **VirtueMart** / **Configuration**.
 - Select in the left menu **CONFIGURATION** / **PACKETA**.
 - Go to the ** Orders ** tab.
-- To export shipments, check the checkbox in the first column of the order and then click the ** CSV ** button (when exporting to a csv file) or the ** Submit Shipments ** button (in case of direct submission).
+- To export shipments, check the checkbox in the first column of the order and then click the ** CSV ** button (when exporting to a CSV file) or the ** Submit Shipments ** button (in case of direct submission).
 
 - Export shipments to CSV file:
-    - Mark orders (by checkbox) that you want to export to CSV file.
+    - Mark orders (by the checkbox) that you want to export to the CSV file.
     - Above the list of orders, click the ** CSV ** button to save the file.
 
 - Direct submission (via API):
@@ -80,8 +80,8 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 - Set different prices for different target countries
 - Setting prices according to weight rules
 - Free shipping from the specified price or weight of the order
-- Export shipments to csv file, which can be imported in [client section](https://client.packeta.com/)
-- Direct orders submission to the Packeta system and labels printing
+- Export shipments to a CSV file, which can be imported in [client section](https://client.packeta.com/)
+- Direct submission of orders to the Packeta system and labels printing
 
 ### OPC support
 
