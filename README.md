@@ -75,14 +75,20 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 
 #### Functions provided:
 
-- Widget integration in eshop cart
+- Integration of [widget v6](https://widget.packeta.com/v6) for selection of pickup points in the e-shop cart.
+- Support for pickup points of external carriers.
 - Set different prices for different target countries
 - Setting prices according to weight rules
 - Free shipping from the specified price or weight of the order
 - Export shipments to csv file, which can be imported in [client section](https://client.packeta.com/)
-- Přímé podání zásilek do systému Zásilkovny a tisk štítků
 - Direct orders submission to the Packeta system and labels printing
 
+### OPC support
+
+- *One Page Checkout for VirtueMart* from [RuposTel](https://www.rupostel.com/)
+
+In case you are using another third-party cart module, please write to [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
+Packeta module may not work with another OPC module.
 
 # Modul pro VirtueMart 3 + Joomla 3
 
@@ -160,9 +166,15 @@ Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Met
 
 #### Poskytované funkce:
 
-- Integrace widgetu v košíku eshopu
-- Nastavení různé ceny pro různé cílové země
+- Integrace [widgetu v6](https://widget.packeta.com/v6) pro výběr výdejních míst v košíku eshopu.
+- Podpora výdejních míst externích dopravců.
 - Nastavení cen podle váhových pravidel
 - Doprava zdarma od zadané ceny nebo hmotnosti objednávky
 - Export zásilek do csv souboru, který lze importovat v [klientské sekci](https://client.packeta.com/)
 - Přímé podání zásilek do systému Zásilkovny a tisk štítků
+
+### Podpora pro OPC
+- *One Page Checkout for VirtueMart* od [RuposTel](https://www.rupostel.com/)
+
+Pokud používáte nějaký jiný modul košíku třetí strany, napište nám [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
+Modul Zásilkovny nemusí být s jiným OPC modulem funkční.
