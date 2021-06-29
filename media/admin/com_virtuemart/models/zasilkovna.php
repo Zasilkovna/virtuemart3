@@ -263,7 +263,6 @@ class VirtueMartModelZasilkovna extends VmModel
         if($this->checked_configuration) return $this->config_ok;
         $this->checked_configuration = true;
         $key = $this->api_key;
-        $testUrl = $this->_zas_url . "api/v3/$key/test";
 
         if(!$key) {
             $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_API_KEY_NOT_SET');
@@ -276,9 +275,6 @@ class VirtueMartModelZasilkovna extends VmModel
             $this->config_ok = false;
 
             return false;
-        }
-        if($this->fetch($testUrl) != 1) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_API_KEY_NOT_VERIFIED');
         }
         $this->config_ok = true;
 
