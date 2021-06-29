@@ -4,7 +4,7 @@
 
 ### Download module
 
-[Actual version 1.1.9](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.9.zip)
+[Actual version 1.2.0](https://github.com/Zasilkovna/virtuemart3/archive/v1.2.0.zip)
 
 ### Installation
 
@@ -29,7 +29,7 @@ To install the plug-in, you need to do the following:
 
 ##### General rules
 
-Since version 1.1.9 pricing rules have been moved to shipping method configuration
+Since version 1.2.0 pricing rules have been moved to shipping method configuration
 
 - **default price** - the shipping price applies if the country-specific default price is not filled
 - **Maximum weight** - for orders with a larger weight, the Packeta shipping method will not be offered in the cart
@@ -79,7 +79,7 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 - Support for pickup points of external carriers.
 - Set different prices for different target countries.
 - Setting prices according to weight rules.
-- Free shipping from the specified price or weight of the order.
+- Free shipping from the specified price of the order.
 - Export shipments to a CSV file, which can be imported in [client section](https://client.packeta.com/).
 - Direct submission of orders to the Packeta system and labels printing.
 
@@ -94,7 +94,7 @@ Packeta module may not work with another OPC module.
 
 ### Stažení modulu
 
-[Aktuální verze 1.1.9](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.9.zip)
+[Aktuální verze 1.2.0](https://github.com/Zasilkovna/virtuemart3/archive/v1.2.0.zip)
 
 ### Instalace
 
@@ -120,7 +120,7 @@ Pro instalaci plug-inu je potřeba provést následující kroky:
 
 ##### Obecná pravidla 
 
-Od verze 1.1.9 se cenová pravidla konfigurují v detailu způsobu dopravy 
+Od verze 1.2.0 se cenová pravidla konfigurují v detailu způsobu dopravy 
 
 - **Výchozí cena** - cena za přepravu se použije v případě, že není vyplněna výchozí cena u konkrétní země
 - **Maximální váha** - u objednávek s větší hmotnostní nebude v košíku přepravní metoda Zásilkovna nabízena
@@ -170,7 +170,7 @@ Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Met
 - Podpora výdejních míst externích dopravců.
 - Nastavení různých cen pro různé cílové země.
 - Nastavení cen podle váhových pravidel.
-- Doprava zdarma od zadané ceny nebo hmotnosti objednávky.
+- Doprava zdarma od zadané ceny objednávky.
 - Export zásilek do CSV souboru, který lze importovat v [klientské sekci](https://client.packeta.com/).
 - Přímé podání zásilek do systému Zásilkovny a tisk štítků.
 

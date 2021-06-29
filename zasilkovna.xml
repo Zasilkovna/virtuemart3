@@ -8,12 +8,12 @@
     <author>Zásilkovna s.r.o.</author>
     <authorEmail>technicka.podpora@zasilkovna.cz</authorEmail>
     <authorUrl>http://www.zasilkovna.cz/</authorUrl>
-    <copyright>(c) 2020 Zásilkovna s.r.o.</copyright>
+    <copyright>(c) 2021 Zásilkovna s.r.o.</copyright>
     <license>License Info with link</license>
     <!--  The version string is recorded in the components table -->
-    <version>1.1.9</version>
+    <version>1.2.0</version>
     <!--  The date for the actual version release -->
-    <releaseDate>2020-04-14</releaseDate>
+    <releaseDate>2021-06-29</releaseDate>
     <!--  Type of release: Bug fix, Security Fix, Minor update, Major update -->
     <releaseType>Major update</releaseType>
     <!-- The description is optional and defaults to the name -->
