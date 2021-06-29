@@ -1,4 +1,4 @@
-1.1.9 - Added: packeta shipping method configuration
+1.2.0 - Added: packeta shipping method configuration
       - Added: configuration for other countries than previously specified is now possible
       - Added: data migration from 1.1.8 data structure
       - Added: packeta widget v6 integration
