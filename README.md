@@ -71,17 +71,17 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 #### Supported versions:
 
 - VirtueMart 3 + Joomla 3
-- If you have trouble using the module, please contact us at [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz)
+- If you have trouble using the module, please contact us at [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
 
 #### Functions provided:
 
 - Integration of [widget v6](https://widget.packeta.com/v6) for selection of pickup points in the e-shop cart.
 - Support for pickup points of external carriers.
-- Set different prices for different target countries
-- Setting prices according to weight rules
-- Free shipping from the specified price or weight of the order
-- Export shipments to a CSV file, which can be imported in [client section](https://client.packeta.com/)
-- Direct submission of orders to the Packeta system and labels printing
+- Set different prices for different target countries.
+- Setting prices according to weight rules.
+- Free shipping from the specified price or weight of the order.
+- Export shipments to a CSV file, which can be imported in [client section](https://client.packeta.com/).
+- Direct submission of orders to the Packeta system and labels printing.
 
 ### OPC support
 
@@ -168,10 +168,11 @@ Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Met
 
 - Integrace [widgetu v6](https://widget.packeta.com/v6) pro výběr výdejních míst v košíku eshopu.
 - Podpora výdejních míst externích dopravců.
-- Nastavení cen podle váhových pravidel
-- Doprava zdarma od zadané ceny nebo hmotnosti objednávky
-- Export zásilek do csv souboru, který lze importovat v [klientské sekci](https://client.packeta.com/)
-- Přímé podání zásilek do systému Zásilkovny a tisk štítků
+- Nastavení různých cen pro různé cílové země.
+- Nastavení cen podle váhových pravidel.
+- Doprava zdarma od zadané ceny nebo hmotnosti objednávky.
+- Export zásilek do CSV souboru, který lze importovat v [klientské sekci](https://client.packeta.com/).
+- Přímé podání zásilek do systému Zásilkovny a tisk štítků.
 
 ### Podpora pro OPC
 - *One Page Checkout for VirtueMart* od [RuposTel](https://www.rupostel.com/)
