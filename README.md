@@ -4,12 +4,12 @@
 
 ### Download module
 
-[Actual version 1.1.8](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.8.zip)
+[Actual version 1.2.0](https://github.com/Zasilkovna/virtuemart3/archive/v1.2.0.zip)
 
 ### Installation
 
-The current version of the module is available on the github in the repository https://github.com/Zasilkovna/virtuemart3. 
-To download the module directly as a zip package, click the button **Clone or download** and choose an option **Download ZIP**.
+The current version of the module is available on GitHub in the repository https://github.com/Zasilkovna/virtuemart3. 
+To download the module directly as a zip package, click the button **Clone or download** and choose the option **Download ZIP**.
 
 To install the plug-in, you need to do the following:
 
@@ -24,11 +24,12 @@ To install the plug-in, you need to do the following:
 - In the Joomla administration, select in the top menu **VirtueMart** / **Configuration**.
 - Select in the left menu **CONFIGURATION** / **PACKETA**.
 - Go to the ** Configuration ** tab.
-- Fill in **API key** which you can find in the [client section] (https://client.packeta.com/cs/support/) » Client support.
-- Enter ** E-shop ID ** - the sender name you have set in the client section of your [sender] (https://client.packeta.com/cs/senders/).
-
+- Fill in **API key** which you can find in the [client section](https://client.packeta.com/support/) » Client support.
+- Enter ** E-shop ID ** - the sender name you have set in the client section of your [sender](https://client.packeta.com/senders/).
 
 ##### General rules
+
+Since version 1.2.0 pricing rules have been moved to shipping method configuration
 
 - **default price** - the shipping price applies if the country-specific default price is not filled
 - **Maximum weight** - for orders with a larger weight, the Packeta shipping method will not be offered in the cart
@@ -49,10 +50,10 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 - In the Joomla administration, select the item in the top menu **VirtueMart** / **Configuration**.
 - Select in the left menu **CONFIGURATION** / **PACKETA**.
 - Go to the ** Orders ** tab.
-- To export shipments, check the checkbox in the first column of the order and then click the ** CSV ** button (when exporting to a csv file) or the ** Submit Shipments ** button (in case of direct submission).
+- To export shipments, check the checkbox in the first column of the order and then click the ** CSV ** button (when exporting to a CSV file) or the ** Submit Shipments ** button (in case of direct submission).
 
 - Export shipments to CSV file:
-    - Mark orders (by checkbox) that you want to export to CSV file.
+    - Mark orders (by the checkbox) that you want to export to the CSV file.
     - Above the list of orders, click the ** CSV ** button to save the file.
 
 - Direct submission (via API):
@@ -70,24 +71,30 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 #### Supported versions:
 
 - VirtueMart 3 + Joomla 3
-- If you have trouble using the module, please contact us at [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz)
+- If you have trouble using the module, please contact us at [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
 
 #### Functions provided:
 
-- Widget integration in eshop cart
-- Set different prices for different target countries
-- Setting prices according to weight rules
-- Free shipping from the specified price or weight of the order
-- Export shipments to csv file, which can be imported in [client section](https://client.packeta.com/)
-- Přímé podání zásilek do systému Zásilkovny a tisk štítků
-- Direct orders submission to the Packeta system and labels printing
+- Integration of [widget v6](https://widget.packeta.com/v6) for selection of pickup points in the e-shop cart.
+- Support for pickup points of external carriers.
+- Set different prices for different target countries.
+- Setting prices according to weight rules.
+- Free shipping from the specified price of the order.
+- Export shipments to a CSV file, which can be imported in [client section](https://client.packeta.com/).
+- Direct submission of orders to the Packeta system and labels printing.
 
+### OPC support
+
+- *One Page Checkout for VirtueMart* from [RuposTel](https://www.rupostel.com/)
+
+In case you are using another third-party cart module, please write to [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
+Packeta module may not work with another OPC module.
 
 # Modul pro VirtueMart 3 + Joomla 3
 
 ### Stažení modulu
 
-[Aktuální verze 1.1.8](https://github.com/Zasilkovna/virtuemart3/archive/v1.1.8.zip)
+[Aktuální verze 1.2.0](https://github.com/Zasilkovna/virtuemart3/archive/v1.2.0.zip)
 
 ### Instalace
 
@@ -112,6 +119,8 @@ Pro instalaci plug-inu je potřeba provést následující kroky:
 
 
 ##### Obecná pravidla 
+
+Od verze 1.2.0 se cenová pravidla konfigurují v detailu způsobu dopravy 
 
 - **Výchozí cena** - cena za přepravu se použije v případě, že není vyplněna výchozí cena u konkrétní země
 - **Maximální váha** - u objednávek s větší hmotnostní nebude v košíku přepravní metoda Zásilkovna nabízena
@@ -157,9 +166,16 @@ Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Met
 
 #### Poskytované funkce:
 
-- Integrace widgetu v košíku eshopu
-- Nastavení různé ceny pro různé cílové země
-- Nastavení cen podle váhových pravidel
-- Doprava zdarma od zadané ceny nebo hmotnosti objednávky
-- Export zásilek do csv souboru, který lze importovat v [klientské sekci](https://client.packeta.com/)
-- Přímé podání zásilek do systému Zásilkovny a tisk štítků
+- Integrace [widgetu v6](https://widget.packeta.com/v6) pro výběr výdejních míst v košíku eshopu.
+- Podpora výdejních míst externích dopravců.
+- Nastavení různých cen pro různé cílové země.
+- Nastavení cen podle váhových pravidel.
+- Doprava zdarma od zadané ceny objednávky.
+- Export zásilek do CSV souboru, který lze importovat v [klientské sekci](https://client.packeta.com/).
+- Přímé podání zásilek do systému Zásilkovny a tisk štítků.
+
+### Podpora pro OPC
+- *One Page Checkout for VirtueMart* od [RuposTel](https://www.rupostel.com/)
+
+Pokud používáte nějaký jiný modul košíku třetí strany, napište nám [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
+Modul Zásilkovny nemusí být s jiným OPC modulem funkční.

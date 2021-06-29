@@ -1,0 +1,13 @@
+1.2.0 - Added: packeta shipping method configuration
+      - Added: configuration for other countries than previously specified is now possible
+      - Added: data migration from 1.1.8 data structure
+      - Added: packeta widget v6 integration
+      - Fixed: multiple Packeta shipping methods in checkout are now possible
+      - Fixed: packet export fix
+      - Fixed: quotes fix in translations
+      - Updated: translations unification, additions and pruning
+      - Updated: RuposTel OPC compatibility
+      - Updated: remembering chosen pickup point for each shipment method separately
+      - Fixed: obsolete iframe in cart deleted
+      - Fixed: pickup point choice enabled even for automatically selected shipment
+      - Fixed: shipping method display in cart respects all conditions

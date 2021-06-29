@@ -1,0 +1,22 @@
+<script type="text/javascript">
+
+    window.packetery = (function(){
+        var packetery =  window.packetery || {};
+
+        packetery.savePickupPointUrl = <?php echo json_encode($savePickupPointUrl); ?>;
+        packetery.apiKey = <?php echo json_encode($apiKey); ?>;
+        packetery.country = <?php echo json_encode($country); ?>;
+        packetery.language = <?php echo json_encode($language); ?>;
+        packetery.version = <?php echo json_encode($version); ?>;
+
+        return packetery;
+    })();
+
+</script>
+<script src="https://widget.packeta.com/v6/www/js/library.js"></script>
+<script src="<?php echo htmlentities($widgetJsUrl); ?>"></script>
+<script>toggleZasilkovnaBox();</script>
+
+<?php if ($tailBlockJsPath) { ?>
+    <script src="<?php echo htmlentities($tailBlockJsPath); ?>"></script>
+<?php } ?>
