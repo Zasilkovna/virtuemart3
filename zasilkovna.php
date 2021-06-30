@@ -631,7 +631,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         if ($method->shipment_element === VirtueMartModelZasilkovna::PLG_NAME) {
-            return $this->hasPointSelected($cart->virtuemart_shipmentmethod_id);
+            $has = $this->hasPointSelected($cart->virtuemart_shipmentmethod_id);
+            if ($has === false) {
+                vmError(JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPMENT_NOT_SELECTED'));
+            }
+
+            return $has;
         }
 
         return null;
