@@ -709,6 +709,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $address['virtuemart_country_id'] = 0;
         }
 
+        $lastHtmlMethodKey = null;
         $activeCheckout = $this->checkoutModuleDetector->getActiveCheckout();
         foreach($this->methods as $key => $method) {
 
@@ -756,6 +757,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 );
 
                 $html[$key] = $renderer->renderToString();
+                $lastHtmlMethodKey = $key;
             }
         }
 
@@ -789,7 +791,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             ]
         );
 
-        $html[$key] .= $renderer->renderToString();
+        $html[$lastHtmlMethodKey] .= $renderer->renderToString();
         $htmlIn[] = $html;
 
         return TRUE;
