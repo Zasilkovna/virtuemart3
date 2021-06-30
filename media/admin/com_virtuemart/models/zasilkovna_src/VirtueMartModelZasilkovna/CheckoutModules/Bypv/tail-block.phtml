@@ -1,0 +1,21 @@
+<?php include __DIR__ . '/../tail-block-base.phtml'; ?>
+
+<script>
+    if(VirtueMartCart_byPV && VirtueMartCart_byPV.CART_SELECTOR && VirtueMartCart_byPV.renderMessages) {
+        jQuery('body').off('click.packeteryBypvValidation').on(
+            'click.packeteryBypvValidation',
+            VirtueMartCart_byPV.CART_SELECTOR + ' [name="bypv_submit_checkout"], ' + VirtueMartCart_byPV.CART_SELECTOR + ' [name="bypv_submit_confirm"]',
+            function() {
+                var messages = {'warning': []};
+
+                if(isPacketeryShippingSelected() && !isPacketeryShippingPointSelected()) {
+                    messages.warning.push(<?php echo json_encode($errorPickupPointNotSelected); ?>);
+                }
+
+                if(messages.warning.length > 0) {
+                    VirtueMartCart_byPV.renderMessages(messages);
+                    return false;
+                }
+            });
+    }
+</script>
