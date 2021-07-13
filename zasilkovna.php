@@ -631,7 +631,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         if ($method->shipment_element === VirtueMartModelZasilkovna::PLG_NAME) {
-            return $this->hasPointSelected($cart->virtuemart_shipmentmethod_id);
+            $has = $this->hasPointSelected($cart->virtuemart_shipmentmethod_id);
+            if ($has === false) {
+                vmError(JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPMENT_NOT_SELECTED'));
+            }
+
+            return $has;
         }
 
         return null;
@@ -709,6 +714,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $address['virtuemart_country_id'] = 0;
         }
 
+        $lastHtmlMethodKey = null;
         $activeCheckout = $this->checkoutModuleDetector->getActiveCheckout();
         foreach($this->methods as $key => $method) {
 
@@ -733,8 +739,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 continue;
             }
 
-            $html[$key] = '';
-
             if($this->checkConditions($cart, $method, $cart->pricesUnformatted)) {
                 $methodSalesPrice = $this->calculateSalesPrice($cart, $method, $cart->pricesUnformatted);
                 $method->$method_name = $this->renderPluginName($method);
@@ -756,10 +760,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 );
 
                 $html[$key] = $renderer->renderToString();
+                $lastHtmlMethodKey = $key;
             }
         }
 
-        if(empty($html)) {
+        if($lastHtmlMethodKey === null) {
             return FALSE;
         }
 
@@ -789,7 +794,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             ]
         );
 
-        $html[$key] .= $renderer->renderToString();
+        $html[$lastHtmlMethodKey] .= $renderer->renderToString();
         $htmlIn[] = $html;
 
         return TRUE;

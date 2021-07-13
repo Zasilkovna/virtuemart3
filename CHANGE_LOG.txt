@@ -1,3 +1,5 @@
+1.2.1 - Added: support for BYPV one page checkout
+
 1.2.0 - Added: packeta shipping method configuration
       - Added: configuration for other countries than previously specified is now possible
       - Added: data migration from 1.1.8 data structure
