@@ -739,8 +739,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 continue;
             }
 
-            $html[$key] = '';
-
             if($this->checkConditions($cart, $method, $cart->pricesUnformatted)) {
                 $methodSalesPrice = $this->calculateSalesPrice($cart, $method, $cart->pricesUnformatted);
                 $method->$method_name = $this->renderPluginName($method);
@@ -766,7 +764,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             }
         }
 
-        if(empty($html)) {
+        if($lastHtmlMethodKey === null) {
             return FALSE;
         }
 
