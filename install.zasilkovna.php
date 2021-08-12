@@ -146,7 +146,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
 							  `order_number` char(32) DEFAULT NULL,
 							  `zasilkovna_packet_id` decimal(10,0) DEFAULT NULL,
 							  `zasilkovna_packet_price` decimal(15,2) DEFAULT NULL,
-							  `weight` decimal(10,4) NOT NULL DEFAULT '0.0000',
+							  `weight` decimal(10,3) NOT NULL DEFAULT '0.000',
 							  `branch_id` decimal(10,0) DEFAULT NULL,
 							  `branch_currency` char(5) DEFAULT NULL,
 							  `branch_name_street` varchar(500) DEFAULT NULL,

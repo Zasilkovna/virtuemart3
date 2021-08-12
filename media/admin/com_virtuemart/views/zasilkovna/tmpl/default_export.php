@@ -133,7 +133,7 @@
                     <!-- packet price -->
                     <td><?php echo '<input size="8" type="input" name="orders[' . $key . '][zasilkovna_packet_price]" value="' . htmlentities($order->zasilkovna_packet_price) . '"' . $disabled . '> ' . htmlentities($order->branch_currency); ?></td>
                     <!-- weight-->
-                    <td><?php echo '<input size="8" type="input" name="orders[' . $key . '][weight]" value="' . htmlentities($order->weight) . '"' . $disabled . '> ' . 'KG'; ?></td>
+                    <td><?php echo '<input size="8" type="input" name="orders[' . $key . '][weight]" value="' . htmlentities($order->weight) . '"' . $disabled . '> kg'; ?></td>
                     <!-- packet id -->
                     <td>
 					<?php
