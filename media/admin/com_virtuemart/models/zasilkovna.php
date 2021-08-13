@@ -98,7 +98,7 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function updateConfig($data)
     {
-        $db =& JFactory::getDBO();
+        $db = JFactory::getDBO();
         $q = "UPDATE #__extensions SET custom_data='" . serialize($data) . "' WHERE element='zasilkovna'";
         $db->setQuery($q);
         $db->query();
@@ -244,7 +244,7 @@ class VirtueMartModelZasilkovna extends VmModel
     {
         $checkUrl = $this->_zas_url . "api/" . $this->api_key . "/version-check-virtuemart2?my=" . self::VERSION;
         $data = json_decode($this->fetch($checkUrl));
-        if($data->version > self::VERSION) {
+        if($data && $data->version > self::VERSION) {
             $lg =& JFactory::getLanguage();
             $lang = substr($lg->getTag(), 0, 2);
 
