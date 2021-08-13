@@ -281,7 +281,12 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 //$set_q[] = " email = '" . $db->escape($order['email']) . "' ";
                 //$set_q[] = " phone = '" . $db->escape($order['phone']) . "' ";
                 $set_q[] = " zasilkovna_packet_price = " . (float) str_replace(',','.', $order['zasilkovna_packet_price']) . " ";
-                $set_q[] = " weight = " . (float) str_replace(',','.', $order['weight']) . " ";
+
+                if ($order['weight'] === '') {
+                    $set_q[] = " weight = NULL ";
+                } else {
+                    $set_q[] = " weight = " . (float)$order['weight'] . " ";
+                }
 
                 if(isset($order['adult_content']) && $order['adult_content'] == 'on') {
                     $set_q[] = " adult_content = 1";
