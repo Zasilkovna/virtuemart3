@@ -106,6 +106,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     'addressId' => $order['point_id'],
                     'cod' => $order['packet_cod'],
                     'value' => $order['value'],
+                    'weight' => $order['weight'],
                     'currency' => $order['currency'],
                     'eshop' => $sender_label = $this->zas_model->getConfig('zasilkovna_eshop_label'),
                     'adultContent' => ($order['adult_content'] == 1 ? true : false)
@@ -224,7 +225,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $row['packet_cod'],
                 $row['currency'],
                 $row['value'],
-                '', //weight
+                $row['weight'],
                 $row['point_id'],
                 $sender_label,
                 ($row['adult_content'])? "1" : "0", //adult content
@@ -280,6 +281,13 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 //$set_q[] = " email = '" . $db->escape($order['email']) . "' ";
                 //$set_q[] = " phone = '" . $db->escape($order['phone']) . "' ";
                 $set_q[] = " zasilkovna_packet_price = " . (float) str_replace(',','.', $order['zasilkovna_packet_price']) . " ";
+
+                if ($order['weight'] === '') {
+                    $set_q[] = " weight = NULL ";
+                } else {
+                    $set_q[] = " weight = " . (float)$order['weight'] . " ";
+                }
+
                 if(isset($order['adult_content']) && $order['adult_content'] == 'on') {
                     $set_q[] = " adult_content = 1";
                 }
@@ -338,7 +346,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         plg.zasilkovna_packet_price order_total,oi.first_name,oi.last_name,
         oi_bt.email,IFNULL(oi.phone_1, oi_bt.phone_1) as phone_1,IFNULL(oi.phone_2, oi_bt.phone_2) as phone_2,plg.packet_cod,
        	plg.branch_id,plg.zasilkovna_packet_id, plg.carrier_pickup_point,
-        plg.address as address, plg.adult_content AS adult_content, plg.city, plg.zip_code, plg.branch_currency FROM #__virtuemart_orders o ";
+        plg.address as address, plg.adult_content AS adult_content, plg.city, plg.zip_code, plg.branch_currency, plg.weight FROM #__virtuemart_orders o ";
         $q .= "INNER JOIN #__virtuemart_order_userinfos oi ON o.virtuemart_order_id=oi.virtuemart_order_id AND oi.address_type = IF(o.STsameAsBT = 1, 'BT', 'ST') ";
         $q .= "INNER JOIN #__virtuemart_order_userinfos oi_bt ON o.virtuemart_order_id=oi_bt.virtuemart_order_id AND oi_bt.address_type = 'BT' ";
         $q .= "INNER JOIN " . $this->zas_model->getDbTableName() . " plg ON plg.order_number=o.order_number ";
@@ -397,6 +405,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $orderForExport['packet_cod'] = $row['packet_cod'];
             $orderForExport['currency'] = $row["order_currency_name"];
             $orderForExport['value'] = $row['order_total'];
+            $orderForExport['weight'] = $row['weight'];
             $orderForExport['point_id'] = $row['branch_id'];
             $orderForExport['adult_content'] = $row['adult_content'];
             $orderForExport['recipient_street'] = $street;
@@ -627,7 +636,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         plg.exported AS exported,plg.is_cod AS is_cod, plg.packet_cod AS packet_cod, plg.branch_currency, plg.branch_name_street AS name_street, 
         brnch.country as country, plg.adult_content, plg.email, u_bt.email AS billing_email, 
         IF(IFNULL(u.phone_1, u_bt.phone_1) <> "", IFNULL(u.phone_1, u_bt.phone_1), IFNULL(u.phone_2, u_bt.phone_2)) as phone,              
-        plg.zasilkovna_packet_id,plg.zasilkovna_packet_price ';
+        plg.zasilkovna_packet_id,plg.zasilkovna_packet_price,plg.weight ';
         if($shipment_id == self::ALL_ORDERS) {
             //no where statement => select all
             ;

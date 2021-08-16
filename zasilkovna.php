@@ -152,6 +152,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             'order_number' => 'char(32)',
             'zasilkovna_packet_id' => 'decimal(10,0)',
             'zasilkovna_packet_price' => 'decimal(15,2)',
+            'weight' => 'decimal(10,4) DEFAULT NULL',
             'branch_id' => 'decimal(10,0)',
             'branch_currency' => 'char(5)',
             'branch_name_street' => 'varchar(500)',
@@ -299,6 +300,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['exported'] = 0;
         $values['shipment_name'] = $method->shipment_name;
         $values['shipment_cost'] = $this->getCosts($cart, ShipmentMethod::fromRandom($method), "");
+        $values['weight'] = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
         $values['tax_id'] = $method->tax_id;
         $this->storePSPluginInternalData($values);
 
