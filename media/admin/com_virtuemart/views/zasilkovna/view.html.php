@@ -60,8 +60,10 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         usort($shipments, "cmpShipments"); //sort, coz it comes in random order
         $this->assignRef('shipmentMethods', $shipments);
 
-        $this->assignRef('js_path', $model->updateJSApi());
-        $this->assignRef('moduleVersion', $model->checkModuleVersion());
+        $jsPath = $model->updateJSApi();
+        $this->assignRef('js_path', $jsPath);
+        $moduleVersion = $model->checkModuleVersion();
+        $this->assignRef('moduleVersion', $moduleVersion);
         $this->assignRef('errors', $model->errors);
         $this->assignRef('warnings', $model->warnings);
 
@@ -203,9 +205,11 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 		$zas_model->updateBranchesInfo();
 
         $this->assignRef('media_url', $zas_model->_media_url);
-        $this->assignRef('restrictionInstalled', $zas_model->isShipmentPaymentRestrictionInstalled());
+        $restrictionInstalled = $zas_model->isShipmentPaymentRestrictionInstalled();
+        $this->assignRef('restrictionInstalled', $restrictionInstalled);
 
-        $this->assignRef('branches', $zas_model->getBranches());
+        $branches = $zas_model->getBranches();
+        $this->assignRef('branches', $branches);
         JToolBarHelper::save('submitToZasilkovna', JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_ORDERS_TO_ZASILKOVNA'));
         JToolBarHelper::custom('printLabels', 'copy', '', JText::_('PLG_VMSHIPMENT_PACKETERY_DO_PRINT_LABELS'), false, false);
 
@@ -214,7 +218,8 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $pagination = $ordersModel->getPagination();
         $this->assignRef('pagination', $pagination);
 
-        $this->assignRef('shipmentSelect', $this->renderShipmentsList());
+        $shipmentSelect = $this->renderShipmentsList();
+        $this->assignRef('shipmentSelect', $shipmentSelect);
         $model->raiseErrors();
         parent::display($tpl);
     }

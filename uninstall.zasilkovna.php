@@ -31,7 +31,7 @@ unlink($com_virtuemart."/html/store.ship_payment.php");
 unlink($com_virtuemart."/html/store.ship_payment_save.php");
 
 
-$db =& JFactory::getDBO();
+$db = JFactory::getDBO();
 $q="DROP TABLE IF EXISTS #__zasilkovna_branches;";
 $db->setQuery($q);
 $db->query();
