@@ -60,8 +60,6 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         usort($shipments, "cmpShipments"); //sort, coz it comes in random order
         $this->assignRef('shipmentMethods', $shipments);
 
-        $jsPath = $model->updateJSApi();
-        $this->assignRef('js_path', $jsPath);
         $moduleVersion = $model->checkModuleVersion();
         $this->assignRef('moduleVersion', $moduleVersion);
         $this->assignRef('errors', $model->errors);
