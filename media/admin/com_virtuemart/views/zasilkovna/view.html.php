@@ -200,7 +200,6 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         JToolBarHelper::save('updateAndExportZasilkovnaOrders', 'CSV');
         /** @var VirtueMartModelZasilkovna $zas_model */
         $zas_model = VmModel::getModel('zasilkovna');
-		$zas_model->updateBranchesInfo();
 
         $this->assignRef('media_url', $zas_model->_media_url);
         $restrictionInstalled = $zas_model->isShipmentPaymentRestrictionInstalled();
