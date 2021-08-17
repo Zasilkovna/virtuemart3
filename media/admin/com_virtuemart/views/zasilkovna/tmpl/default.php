@@ -31,6 +31,7 @@
         AdminUIHelper::buildTabs($this, array(
             'export' => JText::_('PLG_VMSHIPMENT_PACKETERY_ORDERS_TAB'),
             'config' => JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_TAB'),
+            'carriers' => JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_TAB'),
         ));
     ?>
     <!-- Hidden Fields -->

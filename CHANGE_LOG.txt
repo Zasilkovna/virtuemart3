@@ -20,3 +20,4 @@
       - Fixed: pickup point choice enabled even for automatically selected shipment
       - Fixed: shipping method display in cart respects all conditions
       - Fixed: debug mode notices
+      - Added: carrier v4 import

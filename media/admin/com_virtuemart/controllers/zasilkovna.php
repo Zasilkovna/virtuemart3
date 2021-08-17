@@ -31,6 +31,16 @@ VmModel::getModel('zasilkovna')->loadLanguage();
  */
 class VirtuemartControllerZasilkovna extends VmController
 {
+    /**
+     * Updates carriers.
+     */
+    public function updateCarriers() {
+        /** @var VirtueMartModelZasilkovna $zas_model */
+        $zas_model = VmModel::getModel('zasilkovna');
+        $zas_model->updateBranchesInfo();
+
+        $this->setRedirect($this->redirectPath);
+    }
 
     /**
      * Handle the save task.

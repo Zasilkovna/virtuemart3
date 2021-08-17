@@ -56,6 +56,16 @@ class Repository
     }
 
     /**
+     * Gets total count of usable carriers.
+     */
+    public function getTotalUsableCarriersCount() {
+        $db = \JFactory::getDBO();
+        $db->setQuery("SELECT COUNT(*) AS counted FROM #__virtuemart_zasilkovna_carriers WHERE deleted = 0");
+        $result = $db->loadObject();
+        return (int)$result->counted;
+    }
+
+    /**
      * @param $carrierIds
      */
     public function setOtherCarriersDeleted($carrierIds) {
