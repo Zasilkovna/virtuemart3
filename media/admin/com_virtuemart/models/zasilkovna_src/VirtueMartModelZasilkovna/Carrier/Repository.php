@@ -27,7 +27,7 @@ class Repository
         $set = [];
         foreach ($data as $column => $columnData) {
             $columnData = $db->escape($columnData);
-            $set[] = " $column = '$columnData' ";
+            $set[] = sprintf(' %s = "%s" ', $column, $columnData);
         }
         $setImploded = implode(', ', $set);
         $carrierId = (int)$carrierId;
@@ -37,7 +37,7 @@ class Repository
     }
 
     /**
-     * @param $data
+     * @param array $data
      */
     public function insertCarrier($data) {
         $db = \JFactory::getDBO();
@@ -45,7 +45,7 @@ class Repository
         $columnsImploded = implode(', ', $columns);
 
         foreach($data as &$item) {
-            $item = '"' . $db->escape($item) . '"';
+            $item = sprintf('"%s"', $db->escape($item));
         }
 
         $imploded = implode(', ', $data);
