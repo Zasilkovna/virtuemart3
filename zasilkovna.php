@@ -152,7 +152,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             'order_number' => 'char(32)',
             'zasilkovna_packet_id' => 'decimal(10,0)',
             'zasilkovna_packet_price' => 'decimal(15,2)',
-            'weight' => 'decimal(10,4) DEFAULT NULL',
+            'weight' => 'decimal(10,4)',
             'branch_id' => 'decimal(10,0)',
             'branch_currency' => 'char(5)',
             'branch_name_street' => 'varchar(500)',
