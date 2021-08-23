@@ -4,6 +4,10 @@ namespace VirtueMartModelZasilkovna\Carrier;
 
 class Repository
 {
+    /**
+     * @param mixed|int $carrierId
+     * @return bool
+     */
     public function carrierExists($carrierId) {
         $carrierId = (int)$carrierId;
         $query = 'SELECT 1 FROM #__virtuemart_zasilkovna_carriers WHERE id = ' . $carrierId;
@@ -19,7 +23,7 @@ class Repository
     }
 
     /**
-     * @param $carrierId
+     * @param mixed|int $carrierId
      * @param array $data
      */
     public function updateCarrier($carrierId, array $data) {
@@ -27,6 +31,7 @@ class Repository
         $set = [];
         foreach ($data as $column => $columnData) {
             $columnData = $db->escape($columnData);
+            $column = $db->escape($column);
             $set[] = sprintf(' %s = "%s" ', $column, $columnData);
         }
         $setImploded = implode(', ', $set);
@@ -66,7 +71,7 @@ class Repository
     }
 
     /**
-     * @param $carrierIds
+     * @param array $carrierIds
      */
     public function setOtherCarriersDeleted($carrierIds) {
         foreach ($carrierIds as &$carrierId) {

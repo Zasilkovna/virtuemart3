@@ -35,9 +35,14 @@ class VirtuemartControllerZasilkovna extends VmController
      * Updates carriers.
      */
     public function updateCarriers() {
-        /** @var VirtueMartModelZasilkovna $zas_model */
-        $zas_model = VmModel::getModel('zasilkovna');
-        $zas_model->updateBranchesInfo();
+        /** @var VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $model->updateBranchesInfo();
+        $model->raiseErrors();
+
+        if (empty($model->errors)) {
+            \Joomla\CMS\Factory::getApplication()->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATED'));
+        }
 
         $this->setRedirect($this->redirectPath);
     }

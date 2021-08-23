@@ -143,9 +143,19 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             jExit();
         }
 
-        /** @var VirtueMartModelZasilkovna $zas_model */
-        $zas_model = VmModel::getModel('zasilkovna');
-        $zas_model->updateBranchesInfo();
+        /** @var VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $model->updateBranchesInfo();
+
+        foreach ($model->errors as $error) {
+            echo $error;
+            echo '<br>';
+        }
+
+        if (empty($model->errors)) {
+            echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATED');
+            echo '<br>';
+        }
 
         jExit();
     }

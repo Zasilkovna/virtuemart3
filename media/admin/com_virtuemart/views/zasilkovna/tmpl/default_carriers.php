@@ -9,8 +9,8 @@
     $params['type'] = 'vmshipment';
     $params['token'] = $updateCarriersToken;
     $params['name'] = VirtueMartModelZasilkovna::PLG_NAME;
-    $publicUpdateUrl = '/index.php?' . http_build_query($params);
-    $updateUrl = 'index.php?option=com_virtuemart&view=zasilkovna&task=updateCarriers';
+    $publicUpdateUrl = JUri::root() . 'index.php?' . http_build_query($params);
+    $updateUrl = Juri::base(true) . '/index.php?option=com_virtuemart&view=zasilkovna&task=updateCarriers';
 
     $lastUpdated = $model->getLastCarriersUpdateTimeFormatted();
     $carriersCount = $model->getTotalUsableCarriersCount();
