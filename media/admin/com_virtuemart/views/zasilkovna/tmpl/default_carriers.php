@@ -16,14 +16,14 @@
     $carriersCount = $model->getTotalUsableCarriersCount();
 ?>
 <div>
-    <p><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_TOTAL'); ?>: <?php echo $carriersCount; ?></p>
-    <p><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_LAST_UPDATE'); ?>: <?php echo $lastUpdated; ?></p>
+    <p><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_TOTAL'); ?>: <?php echo htmlentities($carriersCount); ?></p>
+    <p><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_LAST_UPDATE'); ?>: <?php echo htmlentities($lastUpdated); ?></p>
     <p>
         <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_MANUAL_UPDATE'); ?>:
-        <a href="<?php echo $updateUrl; ?>"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATE_BUTTON'); ?></a>
+        <a href="<?php echo htmlentities($updateUrl); ?>"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATE_BUTTON'); ?></a>
     </p>
     <p>
         <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_MANUAL_UPDATE_URL'); ?>:
-        <a target="_blank" href="<?php echo $publicUpdateUrl; ?>"><?php echo $publicUpdateUrl; ?></a>
+        <a target="_blank" href="<?php echo htmlentities($publicUpdateUrl); ?>"><?php echo htmlentities($publicUpdateUrl); ?></a>
     </p>
 </div>
