@@ -71,9 +71,24 @@ class Repository
     }
 
     /**
+     * Gets all active carriers.
+     *
+     * @return array
+     */
+    public function getAllActiveCarrierIds() {
+        $db = \JFactory::getDBO();
+        $db->setQuery("SELECT id FROM #__virtuemart_zasilkovna_carriers WHERE deleted = 0");
+        return $db->loadAssocList('id', 'id');
+    }
+
+    /**
      * @param array $carrierIds
      */
-    public function setOtherCarriersDeleted($carrierIds) {
+    public function setCarriersDeleted($carrierIds) {
+        if (empty($carrierIds)) {
+            return;
+        }
+
         foreach ($carrierIds as &$carrierId) {
             $carrierId = (int)$carrierId; // to escape values
         }
@@ -81,7 +96,7 @@ class Repository
         $carrierIdsImploded = implode(',', $carrierIds);
 
         $db = \JFactory::getDBO();
-        $db->setQuery("UPDATE #__virtuemart_zasilkovna_carriers SET deleted = 1 WHERE id NOT IN ($carrierIdsImploded)");
+        $db->setQuery("UPDATE #__virtuemart_zasilkovna_carriers SET deleted = 1 WHERE id IN ($carrierIdsImploded)");
         $db->query();
     }
 }
