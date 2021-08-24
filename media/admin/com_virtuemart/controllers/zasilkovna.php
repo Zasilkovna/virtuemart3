@@ -37,7 +37,7 @@ class VirtuemartControllerZasilkovna extends VmController
     public function updateCarriers() {
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
-        $model->updateBranchesInfo();
+        $model->updateCarriers();
         $model->raiseErrors();
 
         if (empty($model->errors)) {

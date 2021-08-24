@@ -145,7 +145,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
-        $model->updateBranchesInfo();
+        $model->updateCarriers();
 
         foreach ($model->errors as $error) {
             echo $error;
