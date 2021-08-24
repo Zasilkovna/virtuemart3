@@ -20,10 +20,9 @@
     <p><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_LAST_UPDATE'); ?>: <?php echo htmlentities($lastUpdated); ?></p>
     <p>
         <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_MANUAL_UPDATE'); ?>:
-        <a href="<?php echo htmlentities($updateUrl); ?>"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATE_BUTTON'); ?></a>
+        <a class="btn btn-small" href="<?php echo htmlentities($updateUrl); ?>"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATE_BUTTON'); ?></a>
     </p>
     <p>
-        <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_MANUAL_UPDATE_URL'); ?>:
-        <a target="_blank" href="<?php echo htmlentities($publicUpdateUrl); ?>"><?php echo htmlentities($publicUpdateUrl); ?></a>
+        <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_MANUAL_UPDATE_URL'); ?>: <?php echo htmlentities($publicUpdateUrl); ?>
     </p>
 </div>

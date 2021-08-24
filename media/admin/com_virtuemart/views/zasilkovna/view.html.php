@@ -205,8 +205,6 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $restrictionInstalled = $zas_model->isShipmentPaymentRestrictionInstalled();
         $this->assignRef('restrictionInstalled', $restrictionInstalled);
 
-        $branches = $zas_model->getBranches();
-        $this->assignRef('branches', $branches);
         JToolBarHelper::save('submitToZasilkovna', JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_ORDERS_TO_ZASILKOVNA'));
         JToolBarHelper::custom('printLabels', 'copy', '', JText::_('PLG_VMSHIPMENT_PACKETERY_DO_PRINT_LABELS'), false, false);
 

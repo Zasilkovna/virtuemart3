@@ -5,58 +5,30 @@ namespace VirtueMartModelZasilkovna\Carrier;
 class Repository
 {
     /**
-     * @param mixed|int $carrierId
-     * @return bool
-     */
-    public function carrierExists($carrierId) {
-        $carrierId = (int)$carrierId;
-        $query = 'SELECT 1 FROM #__virtuemart_zasilkovna_carriers WHERE id = ' . $carrierId;
-
-        $db = \JFactory::getDBO();
-        $db->setQuery($query);
-
-        if ($db->loadObject()) {
-            return true;
-        }
-
-        return false;
-    }
-
-    /**
-     * @param mixed|int $carrierId
      * @param array $data
      */
-    public function updateCarrier($carrierId, array $data) {
+    public function insertUpdateCarrier($data) {
         $db = \JFactory::getDBO();
-        $set = [];
-        foreach ($data as $column => $columnData) {
-            $columnData = $db->escape($columnData);
-            $column = $db->escape($column);
-            $set[] = sprintf(' %s = "%s" ', $column, $columnData);
+        $columns = [];
+        $values = [];
+        $onDuplicates = [];
+
+        foreach($data as $key => $item) {
+            $escapedKey = $db->quoteName($db->escape($key));
+            $values[$key] = $db->quote($db->escape($item));
+            $columns[$key] = $escapedKey;
+
+            if ($key !== 'id') {
+                $onDuplicates[$key] = sprintf(' %s = VALUES(%s) ', $escapedKey, $escapedKey);
+            }
         }
-        $setImploded = implode(', ', $set);
-        $carrierId = (int)$carrierId;
 
-        $db->setQuery("UPDATE #__virtuemart_zasilkovna_carriers SET $setImploded WHERE id = $carrierId");
-        $db->query();
-    }
-
-    /**
-     * @param array $data
-     */
-    public function insertCarrier($data) {
-        $db = \JFactory::getDBO();
-        $columns = array_keys($data);
         $columnsImploded = implode(', ', $columns);
-
-        foreach($data as &$item) {
-            $item = sprintf('"%s"', $db->escape($item));
-        }
-
-        $imploded = implode(', ', $data);
+        $valuesImploded = implode(', ', $values);
+        $onDuplicatesImploded = implode(', ', $onDuplicates);
 
         $db = \JFactory::getDBO();
-        $db->setQuery("INSERT INTO #__virtuemart_zasilkovna_carriers ($columnsImploded) VALUES ($imploded)");
+        $db->setQuery( "INSERT INTO #__virtuemart_zasilkovna_carriers ($columnsImploded) VALUES ($valuesImploded) ON DUPLICATE KEY UPDATE $onDuplicatesImploded;");
         $db->query();
     }
 
