@@ -15,6 +15,11 @@ class Repository
 
         foreach($data as $key => $item) {
             $escapedKey = $db->quoteName($db->escape($key));
+
+            if (is_bool($item)) {
+                $item = (int)$item;
+            }
+
             $values[$key] = $db->quote($db->escape($item));
             $columns[$key] = $escapedKey;
 

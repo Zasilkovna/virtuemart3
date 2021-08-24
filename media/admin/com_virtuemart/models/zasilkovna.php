@@ -399,54 +399,40 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param $path
+     * @param string $path
      * @return bool
      */
-    private function saveBranchesXmlToDb($path) {
-        $xml = simplexml_load_file($path);
-        if($xml) {
-            $db = JFactory::getDBO();
-            $query = 'TRUNCATE TABLE #__virtuemart_zasilkovna_branches';
-            $db->setQuery($query);
-            $db->execute();
-            $q = "INSERT INTO #__virtuemart_zasilkovna_branches (
-	              `id` ,
-	              `name_street` ,
-	              `currency` ,
-	              `country`
-	              ) VALUES ";
-            $first = true;
-            foreach($xml->branches->branch as $key => $branch) {
-                if($first) {
-                    $q .= " (";
-                    $first = false;
-                }
-                else {
-                    $q .= ", (";
-                }
-
-                $q .= "'".$db->escape($branch->id)."', '".$db->escape($branch->nameStreet)."','".$db->escape($branch->currency)."','".$db->escape($branch->country)."')";
-
-            }
-            $db->setQuery($q);
-            $db->execute();
-        }
-        else {
+    private function saveCarriersXmlToDb($path) {
+        $xml = @simplexml_load_file($path);
+        if ($xml === false) {
             return false;
         }
 
-        return true;
-    }
+        $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
+        foreach ($xml->carriers->carrier as $carrier) {
+            unset($carrierIdsToDelete[(string)$carrier->id]);
 
-    /**
-     * @param $path
-     * @return bool
-     */
-    private function isFileUpToDate($path) {
-        if(!file_exists($path)) return false;
-        if(filemtime($path) < time() - (60 * 60 * 24)) return false;
-        if(filesize($path) <= 1024) return false;
+            $data = [
+                'id' => $carrier->id,
+                'name' => $carrier->name,
+                'is_pickup_points' => $this->transformStringBool($carrier->pickupPoints),
+                'has_carrier_direct_label' => $this->transformStringBool($carrier->apiAllowed),
+                'separate_house_number' => $this->transformStringBool($carrier->separateHouseNumber),
+                'customs_declarations' => $this->transformStringBool($carrier->customsDeclarations),
+                'requires_email' => $this->transformStringBool($carrier->requiresEmail),
+                'requires_phone' => $this->transformStringBool($carrier->requiresPhone),
+                'requires_size' => $this->transformStringBool($carrier->requiresSize),
+                'disallows_cod' => $this->transformStringBool($carrier->disallowsCod),
+                'country' => $carrier->country,
+                'currency' => $carrier->currency,
+                'max_weight' => $carrier->maxWeight,
+                'deleted' => 0,
+            ];
 
+            $this->carrierRepository->insertUpdateCarrier($data);
+        }
+
+        $this->carrierRepository->setCarriersDeleted($carrierIdsToDelete);
         return true;
     }
 
@@ -461,6 +447,19 @@ class VirtueMartModelZasilkovna extends VmModel
         if(filesize($path) <= 1024) return false;
 
         return true;
+    }
+
+    /**
+     * @param \SimpleXMLElement $value
+     * @return bool
+     */
+    private function transformStringBool($value) {
+        $value = (string)$value;
+        if ($value === 'false') {
+            return false;
+        }
+
+        return (bool)$value;
     }
 
     /**
