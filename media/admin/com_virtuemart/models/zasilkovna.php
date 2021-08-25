@@ -454,12 +454,7 @@ class VirtueMartModelZasilkovna extends VmModel
      * @return bool
      */
     private function transformStringBool($value) {
-        $value = (string)$value;
-        if ($value === 'false') {
-            return false;
-        }
-
-        return (bool)$value;
+        return ((string)$value === 'false' ? false : true);
     }
 
     /**
