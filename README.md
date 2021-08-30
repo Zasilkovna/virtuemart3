@@ -80,6 +80,7 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 - Set different prices for different target countries.
 - Setting prices according to weight rules.
 - Free shipping from the specified price of the order.
+- Possibility of bulk weight adjustment in the shipment list.
 - Export shipments to a CSV file, which can be imported in [client section](https://client.packeta.com/).
 - Direct submission of orders to the Packeta system and labels printing.
 
@@ -171,6 +172,7 @@ Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Met
 - Nastavení různých cen pro různé cílové země.
 - Nastavení cen podle váhových pravidel.
 - Doprava zdarma od zadané ceny objednávky.
+- Možnost hromadné úpravy hmotnosti v seznamu zásilek.
 - Export zásilek do CSV souboru, který lze importovat v [klientské sekci](https://client.packeta.com/).
 - Přímé podání zásilek do systému Zásilkovny a tisk štítků.
 
