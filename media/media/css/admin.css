@@ -15,6 +15,10 @@
     font-size: inherit;
 }
 
+.zasilkovna .packetery-editable-input {
+    width: 60px;
+}
+
 fieldset {
     margin: 35px 0 35px 10px;
 }

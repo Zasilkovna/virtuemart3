@@ -129,7 +129,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
                 }
             }
 
-			$db =& JFactory::getDBO();
+			$db = JFactory::getDBO();
 			$q = "CREATE TABLE IF NOT EXISTS #__virtuemart_zasilkovna_branches (
 										`id` int(10) NOT NULL,
 										`name_street` varchar(200) NOT NULL,
@@ -146,6 +146,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
 							  `order_number` char(32) DEFAULT NULL,
 							  `zasilkovna_packet_id` decimal(10,0) DEFAULT NULL,
 							  `zasilkovna_packet_price` decimal(15,2) DEFAULT NULL,
+							  `weight` decimal(10,4) DEFAULT NULL,
 							  `branch_id` decimal(10,0) DEFAULT NULL,
 							  `branch_currency` char(5) DEFAULT NULL,
 							  `branch_name_street` varchar(500) DEFAULT NULL,
@@ -392,7 +393,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
         $id = $data['virtuemart_shipmentmethod_id'];
 
-        $db =& JFactory::getDBO();
+        $db = JFactory::getDBO();
         $q = "UPDATE #__virtuemart_shipmentmethods SET shipment_params='" . $data['shipment_params'] . "' WHERE virtuemart_shipmentmethod_id='{$id}'";
         $db->setQuery($q);
         $db->execute();
@@ -412,7 +413,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 	 * @param   JAdapterInstance $adapter The object responsible for running this script
 	 */
 	public function uninstall(JAdapterInstance $adapter) {
-		$db =& JFactory::getDBO();
+		$db = JFactory::getDBO();
 		$q = "DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = 'zasilkovna';";
 		$db->setQuery($q);
 		$db->query();

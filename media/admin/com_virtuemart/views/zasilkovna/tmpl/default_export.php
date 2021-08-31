@@ -46,6 +46,7 @@
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_EMAIL'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PHONE'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_WEIGHT'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PACKET_ID'); ?></th>
             <th></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT'); ?></th>
@@ -131,6 +132,8 @@
                     <td><?php echo htmlentities($order->phone); ?></td>
                     <!-- packet price -->
                     <td><?php echo '<input size="8" type="input" name="orders[' . $key . '][zasilkovna_packet_price]" value="' . htmlentities($order->zasilkovna_packet_price) . '"' . $disabled . '> ' . htmlentities($order->branch_currency); ?></td>
+                    <!-- weight-->
+                    <td><?php echo '<input class="packetery-editable-input" size="8" type="number" step="0.0001" name="orders[' . $key . '][weight]" value="' . (is_numeric($order->weight) ? (float)$order->weight : '') . '"' . $disabled . '> kg'; ?></td>
                     <!-- packet id -->
                     <td>
 					<?php

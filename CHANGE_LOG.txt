@@ -1,3 +1,5 @@
+1.3.0 - Added: editable order weight
+
 1.2.0 - Added: packeta shipping method configuration
       - Added: configuration for other countries than previously specified is now possible
       - Added: data migration from 1.1.8 data structure
@@ -11,3 +13,4 @@
       - Fixed: obsolete iframe in cart deleted
       - Fixed: pickup point choice enabled even for automatically selected shipment
       - Fixed: shipping method display in cart respects all conditions
+      - Fixed: debug mode notices
