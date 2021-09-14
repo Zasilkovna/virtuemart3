@@ -1,7 +1,7 @@
 <?php defined('_JEXEC') or die('Restricted access');
     /** @var VirtueMartModelZasilkovna $model */
     $model = VmModel::getModel('zasilkovna');
-    $updateCarriersToken = $model->getConfig('update_carriers_token');
+    $updateCarriersToken = $model->getConfig('cron_token');
 
     $params['task'] = 'updateCarriers';
     $params['option'] = 'com_virtuemart';

@@ -137,7 +137,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     public function handleUpdateCarriers() {
         $token = JRequest::getVar('token', '');
-        $expectedToken = $this->model->getConfig('update_carriers_token');
+        $expectedToken = $this->model->getConfig('cron_token');
 
         if ($token !== $expectedToken) {
             jExit();

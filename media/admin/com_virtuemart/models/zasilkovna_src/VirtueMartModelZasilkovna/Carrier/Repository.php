@@ -5,15 +5,15 @@ namespace VirtueMartModelZasilkovna\Carrier;
 class Repository
 {
     /**
-     * @param array $data
+     * @param array $carrierData
      */
-    public function insertUpdateCarrier($data) {
+    public function insertUpdateCarrier(array $carrierData) {
         $db = \JFactory::getDBO();
         $columns = [];
         $values = [];
         $onDuplicates = [];
 
-        foreach($data as $key => $item) {
+        foreach($carrierData as $key => $item) {
             $escapedKey = $db->quoteName($db->escape($key));
 
             if (is_bool($item)) {
@@ -39,6 +39,7 @@ class Repository
 
     /**
      * Gets total count of usable carriers.
+     * @return int
      */
     public function getTotalUsableCarriersCount() {
         $db = \JFactory::getDBO();
@@ -60,8 +61,9 @@ class Repository
 
     /**
      * @param array $carrierIds
+     * @return void
      */
-    public function setCarriersDeleted($carrierIds) {
+    public function setCarriersDeleted(array $carrierIds) {
         if (empty($carrierIds)) {
             return;
         }
