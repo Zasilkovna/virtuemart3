@@ -344,14 +344,18 @@ class VirtueMartModelZasilkovna extends VmModel
      * @return string
      */
     public function getLastCarriersUpdateTimeFormatted() {
-        $localFilePath = $this->_media_path . 'carriers.xml';
-        $time = @filemtime($localFilePath);
+        $config = $this->loadConfig();
+        $time = null;
+        if (isset($config['carriers_updated_at'])) {
+            $time = $config['carriers_updated_at'];
+        }
 
-        if ($time === false) {
+        if (!$time) {
             return JText::_('PLG_VMSHIPMENT_PACKETERY_NEVER');
         }
 
-        return date(JText::_('PLG_VMSHIPMENT_PACKETERY_DATETIME_FORMAT'), $time);
+        $timeInstance = \DateTime::createFromFormat(\DateTime::ATOM, $time);
+        return $timeInstance->format(JText::_('PLG_VMSHIPMENT_PACKETERY_DATETIME_FORMAT'));
     }
 
     /**
@@ -421,6 +425,11 @@ class VirtueMartModelZasilkovna extends VmModel
         }
 
         $this->carrierRepository->setCarriersDeleted($carrierIdsToDelete);
+
+        $config = $this->loadConfig();
+        $config['carriers_updated_at'] = (new \DateTime())->format(\DateTime::ATOM);
+        $this->updateConfig($config);
+
         return true;
     }
 
