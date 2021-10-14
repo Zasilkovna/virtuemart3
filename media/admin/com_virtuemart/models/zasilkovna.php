@@ -99,7 +99,7 @@ class VirtueMartModelZasilkovna extends VmModel
     public function updateConfig($data)
     {
         $db = JFactory::getDBO();
-        $q = "UPDATE #__extensions SET custom_data='" . serialize($data) . "' WHERE element='zasilkovna'";
+        $q = "UPDATE #__extensions SET custom_data='" . $db->escape(serialize($data)) . "' WHERE element='zasilkovna'";
         $db->setQuery($q);
         $db->query();
     }
@@ -172,8 +172,8 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function getShipmentMethodIds()
     {
-        $q = "SELECT virtuemart_shipmentmethod_id FROM #__virtuemart_shipmentmethods WHERE shipment_element = '" . self::PLG_NAME . "'";
-        $db = JFactory::getDBO();
+	$db = JFactory::getDBO();
+        $q = "SELECT virtuemart_shipmentmethod_id FROM #__virtuemart_shipmentmethods WHERE shipment_element = '" . $db->escape(self::PLG_NAME) . "'";
         $db->setQuery($q);
         $objList = $db->loadObjectList();
         $list = array();
@@ -190,9 +190,11 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function publishShipmentMethods($ids, $value = 1)
     {
+	if (empty($ids)) return; 
+	if (!is_array($ids)) return; 
         $value = (int) $value;
         $imploded = implode(',', $ids);
-        $q = "UPDATE #__virtuemart_shipmentmethods SET published = $value WHERE virtuemart_shipmentmethod_id IN ($imploded)";
+        $q = "UPDATE #__virtuemart_shipmentmethods SET published = ".(int)$value." WHERE virtuemart_shipmentmethod_id IN ($imploded)";
         $db = JFactory::getDBO();
         $db->setQuery($q);
         $db->execute();
@@ -217,7 +219,7 @@ class VirtueMartModelZasilkovna extends VmModel
     {
         $vendorId = VirtueMartModelVendor::getLoggedVendor();
         $db = JFactory::getDBO();
-        $q = 'SELECT   `currency_code_3` FROM `#__virtuemart_currencies` WHERE `virtuemart_currency_id`=' . $currency_id;
+        $q = 'SELECT   `currency_code_3` FROM `#__virtuemart_currencies` WHERE `virtuemart_currency_id`=' . (int)$currency_id;
         $db->setQuery($q);
 
         return $db->loadResult();
@@ -413,8 +415,8 @@ class VirtueMartModelZasilkovna extends VmModel
                 else {
                     $q .= ", (";
                 }
-                $streetEscaped = $db->escape($branch->nameStreet);
-                $q .= "'$branch->id', '$streetEscaped','$branch->currency','$branch->country')";
+                
+                $q .= "'".$db->escape($branch->id)."', '".$db->escape($branch->nameStreet)."','".$db->escape($branch->currency)."','".$db->escape($branch->country)."')";
 
             }
             $db->setQuery($q);
