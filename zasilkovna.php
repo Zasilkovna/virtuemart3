@@ -869,8 +869,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     function getOrderShipmentHtml($virtuemart_order_id) {
 
         $db = JFactory::getDBO();
-        $q = 'SELECT * FROM `' . $this->_tablename . '` '
-            . 'WHERE `virtuemart_order_id` = ' . $virtuemart_order_id;
+        $q = 'SELECT * FROM `' . $db->escape($this->_tablename) . '` '
+            . 'WHERE `virtuemart_order_id` = ' . (int)$virtuemart_order_id;
         $db->setQuery($q);
         if(!($shipinfo = $db->loadObject())) {
             vmWarn(500, $q . " " . $db->getErrorMsg());

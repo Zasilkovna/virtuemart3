@@ -117,7 +117,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 }
 
                 $packet = $gw->createPacket($apiPassword, $attributes);
-                $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET zasilkovna_packet_id=" . $packet->id . " WHERE order_number = '" . $order['order_number'] . "'; ";
+                $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET zasilkovna_packet_id=" . (int)$packet->id . " WHERE order_number = '" . $db->escape($order['order_number']) . "'; ";
                 $db->setQuery($q);
                 $db->loadAssocList();
                 $exportedOrders[] = array('order_number' => $order['order_number'], 'zasilkovna_id' => $packet->id);
@@ -154,7 +154,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     public function cancelOrderSubmitToZasilkovna($order_id) {
         if(!isset($order_id)) return false;
         $db = JFactory::getDBO();
-        $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET exported=0, zasilkovna_packet_id=0 WHERE virtuemart_order_id = " . $order_id . ";";
+        $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET exported=0, zasilkovna_packet_id=0 WHERE virtuemart_order_id = " . (int)$order_id . ";";
         $db->setQuery($q);
         $db->loadAssocList();
 
@@ -164,7 +164,13 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     private function setPrintLabelFlag($printedLabels) {
         if(count($printedLabels)) {
             $db = JFactory::getDBO();
-            $printedLabelsString = implode("','", $printedLabels);
+
+            $escapedLabels = [];
+            foreach ($printedLabels as $printedLabel) {
+                $escapedLabels[] = $db->escape($printedLabel);
+            }
+
+            $printedLabelsString = implode("','", $escapedLabels);
             $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET printed_label=1 WHERE zasilkovna_packet_id IN ('" . $printedLabelsString . "') ";
             $db->setQuery($q);
             $db->loadAssocList();
@@ -174,7 +180,13 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     private function setExportedFlag($exportedOrders) {
         if(count($exportedOrders)) {
             $db = JFactory::getDBO();
-            $exportedOrdersString = implode("','", $exportedOrders);
+
+            $escapedOrders = [];
+            foreach ($exportedOrders as $exportedOrder) {
+                $escapedOrders[] = $db->escape($exportedOrder);
+            }
+
+            $exportedOrdersString = implode("','", $escapedOrders);
             $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET exported=1 WHERE order_number IN ('" . $exportedOrdersString . "') ";
             $db->setQuery($q);
             $db->query();
@@ -252,22 +264,6 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $db = JFactory::getDBO();
 
         foreach($orders as $key => $order) {
-
-            $queries = array();
-
-            /*
-                convert packet price from old branch currency to new branch currency
-            */
-            $db->setQuery("SELECT brnch.currency FROM #__virtuemart_zasilkovna_branches brnch JOIN " . $this->zas_model->getDbTableName() . " t ON brnch.id=t.branch_id WHERE order_number='" . $order['order_number'] . "';");
-
-            $db->setQuery("SELECT currency FROM #__virtuemart_zasilkovna_branches WHERE id=" . $order['branch_id'] . ";");
-
-            /*
-            if($oldBranchCurrency != $newBranchCurrency) {
-                $order['zasilkovna_packet_price'] = $this->convertToBranchCurrency($order['zasilkovna_packet_price'], $oldBranchCurrency, $newBranchCurrency);
-            }
-            */
-
             $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET ";
             $set_q = array();
             if($order['submitted'] == '1') {
@@ -300,7 +296,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     $set_q[] = " " . $field . " = '" . $db->escape($order[$field]) . "' ";
                 }
             }
-            $q .= implode(' , ', $set_q) . " WHERE order_number='" . $order['order_number'] . "'; ";
+            $q .= implode(' , ', $set_q) . " WHERE order_number='" . $db->escape($order['order_number']) . "'; ";
 
             $db->setQuery($q);
             $db->query();
@@ -340,8 +336,13 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             return;
         }
 
-        $ordersForINStatement = implode("','", $orders_arr);
         $db = JFactory::getDBO();
+        $orderNumbers = [];
+        foreach ($orders_arr as $orderNumber) {
+            $orderNumbers[] = $db->escape($orderNumber);
+        }
+
+        $ordersForINStatement = implode("','", $orderNumbers);
         $q = "SELECT o.order_number,curr.currency_code_3 order_currency_name,
         plg.zasilkovna_packet_price order_total,oi.first_name,oi.last_name,
         oi_bt.email,IFNULL(oi.phone_1, oi_bt.phone_1) as phone_1,IFNULL(oi.phone_2, oi_bt.phone_2) as phone_2,plg.packet_cod,
@@ -653,7 +654,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
         else {
             //exact shipping method was selected, filter by its id.
-            $where[] = ' o.virtuemart_shipmentmethod_id = ' . $shipment_id;
+            $where[] = ' o.virtuemart_shipmentmethod_id = ' . (int)$shipment_id;
         }
 
         if($search = JRequest::getString('search', false)) {
@@ -665,7 +666,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 
 
         if($order_status_code = JRequest::getString('order_status_code', false)) {
-            $where[] = ' o.order_status = "' . $order_status_code . '" ';
+            $where[] = ' o.order_status = "' . $db->escape($order_status_code) . '" ';
         }
 
         if(count($where) > 0) {
@@ -693,12 +694,14 @@ class VirtueMartModelZasilkovna_orders extends VmModel
      * @author Zasilkovna
      */
     private function getZasilkovnaOrdersListQuery() {
+        $db = JFactory::getDBO();
+
         return ' FROM #__virtuemart_orders as o
 			LEFT JOIN #__virtuemart_order_userinfos as u
 			ON u.virtuemart_order_id = o.virtuemart_order_id AND u.address_type = IF(o.STsameAsBT = 1, "BT", "ST")
                         LEFT JOIN #__virtuemart_order_userinfos u_bt 
                         ON u_bt.virtuemart_order_id = o.virtuemart_order_id AND u_bt.address_type = "BT"
-			LEFT JOIN #__virtuemart_paymentmethods_' . VMLANG . ' as pm
+			LEFT JOIN #__virtuemart_paymentmethods_' . $db->escape(VMLANG) . ' as pm
 			ON o.virtuemart_paymentmethod_id = pm.virtuemart_paymentmethod_id
 			RIGHT JOIN ' . $this->zas_model->getDbTableName() . ' as plg ON plg.order_number=o.order_number
 			LEFT JOIN #__virtuemart_zasilkovna_branches as brnch ON brnch.id=plg.branch_id';
@@ -707,7 +710,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     function getInvoiceNumber($virtuemart_order_id) {
 
         $db = JFactory::getDBO();
-        $q = 'SELECT `invoice_number` FROM `#__virtuemart_invoices` WHERE `virtuemart_order_id`= "' . $virtuemart_order_id . '" ';
+        $q = 'SELECT `invoice_number` FROM `#__virtuemart_invoices` WHERE `virtuemart_order_id`= "' . (int)$virtuemart_order_id . '" ';
         $db->setQuery($q);
 
         return $db->loadresult();

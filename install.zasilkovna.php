@@ -394,7 +394,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         $id = $data['virtuemart_shipmentmethod_id'];
 
         $db = JFactory::getDBO();
-        $q = "UPDATE #__virtuemart_shipmentmethods SET shipment_params='" . $data['shipment_params'] . "' WHERE virtuemart_shipmentmethod_id='{$id}'";
+        $q = "UPDATE #__virtuemart_shipmentmethods SET shipment_params='" . $db->escape($data['shipment_params']) . "' WHERE virtuemart_shipmentmethod_id=" . (int)$id;
         $db->setQuery($q);
         $db->execute();
 

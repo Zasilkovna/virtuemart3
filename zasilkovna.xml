@@ -11,7 +11,7 @@
     <copyright>(c) 2021 Zásilkovna s.r.o.</copyright>
     <license>License Info with link</license>
     <!--  The version string is recorded in the components table -->
-    <version>1.3.0</version>
+    <version>1.3.1</version>
     <!--  The date for the actual version release -->
     <releaseDate>2021-06-29</releaseDate>
     <!--  Type of release: Bug fix, Security Fix, Minor update, Major update -->
