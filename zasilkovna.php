@@ -58,7 +58,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         parent::__construct($subject, $config);
 
         $this->_loggable = true;
-        $this->tableFields = array_keys($this->getTableSQLFields());
         $varsToPush = $this->getVarsToPush();
         $this->addVarsToPushCore($varsToPush,0);
         $this->setConfigParameterable($this->_configTableFieldName, $varsToPush);
@@ -139,45 +138,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     public function getVmPluginCreateTableSQL() {
         return $this->createTableSQL('zasilkovna');
-    }
-
-    /**
-     * @return string[]
-     */
-    function getTableSQLFields() {
-        $SQLfields = array(
-            'id' => 'int(1) UNSIGNED NOT NULL AUTO_INCREMENT',
-            'virtuemart_order_id' => 'int(11) UNSIGNED',
-            'virtuemart_shipmentmethod_id' => 'mediumint(1) UNSIGNED',
-            'order_number' => 'char(32)',
-            'zasilkovna_packet_id' => 'decimal(10,0)',
-            'zasilkovna_packet_price' => 'decimal(15,2)',
-            'weight' => 'decimal(10,4)',
-            'branch_id' => 'decimal(10,0)',
-            'branch_currency' => 'char(5)',
-            'branch_name_street' => 'varchar(500)',
-            'is_carrier' => 'smallint(1) NOT NULL DEFAULT \'0\'',
-            'carrier_pickup_point' => 'varchar(40)',
-            'email' => 'varchar(255)',
-            'phone' => 'varchar(255)',
-            'first_name' => 'varchar(255)',
-            'last_name' => 'varchar(255)',
-            'address' => 'varchar(255)',
-            'city' => 'varchar(255)',
-            'zip_code' => 'varchar(255)',
-            'virtuemart_country_id' => 'varchar(255)',
-            'adult_content' => 'smallint(1) DEFAULT \'0\'',
-            'is_cod' => 'smallint(1)',
-            'packet_cod' => 'decimal(15,2)',
-            'exported' => 'smallint(1)',
-            'printed_label' => 'smallint(1) DEFAULT \'0\'',
-            'shipment_name' => 'varchar(5000)',
-            'shipment_cost' => 'decimal(10,2)',
-            'shipment_package_fee' => 'decimal(10,2)',
-            'tax_id' => 'smallint(1)'
-        );
-
-        return $SQLfields;
     }
 
     /**

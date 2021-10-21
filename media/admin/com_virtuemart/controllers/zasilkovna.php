@@ -72,8 +72,8 @@ class VirtuemartControllerZasilkovna extends VmController
             }
         }
 
-        $db = JFactory::getDBO();
-        $q = "UPDATE #__extensions SET custom_data='" . $db->escape(serialize($data)) . "' WHERE element='zasilkovna'";
+        $db =& JFactory::getDBO();
+        $q = "UPDATE #__extensions SET custom_data='" . serialize($data) . "' WHERE element='zasilkovna'";
         $db->setQuery($q);
         $db->query();
 
