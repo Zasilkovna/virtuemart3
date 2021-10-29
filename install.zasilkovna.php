@@ -63,6 +63,11 @@ class plgVmShipmentZasilkovnaInstallerScript {
 
     private $migratingPricingRules = false;
 
+    /**
+     * @var string
+     */
+    private $fromVersion;
+
     public function __construct() {
         if (!defined('JPATH_VM_PLUGINS')) {
             if (!class_exists('VmConfig')) {
@@ -92,6 +97,8 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	 * @return  boolean  True on success
 	 */
 	public function preflight($route, JAdapterInstance $adapter) {
+	    $this->fromVersion = $this->getExtensionVersion();
+
         if ($route === 'update') {
             $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna';
             recurse_delete($media_path);
@@ -99,6 +106,30 @@ class plgVmShipmentZasilkovnaInstallerScript {
             $this->removeAdministratorFiles();
         }
 	}
+
+    /**
+     * @return string|null
+     */
+    public function getExtensionVersion()
+    {
+        $db = JFactory::getDBO();
+        $query = $db->getQuery(true)
+            ->select('manifest_cache')
+            ->from('#__extensions AS e')
+            ->where('e.element = ' . $db->quote('zasilkovna'))
+            ->order($db->quoteName('extension_id') . ' DESC')
+        ;
+
+        $db->setQuery($query);
+        $result = $db->loadResult();
+
+        if ($result) {
+            $cache = new \Joomla\Registry\Registry($result);
+            return $cache->get('version');
+        }
+
+        return null;
+    }
 
     /**
      * @param $haystack
@@ -151,15 +182,28 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
         if (in_array($route, ['install', 'update'])) {
             $this->upgradeSchema();
+        }
+
+        if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0') < 0) {
             $this->migratePricingRules();
         }
 	}
 
     public function upgradeSchema() {
         $updater = new GenericTableUpdater();
-        $updater->updateMyVmTables(__DIR__ . '/sql/install.sql');
-        $updater->updateMyVmTables(__DIR__ . '/sql/install.sql'); // in order to use InnoDB we need to call the method twice to invoke alter logic
+        $updater->updateMyVmTables(__DIR__ . '/install.sql');
+        $updater->updateMyVmTables(__DIR__ . '/install.sql'); // in order to use InnoDB we need to call the method twice to invoke alter logic
         echo 'Database schema installed/upgraded.<br>';
+
+        // If user uninstalls plugin version 1.1.7 the tables with data will likely still be there.
+        // Then when user installs 1.3.1 the fromVersion variable will be empty.
+
+        if (!$this->fromVersion || version_compare($this->fromVersion, '1.1.8') < 0 ) {
+            $db = JFactory::getDBO();
+            $db->setQuery('UPDATE `#__virtuemart_shipment_plg_zasilkovna` SET packet_cod = zasilkovna_packet_price WHERE is_cod = 1 AND packet_cod = 0.00');
+            $db->execute();
+            echo 'Column packet_cod was filled with zasilkovna_packet_price.<br>';
+        }
 	}
 
 	/**

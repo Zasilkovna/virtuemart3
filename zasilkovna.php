@@ -58,6 +58,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         parent::__construct($subject, $config);
 
         $this->_loggable = true;
+        $this->tableFields = array_keys($this->getTableSQLFields());
         $varsToPush = $this->getVarsToPush();
         $this->addVarsToPushCore($varsToPush,0);
         $this->setConfigParameterable($this->_configTableFieldName, $varsToPush);
@@ -138,6 +139,18 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     public function getVmPluginCreateTableSQL() {
         return $this->createTableSQL('zasilkovna');
+    }
+
+    /**
+     * Get plugin table fields definition.
+     *
+     * @return array
+     */
+    public function getTableSQLFields() {
+        $updater = new GenericTableUpdater();
+        $tableDefinitions = $updater->getTablesBySql(__DIR__ . '/install.sql');
+        $pluginTableDefinition = $tableDefinitions['#__virtuemart_shipment_plg_zasilkovna'];
+        return $pluginTableDefinition[0];
     }
 
     /**
