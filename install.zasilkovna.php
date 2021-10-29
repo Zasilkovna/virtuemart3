@@ -99,6 +99,12 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	public function preflight($route, JAdapterInstance $adapter) {
 	    $this->fromVersion = $this->getExtensionVersion();
 
+        if (in_array($route, ['install', 'update'])) {
+            // Any schema migrations must not use plugin classes, because files are not migrated yet at this point.
+            // If upgrade fails fromVersion does not change due to preflight. So it allows all schema migrations to be executed in case another install attempt happens.
+            $this->upgradeSchema();
+        }
+
         if ($route === 'update') {
             $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna';
             recurse_delete($media_path);
@@ -180,10 +186,6 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
 		}
 
-        if (in_array($route, ['install', 'update'])) {
-            $this->upgradeSchema();
-        }
-
         if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0') < 0) {
             $this->migratePricingRules();
         }
@@ -197,6 +199,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
         // If user uninstalls plugin version 1.1.7 the tables with data will likely still be there.
         // Then when user installs 1.3.1 the fromVersion variable will be empty.
+        // Make sure you add SQL upgrade that can be run multiple times or uses custom flag.
 
         if (!$this->fromVersion || version_compare($this->fromVersion, '1.1.8') < 0 ) {
             $db = JFactory::getDBO();
