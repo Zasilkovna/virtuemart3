@@ -145,7 +145,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
 INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `link`, `depends`, `icon_class`, `ordering`, `published`, `tooltip`, `view`, `task`) VALUES
 							(5, 0, 'ZASILKOVNA', '', '', 'vmicon vmicon-16-zasilkovna', 1, 1, '', 'zasilkovna', '');";
 			$db->setQuery($q);
-			$db->query();
+			$db->execute();
 
 		}
 
@@ -382,7 +382,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 		$db = JFactory::getDBO();
 		$q = "DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = 'zasilkovna';";
 		$db->setQuery($q);
-		$db->query();
+		$db->execute();
 
 		$this->removeAdministratorFiles();
 	}

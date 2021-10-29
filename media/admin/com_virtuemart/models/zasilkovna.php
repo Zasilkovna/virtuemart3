@@ -101,7 +101,7 @@ class VirtueMartModelZasilkovna extends VmModel
         $db = JFactory::getDBO();
         $q = "UPDATE #__extensions SET custom_data='" . $db->escape(serialize($data)) . "' WHERE element='zasilkovna'";
         $db->setQuery($q);
-        $db->query();
+        $db->execute();
     }
 
     /**
@@ -406,7 +406,7 @@ class VirtueMartModelZasilkovna extends VmModel
             $db = JFactory::getDBO();
             $query = 'TRUNCATE TABLE #__virtuemart_zasilkovna_branches';
             $db->setQuery($query);
-            $db->query();
+            $db->execute();
             $q = "INSERT INTO #__virtuemart_zasilkovna_branches (
 	              `id` ,
 	              `name_street` ,
@@ -427,7 +427,7 @@ class VirtueMartModelZasilkovna extends VmModel
 
             }
             $db->setQuery($q);
-            $db->query();
+            $db->execute();
         }
         else {
             return false;
