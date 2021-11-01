@@ -199,13 +199,16 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
         // If user uninstalls plugin version 1.1.7 the tables with data will likely still be there.
         // Then when user installs 1.3.1 the fromVersion variable will be empty.
-        // Make sure you add SQL upgrade that can be run multiple times or uses custom flag.
 
-        if (!$this->fromVersion || version_compare($this->fromVersion, '1.1.8') < 0 ) {
+        if ($this->fromVersion && version_compare($this->fromVersion, '1.1.8') < 0 ) {
             $db = JFactory::getDBO();
             $db->setQuery('UPDATE `#__virtuemart_shipment_plg_zasilkovna` SET packet_cod = zasilkovna_packet_price WHERE is_cod = 1 AND packet_cod = 0.00');
             $db->execute();
             echo 'Column packet_cod was filled with zasilkovna_packet_price.<br>';
+        }
+
+        if (!$this->fromVersion) {
+            echo 'Following message is relevant for users upgrading from version 1.1.7 and below. Warning! Packet COD data upgrade was not executed. Data migrations require old plugin to be installed during update.<br>';
         }
 	}
 
