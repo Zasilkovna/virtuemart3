@@ -434,6 +434,17 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 		$db->setQuery($q);
 		$db->execute();
 
+		// Table dropping was added in 1.3.1. Before that tables existed after plugin uninstall.
+        $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_shipment_plg_zasilkovna_backup;");
+        $db->execute();
+
+        // Beware of database constraints. You may want to turn off foreign key constraint check before dropping related tables.
+        $db->setQuery("RENAME TABLE #__virtuemart_shipment_plg_zasilkovna TO #__virtuemart_shipment_plg_zasilkovna_backup;");
+        $db->execute();
+
+        $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_zasilkovna_branches;");
+        $db->execute();
+
 		$this->removeAdministratorFiles();
 	}
 
