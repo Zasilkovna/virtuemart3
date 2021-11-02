@@ -64,7 +64,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
     private $migratingPricingRules = false;
 
     /**
-     * @var string
+     * @var string|null
      */
     private $fromVersion;
 
