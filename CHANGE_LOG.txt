@@ -1,4 +1,6 @@
-1.3.1 - Fixed: SQL escaping
+1.3.1 - Fixed: SQL input escaping added in places where SQL was constructed
+		Updated: Schema migration is simplified by using GenericTableUpdater
+		Added: Backup table for orders added in case uninstall happens by mistake. Plugin tables are dropped during uninstall and backup table for orders are re-created each time.
 
 1.3.0 - Added: editable order weight
 
