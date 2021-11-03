@@ -208,7 +208,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
         $updater = new GenericTableUpdater();
         $updater->updateMyVmTables(__DIR__ . '/install.sql');
-        $updater->updateMyVmTables(__DIR__ . '/install.sql'); // in order to use InnoDB we need to call the method twice to invoke alter logic
+        $updater->updateMyVmTables(__DIR__ . '/install.sql'); // tables are created with MyISAM engine, to use InnoDB, we call the method for second time
         echo 'Database schema installed/upgraded.<br>';
 
         // If user uninstalls plugin version 1.1.7 the tables with data will likely still be there.
