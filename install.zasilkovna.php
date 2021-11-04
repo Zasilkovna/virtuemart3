@@ -186,7 +186,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
 		}
 
-        if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0') < 0) {
+        if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0', '<')) {
             $this->migratePricingRules();
         }
 	}
