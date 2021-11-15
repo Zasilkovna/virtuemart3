@@ -4,7 +4,7 @@
 
 ### Download module
 
-[Actual version 1.3.0](https://github.com/Zasilkovna/virtuemart3/archive/refs/tags/v.1.3.0.zip)
+[Actual version 1.3.1](https://github.com/Zasilkovna/virtuemart3/archive/refs/tags/v.1.3.1.zip)
 
 ### Installation
 
@@ -95,7 +95,7 @@ Packeta module may not work with another OPC module.
 
 ### Stažení modulu
 
-[Aktuální verze 1.3.0](https://github.com/Zasilkovna/virtuemart3/archive/refs/tags/v.1.3.0.zip)
+[Aktuální verze 1.3.1](https://github.com/Zasilkovna/virtuemart3/archive/refs/tags/v.1.3.1.zip)
 
 ### Instalace
 

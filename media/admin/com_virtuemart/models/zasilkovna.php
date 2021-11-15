@@ -14,7 +14,7 @@ if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmod
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.3.0';
+    const VERSION = '1.3.1';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
@@ -101,7 +101,7 @@ class VirtueMartModelZasilkovna extends VmModel
         $db = JFactory::getDBO();
         $q = "UPDATE #__extensions SET custom_data='" . $db->escape(serialize($data)) . "' WHERE element='zasilkovna'";
         $db->setQuery($q);
-        $db->query();
+        $db->execute();
     }
 
     /**
@@ -164,7 +164,8 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function getDbTableName()
     {
-        return $this->_db_table_name;
+        $db = JFactory::getDBO();
+        return $db->escape($this->_db_table_name);
     }
 
     /**
@@ -190,10 +191,16 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function publishShipmentMethods($ids, $value = 1)
     {
-	if (empty($ids)) return; 
-	if (!is_array($ids)) return; 
-        $value = (int) $value;
-        $imploded = implode(',', $ids);
+        if (empty($ids)) {
+            return;
+        }
+
+        $shipmentMethodIds = [];
+        foreach ($ids as $shipmentMethodId) {
+            $shipmentMethodIds[] = (int)$shipmentMethodId;
+        }
+
+        $imploded = implode(',', $shipmentMethodIds);
         $q = "UPDATE #__virtuemart_shipmentmethods SET published = ".(int)$value." WHERE virtuemart_shipmentmethod_id IN ($imploded)";
         $db = JFactory::getDBO();
         $db->setQuery($q);
@@ -399,7 +406,7 @@ class VirtueMartModelZasilkovna extends VmModel
             $db = JFactory::getDBO();
             $query = 'TRUNCATE TABLE #__virtuemart_zasilkovna_branches';
             $db->setQuery($query);
-            $db->query();
+            $db->execute();
             $q = "INSERT INTO #__virtuemart_zasilkovna_branches (
 	              `id` ,
 	              `name_street` ,
@@ -415,12 +422,12 @@ class VirtueMartModelZasilkovna extends VmModel
                 else {
                     $q .= ", (";
                 }
-                
+
                 $q .= "'".$db->escape($branch->id)."', '".$db->escape($branch->nameStreet)."','".$db->escape($branch->currency)."','".$db->escape($branch->country)."')";
 
             }
             $db->setQuery($q);
-            $db->query();
+            $db->execute();
         }
         else {
             return false;

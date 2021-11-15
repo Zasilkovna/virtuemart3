@@ -32,8 +32,8 @@ function recurse_copy($src, $dst) {
 }
 
 /**
- * @param $dir
- * @param false $ignore
+ * @param string $dir Folder or file.
+ * @param bool $ignore Ignores warnings for non existing folders and files.
  */
 function recurse_delete($dir, $ignore = false) {
 	echo "deleting: " . $dir . "<br>";
@@ -63,13 +63,29 @@ class plgVmShipmentZasilkovnaInstallerScript {
 
     private $migratingPricingRules = false;
 
+    /**
+     * @var string|null
+     */
+    private $fromVersion;
+
+    public function __construct() {
+        if (!defined('JPATH_VM_PLUGINS')) {
+            if (!class_exists('VmConfig')) {
+                require(JPATH_ADMINISTRATOR . '/components/com_virtuemart/helpers/config.php');
+            }
+
+            VmConfig::loadConfig();
+        }
+
+        if(!class_exists('GenericTableUpdater')) require(VMPATH_ADMIN .'/helpers/tableupdater.php');
+    }
+
 	/**
 	 * Constructor
 	 *
 	 * @param   JAdapterInstance $adapter The object responsible for running this script
 	 */
 	public function __constructor(JAdapterInstance $adapter) {
-
 	}
 
 	/**
@@ -81,6 +97,14 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	 * @return  boolean  True on success
 	 */
 	public function preflight($route, JAdapterInstance $adapter) {
+	    $this->fromVersion = $this->getExtensionVersion();
+
+        if (in_array($route, ['install', 'update'])) {
+            // Any schema migrations must not use plugin classes, because files are not migrated yet at this point.
+            // If upgrade fails fromVersion does not change due to preflight. So it allows all schema migrations to be executed in case another install attempt happens.
+            $this->upgradeSchema();
+        }
+
         if ($route === 'update') {
             $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna';
             recurse_delete($media_path);
@@ -88,6 +112,30 @@ class plgVmShipmentZasilkovnaInstallerScript {
             $this->removeAdministratorFiles();
         }
 	}
+
+    /**
+     * @return string|null
+     */
+    public function getExtensionVersion()
+    {
+        $db = JFactory::getDBO();
+        $query = $db->getQuery(true)
+            ->select('manifest_cache')
+            ->from('#__extensions AS e')
+            ->where('e.element = ' . $db->quote('zasilkovna'))
+            ->order($db->quoteName('extension_id') . ' DESC')
+        ;
+
+        $db->setQuery($query);
+        $result = $db->loadResult();
+
+        if ($result) {
+            $cache = new \Joomla\Registry\Registry($result);
+            return $cache->get('version');
+        }
+
+        return null;
+    }
 
     /**
      * @param $haystack
@@ -130,63 +178,48 @@ class plgVmShipmentZasilkovnaInstallerScript {
             }
 
 			$db = JFactory::getDBO();
-			$q = "CREATE TABLE IF NOT EXISTS #__virtuemart_zasilkovna_branches (
-										`id` int(10) NOT NULL,
-										`name_street` varchar(200) NOT NULL,
-										`currency` text NOT NULL,
-										`country` varchar(10) NOT NULL
-										) ENGINE=MyISAM DEFAULT CHARSET=utf8;";
-			$db->setQuery($q);
-			$db->query();
-
-			$q = "CREATE TABLE IF NOT EXISTS `#__virtuemart_shipment_plg_zasilkovna` (
-							  `id` int(1) unsigned NOT NULL AUTO_INCREMENT,
-							  `virtuemart_order_id` int(11) unsigned DEFAULT NULL,
-							  `virtuemart_shipmentmethod_id` mediumint(1) unsigned DEFAULT NULL,
-							  `order_number` char(32) DEFAULT NULL,
-							  `zasilkovna_packet_id` decimal(10,0) DEFAULT NULL,
-							  `zasilkovna_packet_price` decimal(15,2) DEFAULT NULL,
-							  `weight` decimal(10,4) DEFAULT NULL,
-							  `branch_id` decimal(10,0) DEFAULT NULL,
-							  `branch_currency` char(5) DEFAULT NULL,
-							  `branch_name_street` varchar(500) DEFAULT NULL,
-							  `is_carrier` smallint(1) NOT NULL DEFAULT '0',
-							  `carrier_pickup_point` varchar(40) DEFAULT NULL,
-							  `email` varchar(255) DEFAULT NULL,
-							  `phone` varchar(255) DEFAULT NULL,
-							  `first_name` varchar(255) DEFAULT NULL,
-							  `last_name` varchar(255) DEFAULT NULL,
-							  `address` varchar(255) DEFAULT NULL,
-							  `city` varchar(255) DEFAULT NULL,
-							  `zip_code` varchar(255) DEFAULT NULL,
-							  `virtuemart_country_id` varchar(255) DEFAULT NULL,
-							  `adult_content` smallint(1) DEFAULT '0',
-							  `is_cod` smallint(1) DEFAULT NULL,
-							  `packet_cod` decimal(15,2) DEFAULT '0',
-							  `exported` smallint(1) DEFAULT NULL,
-							  `printed_label` smallint(1) DEFAULT '0',
-							  `shipment_name` varchar(5000) DEFAULT NULL,
-							  `shipment_cost` decimal(10,2) DEFAULT NULL,
-							  `shipment_package_fee` decimal(10,2) DEFAULT NULL,
-							  `tax_id` smallint(1) DEFAULT NULL,
-							  `created_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-							  `created_by` int(11) NOT NULL DEFAULT '0',
-							  `modified_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-							  `modified_by` int(11) NOT NULL DEFAULT '0',
-							  `locked_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-							  `locked_by` int(11) NOT NULL DEFAULT '0',
-							  PRIMARY KEY (`id`)
-							) ENGINE=MyISAM DEFAULT CHARSET=utf8 COMMENT='zasilkovna';";
-			$db->setQuery($q);
-			$db->query();
-
 			$q = "
 INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `link`, `depends`, `icon_class`, `ordering`, `published`, `tooltip`, `view`, `task`) VALUES
 							(5, 0, 'ZASILKOVNA', '', '', 'vmicon vmicon-16-zasilkovna', 1, 1, '', 'zasilkovna', '');";
 			$db->setQuery($q);
-			$db->query();
+			$db->execute();
 
 		}
+
+        if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0', '<')) {
+            $this->migratePricingRules();
+        }
+	}
+
+    public function pluginTableExists() {
+        $db = JFactory::getDBO();
+        $db->setQuery('SHOW TABLES LIKE "%_virtuemart_shipment_plg_zasilkovna"');
+        $row = $db->loadColumn();
+        return !empty($row);
+    }
+
+    public function upgradeSchema() {
+        $oldColumns = [];
+        if ($this->pluginTableExists()) {
+            $db = JFactory::getDBO();
+            $db->setQuery('SHOW FULL COLUMNS FROM `#__virtuemart_shipment_plg_zasilkovna`');
+            $oldColumns = $db->loadColumn();
+        }
+
+        $updater = new GenericTableUpdater();
+        $updater->updateMyVmTables(__DIR__ . '/install.sql');
+        $updater->updateMyVmTables(__DIR__ . '/install.sql'); // tables are created with MyISAM engine, to use InnoDB, we call the method for second time
+        echo 'Database schema installed/upgraded.<br>';
+
+        // If user uninstalls plugin version 1.1.7 the tables with data will likely still be there.
+        // Then when user installs 1.3.1 the fromVersion variable will be empty.
+
+        if (!empty($oldColumns) && !in_array('packet_cod', $oldColumns)) {
+            $db = JFactory::getDBO();
+            $db->setQuery('UPDATE `#__virtuemart_shipment_plg_zasilkovna` SET packet_cod = zasilkovna_packet_price WHERE is_cod = 1 AND packet_cod = 0.00');
+            $db->execute();
+            echo 'Column packet_cod was filled with zasilkovna_packet_price.<br>';
+        }
 	}
 
 	/**
@@ -197,7 +230,6 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 	 * @return  boolean  True on success
 	 */
 	public function install(JAdapterInstance $adapter) {
-
 	}
 
 	/**
@@ -223,18 +255,12 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
                 }
             }
         }
-
-        $this->migratePricingRules();
 	}
 
     /**
      *  migrates price rules
      */
     private function migratePricingRules() {
-        require_once JPATH_ADMINISTRATOR . '/components/com_virtuemart/install/script.virtuemart.php';
-        $vmInstall = new \com_virtuemartInstallerScript();
-        $vmInstall->loadVm(false);
-
         require_once __DIR__ . '/zasilkovna.php';
 
         /** @var \VirtueMartModelZasilkovna $model */
@@ -394,7 +420,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         $id = $data['virtuemart_shipmentmethod_id'];
 
         $db = JFactory::getDBO();
-        $q = "UPDATE #__virtuemart_shipmentmethods SET shipment_params='" . $data['shipment_params'] . "' WHERE virtuemart_shipmentmethod_id='{$id}'";
+        $q = "UPDATE #__virtuemart_shipmentmethods SET shipment_params='" . $db->escape($data['shipment_params']) . "' WHERE virtuemart_shipmentmethod_id=" . (int)$id;
         $db->setQuery($q);
         $db->execute();
 
@@ -416,7 +442,18 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 		$db = JFactory::getDBO();
 		$q = "DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = 'zasilkovna';";
 		$db->setQuery($q);
-		$db->query();
+		$db->execute();
+
+		// Table dropping was added in 1.3.1. Before that tables existed after plugin uninstall.
+        $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_shipment_plg_zasilkovna_backup;");
+        $db->execute();
+
+        // Beware of database constraints. You may want to turn off foreign key constraint check before dropping related tables.
+        $db->setQuery("RENAME TABLE #__virtuemart_shipment_plg_zasilkovna TO #__virtuemart_shipment_plg_zasilkovna_backup;");
+        $db->execute();
+
+        $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_zasilkovna_branches;");
+        $db->execute();
 
 		$this->removeAdministratorFiles();
 	}
