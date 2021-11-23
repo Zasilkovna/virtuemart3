@@ -189,7 +189,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $exportedOrdersString = implode("','", $escapedOrders);
             $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET exported=1 WHERE order_number IN ('" . $exportedOrdersString . "') ";
             $db->setQuery($q);
-            $db->query();
+            $db->execute();
         }
     }
 
@@ -299,7 +299,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $q .= implode(' , ', $set_q) . " WHERE order_number='" . $db->escape($order['order_number']) . "'; ";
 
             $db->setQuery($q);
-            $db->query();
+            $db->execute();
         }
 
     }
@@ -616,7 +616,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             WHERE o.virtuemart_order_id NOT IN (SELECT virtuemart_order_id FROM {$this->zas_model->getDbTableName()})";
         $db = JFactory::getDBO();
         $db->setQuery($q);
-        $db->query();
+        $db->execute();
     }
  	*/
 

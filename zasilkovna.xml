@@ -23,7 +23,7 @@
     <installfile>install.zasilkovna.php</installfile>
     <files>
         <filename plugin="zasilkovna">zasilkovna.php</filename>
-        <folder>sql</folder>
+        <filename plugin="zasilkovna">install.sql</filename>
     </files>
     <vmconfig>
         <fields name="params">
@@ -107,12 +107,6 @@
             </fieldset>
         </fields>
     </vmconfig>
-
-    <update>
-        <schemas>
-            <schemapath type="mysql">sql/mysql/updates</schemapath>
-        </schemas>
-    </update>
 
     <media folder="media" destination="com_zasilkovna">
         <folder>admin</folder>
