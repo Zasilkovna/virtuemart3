@@ -191,19 +191,29 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         }
 	}
 
-    public function pluginTableExists() {
+    /**
+     * @param string $tableLike
+     * @return bool
+     */
+    public function pluginTableExists($tableLike) {
         $db = JFactory::getDBO();
-        $db->setQuery('SHOW TABLES LIKE "%_virtuemart_shipment_plg_zasilkovna"');
+        $db->setQuery('SHOW TABLES LIKE ' . $db->quote($tableLike));
         $row = $db->loadColumn();
         return !empty($row);
     }
 
     public function upgradeSchema() {
         $oldColumns = [];
-        if ($this->pluginTableExists()) {
+        if ($this->pluginTableExists('%_virtuemart_shipment_plg_zasilkovna')) {
             $db = JFactory::getDBO();
             $db->setQuery('SHOW FULL COLUMNS FROM `#__virtuemart_shipment_plg_zasilkovna`');
             $oldColumns = $db->loadColumn();
+        }
+
+        if ($this->pluginTableExists('%_virtuemart_zasilkovna_branches') && !$this->pluginTableExists('%_virtuemart_zasilkovna_carriers')) {
+            $db = JFactory::getDBO();
+            $db->setQuery('RENAME TABLE `#__virtuemart_zasilkovna_branches` TO `#__virtuemart_zasilkovna_carriers`');
+            $db->execute();
         }
 
         $updater = new GenericTableUpdater();
@@ -452,7 +462,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         $db->setQuery("RENAME TABLE #__virtuemart_shipment_plg_zasilkovna TO #__virtuemart_shipment_plg_zasilkovna_backup;");
         $db->execute();
 
-        $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_zasilkovna_branches;");
+        $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_zasilkovna_carriers;");
         $db->execute();
 
 		$this->removeAdministratorFiles();
