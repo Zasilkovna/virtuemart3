@@ -186,6 +186,9 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
 		}
 
+        if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.php';
+
+        $this->createCronToken();
         if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0', '<')) {
             $this->migratePricingRules();
         }
@@ -271,8 +274,6 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
      *  migrates price rules
      */
     private function migratePricingRules() {
-        require_once __DIR__ . '/zasilkovna.php';
-
         /** @var \VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
         $config = $model->loadConfig();
@@ -484,5 +485,21 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'ro-RO' . DS . 'ro-RO.plg_vmshipment_zasilkovna.ini', true);
     }
 
+    /**
+     * Creates update carriers token.
+     *
+     * @return void
+     */
+    private function createCronToken() {
+        /** @var \VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $config = $model->loadConfig();
+
+        if (!isset($config['cron_token'])) {
+            $config['cron_token'] = sha1(rand());
+        }
+
+        $model->updateConfig($config);
+    }
 }
 

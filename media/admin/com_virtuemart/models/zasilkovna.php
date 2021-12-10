@@ -9,7 +9,7 @@ defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmodel.php');
 
-require_once VMPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.php';
+if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.php';
 
 /**
  * Class VirtueMartModelZasilkovna
@@ -211,17 +211,6 @@ class VirtueMartModelZasilkovna extends VmModel
         $db = JFactory::getDBO();
         $db->setQuery($q);
         $db->execute();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getBranches() {
-        $db = JFactory::getDBO();
-        $q = "SELECT * from #__virtuemart_zasilkovna_branches";
-        $db->setQuery($q);
-
-        return $db->loadObjectList();
     }
 
     /**
