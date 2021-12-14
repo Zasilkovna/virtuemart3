@@ -16,13 +16,27 @@
     $carriersCount = $model->getTotalUsableCarriersCount();
 ?>
 <div>
-    <p><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_TOTAL'); ?>: <?php echo htmlentities($carriersCount); ?></p>
-    <p><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_LAST_UPDATE'); ?>: <?php echo htmlentities($lastUpdated); ?></p>
-    <p>
-        <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_MANUAL_UPDATE'); ?>:
-        <a class="btn btn-small" href="<?php echo htmlentities($updateUrl); ?>"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATE_BUTTON'); ?></a>
-    </p>
-    <p>
-        <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_MANUAL_UPDATE_URL'); ?>: <?php echo htmlentities($publicUpdateUrl); ?>
-    </p>
+    <fieldset>
+        <legend><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATE_LEGEND'); ?></legend>
+        <table class="admintable">
+            <tbody>
+                <tr>
+                    <td class="key"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_TOTAL'); ?></td>
+                    <td><?php echo htmlentities($carriersCount); ?></td>
+                </tr>
+                <tr>
+                    <td class="key"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_LAST_UPDATE'); ?></td>
+                    <td><?php echo htmlentities($lastUpdated); ?></td>
+                </tr>
+                <tr>
+                    <td class="key"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_MANUAL_UPDATE'); ?></td>
+                    <td><a class="btn btn-small btn-success" href="<?php echo htmlentities($updateUrl); ?>"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATE_BUTTON'); ?></a></td>
+                </tr>
+                <tr>
+                    <td class="key"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_MANUAL_UPDATE_URL'); ?></td>
+                    <td><?php echo htmlentities($publicUpdateUrl); ?></td>
+                </tr>
+            </tbody>
+        </table>
+    </fieldset>
 </div>
