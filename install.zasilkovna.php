@@ -496,7 +496,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         $config = $model->loadConfig();
 
         if (!isset($config['cron_token'])) {
-            $config['cron_token'] = sha1(rand());
+            $config['cron_token'] = substr(sha1(rand()), 0, 16);
         }
 
         $model->updateConfig($config);
