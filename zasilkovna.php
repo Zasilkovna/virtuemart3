@@ -133,6 +133,34 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     }
 
     /**
+     * Updates carriers.
+     */
+    public function handleUpdateCarriers() {
+        $token = JRequest::getVar('token', '');
+        $expectedToken = $this->model->getConfig('cron_token');
+
+        if ($token !== $expectedToken) {
+            jExit();
+        }
+
+        /** @var VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $model->updateCarriers();
+
+        foreach ($model->errors as $error) {
+            echo $error;
+            echo '<br>';
+        }
+
+        if (empty($model->errors)) {
+            echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATED');
+            echo '<br>';
+        }
+
+        jExit();
+    }
+
+    /**
      * Create the table for this plugin if it does not yet exist.
      *
      * @author Valérie Isaksen

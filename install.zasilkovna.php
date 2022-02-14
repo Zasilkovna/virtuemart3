@@ -186,24 +186,37 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
 		}
 
+        if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.php';
+
+        $this->createCronToken();
         if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0', '<')) {
             $this->migratePricingRules();
         }
 	}
 
-    public function pluginTableExists() {
+    /**
+     * @param string $tableLike
+     * @return bool
+     */
+    public function pluginTableExists($tableLike) {
         $db = JFactory::getDBO();
-        $db->setQuery('SHOW TABLES LIKE "%_virtuemart_shipment_plg_zasilkovna"');
+        $db->setQuery('SHOW TABLES LIKE ' . $db->quote($tableLike));
         $row = $db->loadColumn();
         return !empty($row);
     }
 
     public function upgradeSchema() {
         $oldColumns = [];
-        if ($this->pluginTableExists()) {
+        if ($this->pluginTableExists('%_virtuemart_shipment_plg_zasilkovna')) {
             $db = JFactory::getDBO();
             $db->setQuery('SHOW FULL COLUMNS FROM `#__virtuemart_shipment_plg_zasilkovna`');
             $oldColumns = $db->loadColumn();
+        }
+
+        if ($this->pluginTableExists('%_virtuemart_zasilkovna_branches') && !$this->pluginTableExists('%_virtuemart_zasilkovna_carriers')) {
+            $db = JFactory::getDBO();
+            $db->setQuery('RENAME TABLE `#__virtuemart_zasilkovna_branches` TO `#__virtuemart_zasilkovna_carriers`');
+            $db->execute();
         }
 
         $updater = new GenericTableUpdater();
@@ -261,8 +274,6 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
      *  migrates price rules
      */
     private function migratePricingRules() {
-        require_once __DIR__ . '/zasilkovna.php';
-
         /** @var \VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
         $config = $model->loadConfig();
@@ -452,7 +463,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         $db->setQuery("RENAME TABLE #__virtuemart_shipment_plg_zasilkovna TO #__virtuemart_shipment_plg_zasilkovna_backup;");
         $db->execute();
 
-        $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_zasilkovna_branches;");
+        $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_zasilkovna_carriers;");
         $db->execute();
 
 		$this->removeAdministratorFiles();
@@ -474,5 +485,21 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'ro-RO' . DS . 'ro-RO.plg_vmshipment_zasilkovna.ini', true);
     }
 
+    /**
+     * Creates update carriers token.
+     *
+     * @return void
+     */
+    private function createCronToken() {
+        /** @var \VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $config = $model->loadConfig();
+
+        if (!isset($config['cron_token'])) {
+            $config['cron_token'] = substr(sha1(rand()), 0, 16);
+        }
+
+        $model->updateConfig($config);
+    }
 }
 

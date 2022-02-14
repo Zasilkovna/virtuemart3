@@ -60,8 +60,6 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         usort($shipments, "cmpShipments"); //sort, coz it comes in random order
         $this->assignRef('shipmentMethods', $shipments);
 
-        $jsPath = $model->updateJSApi();
-        $this->assignRef('js_path', $jsPath);
         $moduleVersion = $model->checkModuleVersion();
         $this->assignRef('moduleVersion', $moduleVersion);
         $this->assignRef('errors', $model->errors);
@@ -202,14 +200,11 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         JToolBarHelper::save('updateAndExportZasilkovnaOrders', 'CSV');
         /** @var VirtueMartModelZasilkovna $zas_model */
         $zas_model = VmModel::getModel('zasilkovna');
-		$zas_model->updateBranchesInfo();
 
         $this->assignRef('media_url', $zas_model->_media_url);
         $restrictionInstalled = $zas_model->isShipmentPaymentRestrictionInstalled();
         $this->assignRef('restrictionInstalled', $restrictionInstalled);
 
-        $branches = $zas_model->getBranches();
-        $this->assignRef('branches', $branches);
         JToolBarHelper::save('submitToZasilkovna', JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_ORDERS_TO_ZASILKOVNA'));
         JToolBarHelper::custom('printLabels', 'copy', '', JText::_('PLG_VMSHIPMENT_PACKETERY_DO_PRINT_LABELS'), false, false);
 

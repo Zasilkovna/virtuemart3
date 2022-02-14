@@ -9,12 +9,14 @@ defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmodel.php');
 
+if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.php';
+
 /**
  * Class VirtueMartModelZasilkovna
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.3.1';
+    const VERSION = '1.4.0';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
@@ -36,6 +38,8 @@ class VirtueMartModelZasilkovna extends VmModel
 
     public $errors = array();
 
+    /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
+    private $carrierRepository;
 
     /**
      * VirtueMartModelZasilkovna constructor.
@@ -53,6 +57,8 @@ class VirtueMartModelZasilkovna extends VmModel
         $this->api_key = substr($this->config['zasilkovna_api_pass'], 0, 16);
         $this->_media_url = JURI::root(true) . "/media/com_zasilkovna/media/";
         $this->_media_path = JPATH_SITE . DS . "media" . DS . "com_zasilkovna" . DS . "media" . DS;
+
+        $this->carrierRepository = new \VirtueMartModelZasilkovna\Carrier\Repository();
 
         parent::__construct();
     }
@@ -173,7 +179,7 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function getShipmentMethodIds()
     {
-	$db = JFactory::getDBO();
+        $db = JFactory::getDBO();
         $q = "SELECT virtuemart_shipmentmethod_id FROM #__virtuemart_shipmentmethods WHERE shipment_element = '" . $db->escape(self::PLG_NAME) . "'";
         $db->setQuery($q);
         $objList = $db->loadObjectList();
@@ -205,17 +211,6 @@ class VirtueMartModelZasilkovna extends VmModel
         $db = JFactory::getDBO();
         $db->setQuery($q);
         $db->execute();
-    }
-
-    /**
-     * @return mixed
-     */
-    public function getBranches() {
-        $db = JFactory::getDBO();
-        $q = "SELECT * from #__virtuemart_zasilkovna_branches";
-        $db->setQuery($q);
-
-        return $db->loadObjectList();
     }
 
     /**
@@ -327,61 +322,49 @@ class VirtueMartModelZasilkovna extends VmModel
         }
     }
 
-    /*
-     * Return js api url and if it is needed, updates it
-     */
     /**
-     * @return false|string
+     * @return int
      */
-    public function updateJSApi() {
-        $js_path = $this->_media_path . 'branch.js';
-        if(!$this->is_writable($js_path)) return false;
-        if(!$this->isFileUpToDate($js_path)) {
-            if(!$this->updateFile($js_path, 'js')) {
-                //updating file failed
-                if(!$this->isFileUsable($js_path)) {
-                    // if file is older than 5 days
-                    $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_UPDATE_ERROR');
-
-                    return false;
-                }
-            }
-        }
-        if(!$this->updateBranchesInfo()) {
-            return false;
-        }
-
-        return $this->_media_url . "branch.js";
+    public function getTotalUsableCarriersCount() {
+        return $this->carrierRepository->getTotalUsableCarriersCount();
     }
 
     /**
-     * @return bool
+     * @return string
      */
-    public function updateBranchesInfo() {
-        $localFilePath = $this->_media_path . 'branch.xml';
-        if(!$this->is_writable($localFilePath)) return false;
-        if(!$this->isFileUpToDate($localFilePath)) {
-            // file is older than one days
-            if(!$this->updateFile($localFilePath, "xml")) {
-                //failed updating
-                if(!$this->isFileUsable($localFilePath)) {
-                    //file is older than 5 days and thus not usable
-                    $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_UPDATE_ERROR');
-
-					return false;
-                }
-            }
-            else {
-                //updating succeeded, update mysql db
-                if(!$this->saveBranchesXmlToDb($localFilePath)) {
-                    $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_XML_ERROR');
-
-                    return false;
-                }
-            }
+    public function getLastCarriersUpdateTimeFormatted() {
+        $config = $this->loadConfig();
+        $time = null;
+        if (isset($config['carriers_updated_at'])) {
+            $time = $config['carriers_updated_at'];
         }
 
-        return true;
+        if (!$time) {
+            return JText::_('PLG_VMSHIPMENT_PACKETERY_NEVER');
+        }
+
+        $timeInstance = \DateTime::createFromFormat(\DateTime::ATOM, $time);
+        return $timeInstance->format(JText::_('PLG_VMSHIPMENT_PACKETERY_DATETIME_FORMAT'));
+    }
+
+    /**
+     * @return void
+     */
+    public function updateCarriers() {
+        $localFilePath = $this->_media_path . 'carriers.xml';
+        if (!$this->isWritable($localFilePath)) {
+            $this->errors[] = $localFilePath . " " . JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_XML_NOT_WRITABLE');
+            return;
+        }
+
+        if (!$this->updateFile($localFilePath)) {
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_XML_ERROR');
+            return;
+        }
+
+        if (!$this->saveCarriersXmlToDb($localFilePath)) {
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_XML_ERROR');
+        }
     }
 
     /**
@@ -397,53 +380,44 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param $path
+     * @param string $path
      * @return bool
      */
-    private function saveBranchesXmlToDb($path) {
-        $xml = simplexml_load_file($path);
-        if($xml) {
-            $db = JFactory::getDBO();
-            $query = 'TRUNCATE TABLE #__virtuemart_zasilkovna_branches';
-            $db->setQuery($query);
-            $db->execute();
-            $q = "INSERT INTO #__virtuemart_zasilkovna_branches (
-	              `id` ,
-	              `name_street` ,
-	              `currency` ,
-	              `country`
-	              ) VALUES ";
-            $first = true;
-            foreach($xml->branches->branch as $key => $branch) {
-                if($first) {
-                    $q .= " (";
-                    $first = false;
-                }
-                else {
-                    $q .= ", (";
-                }
-
-                $q .= "'".$db->escape($branch->id)."', '".$db->escape($branch->nameStreet)."','".$db->escape($branch->currency)."','".$db->escape($branch->country)."')";
-
-            }
-            $db->setQuery($q);
-            $db->execute();
-        }
-        else {
+    private function saveCarriersXmlToDb($path) {
+        $xml = @simplexml_load_file($path);
+        if ($xml === false) {
             return false;
         }
 
-        return true;
-    }
+        $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
+        foreach ($xml->carriers->carrier as $carrier) {
+            unset($carrierIdsToDelete[(string)$carrier->id]);
 
-    /**
-     * @param $path
-     * @return bool
-     */
-    private function isFileUpToDate($path) {
-        if(!file_exists($path)) return false;
-        if(filemtime($path) < time() - (60 * 60 * 24)) return false;
-        if(filesize($path) <= 1024) return false;
+            $data = [
+                'id' => $carrier->id,
+                'name' => $carrier->name,
+                'is_pickup_points' => $this->transformStringBool($carrier->pickupPoints),
+                'has_carrier_direct_label' => $this->transformStringBool($carrier->apiAllowed),
+                'separate_house_number' => $this->transformStringBool($carrier->separateHouseNumber),
+                'customs_declarations' => $this->transformStringBool($carrier->customsDeclarations),
+                'requires_email' => $this->transformStringBool($carrier->requiresEmail),
+                'requires_phone' => $this->transformStringBool($carrier->requiresPhone),
+                'requires_size' => $this->transformStringBool($carrier->requiresSize),
+                'disallows_cod' => $this->transformStringBool($carrier->disallowsCod),
+                'country' => $carrier->country,
+                'currency' => $carrier->currency,
+                'max_weight' => $carrier->maxWeight,
+                'deleted' => 0,
+            ];
+
+            $this->carrierRepository->insertUpdateCarrier($data);
+        }
+
+        $this->carrierRepository->setCarriersDeleted($carrierIdsToDelete);
+
+        $config = $this->loadConfig();
+        $config['carriers_updated_at'] = (new \DateTime())->format(\DateTime::ATOM);
+        $this->updateConfig($config);
 
         return true;
     }
@@ -462,41 +436,43 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param $path
-     * @param $type
+     * @param \SimpleXMLElement $value
      * @return bool
      */
-    private function updateFile($path, $type) {
-        $remote = $this->_zas_url . "api/v3/" . $this->api_key . "/branch." . $type;
-        if($type == 'js') {
-            $lib_path = substr($this->_media_url, 0, -1);
-            $remote .= "?callback=window.addHooks";
-            $remote .= "&lib_path=$lib_path&sync_load=1";
-        }
+    private function transformStringBool($value) {
+        return ((string)$value === 'false' ? false : true);
+    }
+
+    /**
+     * @param $path
+     * @return bool
+     */
+    private function updateFile($path) {
+        $remote = sprintf("%sapi/v4/%s/branch.xml?address-delivery", $this->_zas_url, $this->api_key);
         $data = $this->fetch($remote);
-        file_put_contents($path, $data);
-        clearstatcache();
-        if(filesize($path) < 1024) {
+        if ($data === false) {
             return false;
         }
 
+        $result = file_put_contents($path, $data);
+        if ($result === false) {
+            return false;
+        }
+
+        clearstatcache();
         return true;
     }
 
     /**
-     * @param $filepath
+     * @param string $filepath
      * @return bool
      */
-    private function is_writable($filepath) {
-        if(!file_exists($filepath)) {
-            @touch($filepath);
+    private function isWritable($filepath) {
+        if (!is_writable(dirname($filepath))) {
+            return false;
         }
-        if(is_writable($filepath)) {
-            return true;
-        }
-        $this->errors[] = $filepath . " " . JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH_NOT_WRITABLE');
 
-        return false;
+        return true;
     }
 
     /**

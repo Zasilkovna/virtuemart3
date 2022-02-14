@@ -704,7 +704,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 			LEFT JOIN #__virtuemart_paymentmethods_' . $db->escape(VMLANG) . ' as pm
 			ON o.virtuemart_paymentmethod_id = pm.virtuemart_paymentmethod_id
 			RIGHT JOIN ' . $this->zas_model->getDbTableName() . ' as plg ON plg.order_number=o.order_number
-			LEFT JOIN #__virtuemart_zasilkovna_branches as brnch ON brnch.id=plg.branch_id';
+			LEFT JOIN #__virtuemart_zasilkovna_carriers as brnch ON brnch.id=plg.branch_id';
     }
 
     function getInvoiceNumber($virtuemart_order_id) {

@@ -31,6 +31,21 @@ VmModel::getModel('zasilkovna')->loadLanguage();
  */
 class VirtuemartControllerZasilkovna extends VmController
 {
+    /**
+     * Updates carriers.
+     */
+    public function updateCarriers() {
+        /** @var VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $model->updateCarriers();
+        $model->raiseErrors();
+
+        if (empty($model->errors)) {
+            \Joomla\CMS\Factory::getApplication()->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATED'));
+        }
+
+        $this->setRedirect($this->redirectPath);
+    }
 
     /**
      * Handle the save task.
@@ -41,41 +56,10 @@ class VirtuemartControllerZasilkovna extends VmController
         vRequest::vmCheckToken();
         $data = vRequest::getPost();
 
-        // normalization of numbers (convert decimal comma to decimal point)
-        // global settings
-        $itemKeyList = array('maximum_weight', 'default_price', 'free_shipping');
-        foreach ($itemKeyList as $key)
-        {
-            if (!empty($data['global']['values'][$key]))
-            {
-                $data['global']['values'][$key] = str_replace(',', '.', $data['global']['values'][$key]);
-            }
-        }
-
-        // country settings (default values and weight rules)
-        /** @var VirtueMartModelZasilkovna $zasModel */
-        $zasModel = VmModel::getModel('zasilkovna');
-        $supportedCountries = array_keys($zasModel->getCountries(TRUE));
-
-        foreach ($supportedCountries as $countryCode)
-        {
-            foreach ($data[$countryCode] as $countryRuleKey => $countryRuleValues)
-            {
-                $propertyNames = ('values' === $countryRuleKey ? array('default_price', 'free_shipping') : array('weight_from', 'weight_to', 'price'));
-                foreach ($propertyNames as $property)
-                {
-                    if (!empty($countryRuleValues[$property]))
-                    {
-                        $data[$countryCode][$countryRuleKey][$property] = str_replace(',', '.', $countryRuleValues[$property]);
-                    }
-                }
-            }
-        }
-
-        $db = JFactory::getDBO();
-        $q = "UPDATE #__extensions SET custom_data='" . $db->escape(serialize($data)) . "' WHERE element='zasilkovna'";
-        $db->setQuery($q);
-        $db->execute();
+        /** @var VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $currentData = $model->loadConfig();
+        $model->updateConfig(array_replace_recursive($currentData, $data));
 
         $redir = 'index.php?option=com_virtuemart';
         if(JRequest::getCmd('task') == 'apply') {
