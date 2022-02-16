@@ -2,7 +2,7 @@
 
 <script>
     window.packetery.opcValidationCallback = function() {
-        if(isPacketeryShippingSelected() && !isPacketeryShippingPointSelected()) {
+        if(isPacketeryShippingSelected() && isPacketeryPickupPointDeliverySelected() && !isPacketeryShippingPointSelected()) {
             alert(<?php echo json_encode($errorPickupPointNotSelected); ?>);
             return false;
         }

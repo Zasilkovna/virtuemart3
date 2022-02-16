@@ -214,6 +214,116 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
+     * @param $shipmentMethodId
+     * @return \VirtueMartModelZasilkovna\ShipmentMethod
+     */
+    public function getPacketeryShipmentMethod($shipmentMethodId) {
+        $model = \VmModel::getModel('shipmentmethod');
+        $shipment = $model->getShipment($shipmentMethodId);
+        return \VirtueMartModelZasilkovna\ShipmentMethod::fromRandom($shipment);
+    }
+
+    /**
+     * @param \VirtueMartModelZasilkovna\ShipmentMethod $zasMethod
+     * @return array
+     */
+    public function getAllowedCountryCodes($zasMethod) {
+        $allowedCountryIds = $zasMethod->getAllowedCountries();
+
+        $allowedCountryCodes = [];
+        if ($allowedCountryIds) {
+            foreach ($allowedCountryIds as $allowedCountryId) {
+                $allowedCountryCodes[] = \VirtueMartModelCountry::getCountryFieldByID($allowedCountryId, 'country_2_code');
+            }
+        }
+
+        return $allowedCountryCodes;
+    }
+
+    /**
+     * @param \VirtueMartModelZasilkovna\ShipmentMethod $zasMethod
+     * @return array
+     */
+    public function getBlockedCountryCodes($zasMethod) {
+        $blockingCountries = $zasMethod->getBlockingCountries();
+
+        $blockedCountryCodes = [];
+        if ($blockingCountries) {
+            foreach ($blockingCountries as $allowedCountryId) {
+                $blockedCountryCodes[] = \VirtueMartModelCountry::getCountryFieldByID($allowedCountryId, 'country_2_code');
+            }
+        }
+
+        return $blockedCountryCodes;
+    }
+
+    /**
+     * @param array $allowedCountryCodes
+     * @param array $blockedCountryCodes
+     * @return bool
+     */
+    public function hasPacketaPickupPointCountryCode(array $allowedCountryCodes, array $blockedCountryCodes) {
+        $baseCountries = ['CZ', 'SK', 'RO', 'HU'];
+        $baseCountriesDiff = array_diff($baseCountries, $blockedCountryCodes);
+        $packetaCountries = array_intersect($baseCountriesDiff, $allowedCountryCodes);
+
+        if (!empty($packetaCountries) || (empty($allowedCountryCodes) && !empty($baseCountriesDiff))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param int $methodId
+     * @return array
+     */
+    public function getShipmentMethodTransformedParams($methodId) {
+        $db = JFactory::getDBO();
+        $db->setQuery(
+            "SELECT `shipment_params` FROM `#__virtuemart_shipmentmethods` WHERE `virtuemart_shipmentmethod_id` = ".(int)$methodId
+        );
+        $params = $db->loadResult();
+        $paramsExploded = explode('|', $params);
+        $paramsTransformed = [];
+
+        foreach ($paramsExploded as $item) {
+            list($key, $value) = explode('=', $item); // may include "
+
+            if (!$key) {
+                continue;
+            }
+
+            $paramsTransformed[$key] = json_decode($value, true);
+        }
+
+        return $paramsTransformed;
+    }
+
+    /**
+     * @param int $methodId
+     * @param array $newParams
+     * @return void
+     */
+    public function updateShipmentMethodParams($methodId, array $newParams) {
+        $paramsTransformed = $this->getShipmentMethodTransformedParams($methodId);
+        $newParams = array_merge_recursive($newParams, $paramsTransformed);
+
+        $newParamsTransformed = [];
+        foreach ($newParams as $newParamKey => $newParam) {
+            $newParamsTransformed[] = $newParamKey . '=' . json_encode($newParam);
+        }
+
+        $newParamsTransformedImploded = implode('|', $newParamsTransformed);
+
+        $db = JFactory::getDBO();
+        $db->setQuery(
+            "UPDATE #__virtuemart_shipmentmethods SET shipment_params='" . $db->escape($newParamsTransformedImploded) . "' WHERE virtuemart_shipmentmethod_id=" . (int)$methodId
+        );
+        $db->execute();
+    }
+
+    /**
      * @param $currency_id
      * @return mixed
      */

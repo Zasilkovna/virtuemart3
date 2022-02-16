@@ -13,6 +13,10 @@ spl_autoload_register(
         if (is_file($path)) {
             require_once $path;
         }
+
+        if ($className === 'JFormFieldVmZasilkovnaCarriers') {
+            require_once JPATH_ADMINISTRATOR . '/components/com_virtuemart/fields/vmzasilkovnacarriers.php';
+        }
     }
 );
 
@@ -48,6 +52,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /** @var \VirtueMartModelZasilkovna\ShipmentMethodStorage */
     private $shipmentMethodStorage;
 
+    /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
+    private $carrierRepository;
+
     /**
      * plgVmShipmentZasilkovna constructor.
      *
@@ -73,6 +80,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $this->session = JFactory::getSession();
         $this->checkoutModuleDetector = new \VirtueMartModelZasilkovna\CheckoutModuleDetector();
         $this->shipmentMethodStorage = new \VirtueMartModelZasilkovna\ShipmentMethodStorage($this->session);
+        $this->carrierRepository = new \VirtueMartModelZasilkovna\Carrier\Repository();
     }
 
     /**
@@ -225,6 +233,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if(!$this->OnSelectCheck($cart))
             return false;
 
+        $shippingMethod = \VirtueMartModelZasilkovna\ShippingMethods::PICKUP_POINT_DELIVERY;
         $currency = $this->model->getCurrencyCode($order['details']['BT']->order_currency);
 
         // GET PARAMETERS FROM SESSION AND CLEAR
@@ -278,9 +287,19 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $is_carrier = 1;
         }
 
+        $zasMethod = ShipmentMethod::fromRandom($method);
+        if ($this->carrierRepository->isHomeDeliveryCarrier($zasMethod->getCarrierId())) {
+            $branch_id = $zasMethod->getCarrierId();
+            $is_carrier = 1;
+            $branch_name_street = '';
+            $branch_carrier_pickup_point = '';
+            $shippingMethod = \VirtueMartModelZasilkovna\ShippingMethods::HOME_DELIVERY;
+        }
+
         $values['virtuemart_order_id'] = $details->virtuemart_order_id;
         $values['virtuemart_shipmentmethod_id'] = $details->virtuemart_shipmentmethod_id;
         $values['order_number'] = $details->order_number;
+        $values['shipping_method'] = $shippingMethod;
         $values['zasilkovna_packet_id'] = 0;
         $values['zasilkovna_packet_price'] = $details->order_total;
         $values['branch_id'] = $branch_id;
@@ -300,7 +319,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['is_cod'] = $codSettings; //depends on actual settings of COD payments until its set manually in administration
         $values['exported'] = 0;
         $values['shipment_name'] = $method->shipment_name;
-        $values['shipment_cost'] = $this->getCosts($cart, ShipmentMethod::fromRandom($method), "");
+        $values['shipment_cost'] = $this->getCosts($cart, $zasMethod, "");
         $values['weight'] = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
         $values['tax_id'] = $method->tax_id;
         $this->storePSPluginInternalData($values);
@@ -634,7 +653,13 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         if ($method->shipment_element === VirtueMartModelZasilkovna::PLG_NAME) {
-            return $this->hasPointSelected($cart->virtuemart_shipmentmethod_id);
+            $zasMethod = ShipmentMethod::fromRandom($method);
+
+            if ($this->carrierRepository->isPickupPointCarrier($zasMethod->getCarrierId()) && !$this->hasPointSelected($cart->virtuemart_shipmentmethod_id)) {
+                return false;
+            }
+
+            return true;
         }
 
         return null;
@@ -723,6 +748,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 continue;
             }
 
+            if ($zasMethod->getCarrierId() === null) {
+                continue;
+            }
+
             $countries = array();
             if(!empty($method->countries)) {
                 if(!is_array($method->countries)) {
@@ -753,6 +782,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                         'enterAddress' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_ENTER_ADDRESS'),
                         'baseHtml' => $baseHtml,
                         'isCountrySelected' => !empty($address['virtuemart_country_id']),
+                        'widgetCarrierId' => $zasMethod->getWidgetCarrierId(),
+                        'isPickupPointDelivery' => $this->carrierRepository->isPickupPointCarrier($zasMethod->getCarrierId()),
                         'savedBranchNameStreet' =>
                             (string)$this->shipmentMethodStorage->get($method->virtuemart_shipmentmethod_id, 'branch_name_street', ''),
                     ]
@@ -760,10 +791,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
                 $html[$key] = $renderer->renderToString();
             }
-        }
-
-        if(empty($html)) {
-            return FALSE;
         }
 
         $renderer = new \VirtueMartModelZasilkovna\Box\Renderer();
@@ -789,8 +816,17 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 'widgetJsUrl' => $this->model->_media_url . 'js/widget.js?v=' . filemtime($this->model->_media_path . 'js/widget.js'),
                 'errorPickupPointNotSelected' => \JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPMENT_NOT_SELECTED'),
                 'tailBlockJsPath' => $tailBlockJsPath,
+                'carrierId' => $zasMethod->getCarrierId(),
             ]
         );
+
+        $htmlKeys = array_keys($html);
+        $key = array_pop($htmlKeys);
+
+        if ($key === null) {
+            $key = 0;
+            $html[$key] = '';
+        }
 
         $html[$key] .= $renderer->renderToString();
         $htmlIn[] = $html;
@@ -1008,6 +1044,16 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $method = ShipmentMethod::fromRandom($data);
+
+        $carrierFormFieldList = new \JFormFieldVmZasilkovnaCarriers();
+        $carrierOptions = $carrierFormFieldList->getOptionsForPacketeryShipmentMethod($method);
+        if (empty($carrierOptions) || !isset($carrierOptions[$data[\VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID]])) {
+            $data[\VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID] = $carrierFormFieldList->getFirstCarrierId($carrierOptions);
+            $data['published'] = '0';
+            vmWarn(JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPPING_EMPTY_CARRIER_WARNING'));
+            return;
+        }
+
         $report = $method->validate();
 
         if ($report->isValid() === false) {

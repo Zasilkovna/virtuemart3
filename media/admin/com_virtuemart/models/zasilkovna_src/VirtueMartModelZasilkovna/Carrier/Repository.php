@@ -4,6 +4,8 @@ namespace VirtueMartModelZasilkovna\Carrier;
 
 class Repository
 {
+    const FORM_FIELD_PACKETA_PICKUP_POINTS = 'packetaPickupPoints';
+
     /**
      * @param array $carrierData
      */
@@ -57,6 +59,87 @@ class Repository
         $db = \JFactory::getDBO();
         $db->setQuery("SELECT id FROM #__virtuemart_zasilkovna_carriers WHERE deleted = 0");
         return $db->loadAssocList('id', 'id');
+    }
+
+    /**
+     * Gets all active carriers.
+     *
+     * @param array $allowedCountryCodes
+     * @param array $blockedCountryCodes
+     * @return array
+     */
+    public function getAllActiveCarriers($allowedCountryCodes = [], $blockedCountryCodes = []) {
+        $db = \JFactory::getDBO();
+
+        $andWhere = ["{$db->quoteName('deleted')} = 0"];
+
+        if ($allowedCountryCodes) {
+            $countriesWhere = [];
+            foreach ($allowedCountryCodes as $country) {
+                $country = strtolower($country);
+                $countriesWhere[] = "{$db->quoteName('country')} = {$db->quote($country)}";
+            }
+
+            $andWhere[] = '(' . implode(' OR ', $countriesWhere) . ')';
+        }
+
+        if ($blockedCountryCodes) {
+            foreach ($blockedCountryCodes as $blockedCountryCode) {
+                $blockedCountryCode = strtolower($blockedCountryCode);
+                $andWhere[] = "{$db->quoteName('country')} <> {$db->quote($blockedCountryCode)}";
+            }
+        }
+
+        $db->setQuery("SELECT * FROM #__virtuemart_zasilkovna_carriers WHERE " . implode(' AND ', $andWhere));
+        return $db->loadAssocList();
+    }
+
+    /**
+     * @param string|null $carrierId
+     * @return bool|null
+     */
+    public function isPickupPointCarrier($carrierId) {
+        if ($carrierId === null) {
+            return false;
+        }
+
+        if ($carrierId === self::FORM_FIELD_PACKETA_PICKUP_POINTS) {
+            return true;
+        }
+
+        $db = \JFactory::getDBO();
+        $db->setQuery("SELECT {$db->quoteName('is_pickup_points')} FROM #__virtuemart_zasilkovna_carriers WHERE {$db->quoteName('id')} = {$db->quote($carrierId)}");
+        $record = $db->loadResult();
+
+        if (is_numeric($record)) {
+            return $record === '1';
+        }
+
+        return null;
+    }
+
+    /**
+     * @param string|null $carrierId
+     * @return bool|null
+     */
+    public function isHomeDeliveryCarrier($carrierId) {
+        if ($carrierId === null) {
+            return false;
+        }
+
+        if ($carrierId === self::FORM_FIELD_PACKETA_PICKUP_POINTS) {
+            return false;
+        }
+
+        $db = \JFactory::getDBO();
+        $db->setQuery("SELECT {$db->quoteName('is_pickup_points')} FROM #__virtuemart_zasilkovna_carriers WHERE {$db->quoteName('id')} = {$db->quote($carrierId)}");
+        $record = $db->loadResult();
+
+        if (is_numeric($record)) {
+            return $record === '0';
+        }
+
+        return null;
     }
 
     /**

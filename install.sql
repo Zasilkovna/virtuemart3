@@ -3,6 +3,7 @@ CREATE TABLE IF NOT EXISTS `#__virtuemart_shipment_plg_zasilkovna` (
 	`virtuemart_order_id` int(11) unsigned,
 	`virtuemart_shipmentmethod_id` mediumint(1) unsigned,
 	`order_number` char(32),
+	`shipping_method` varchar(255),
 	`zasilkovna_packet_id` decimal(10,0),
 	`zasilkovna_packet_price` decimal(15,2),
 	`weight` decimal(10,4),

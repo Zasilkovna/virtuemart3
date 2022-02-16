@@ -1,19 +1,21 @@
-<div class='zasilkovna_box'>
+<div class='zasilkovna_box' data-widget-carrier-id="<?php echo htmlentities($widgetCarrierId); ?>">
     <div class='zasilkovna_div'>
         <div class="zasilkovna_base">
             <?php echo $baseHtml; ?>
         </div>
-        <?php if ($isCountrySelected) { ?>
-            <div class='zas-box' style="display: none;">
-                <div class='zasilkovna-logo'></div>
-                <div class="zasilkovna-info">
-                    <a href='javascript:void(0)' class='open-packeta-widget'><?php echo htmlentities($selectPoint); ?></a>
-                    <br>
-                    <ul><li><?php echo htmlentities($selectedPoint); ?>: <span class='picked-delivery-place'><?php echo htmlentities($savedBranchNameStreet); ?></span></li></ul>
+        <?php if ($isPickupPointDelivery) { ?>
+            <?php if ($isCountrySelected) { ?>
+                <div class='zas-box' style="display: none;">
+                    <div class='zasilkovna-logo'></div>
+                    <div class="zasilkovna-info">
+                        <a href='javascript:void(0)' class='open-packeta-widget'><?php echo htmlentities($selectPoint); ?></a>
+                        <br>
+                        <ul><li><?php echo htmlentities($selectedPoint); ?>: <span class='picked-delivery-place'><?php echo htmlentities($savedBranchNameStreet); ?></span></li></ul>
+                    </div>
                 </div>
-            </div>
-        <?php } else { ?>
-            <ul><li><?php echo htmlentities($enterAddress); ?></li></ul>
+            <?php } else { ?>
+                <ul><li><?php echo htmlentities($enterAddress); ?></li></ul>
+            <?php } ?>
         <?php } ?>
     </div>
 </div>

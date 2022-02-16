@@ -3,8 +3,8 @@ jQuery(function(){
     setTimeout(function(){
         Virtuemart.bCheckoutButton = function(e) {
             e.preventDefault();
-            // If shipping method is Zasilkovna
-            if(isPacketeryShippingSelected()){
+            // If shipping method is Packeta pickup point delivery
+            if(isPacketeryShippingSelected() && isPacketeryPickupPointDeliverySelected()){
                 // Branch must be selected
                 if(isPacketeryShippingPointSelected()){
                     // And user has to agree to the Terms of Service

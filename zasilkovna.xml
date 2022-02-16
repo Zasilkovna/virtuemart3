@@ -29,6 +29,9 @@
         <fields name="params">
 
             <fieldset name="global">
+                <field name="packeteryCarrierId" type="vmzasilkovnacarriers" label="PLG_VMSHIPMENT_PACKETERY_CARRIER"
+                       required="false"/>
+
                 <field name="maxWeight" type="number" step="0.001" label="PLG_VMSHIPMENT_PACKETERY_CONFIG_MAX_WEIGHT"
                        required="true"
                        description="PLG_VMSHIPMENT_PACKETERY_CONFIG_MAX_WEIGHT_LABEL" default="10"/>

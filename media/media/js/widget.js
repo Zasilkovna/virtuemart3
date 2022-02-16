@@ -28,6 +28,10 @@ function isPacketeryShippingPointSelected() {
 	return !!selectedPoint.text();
 }
 
+function isPacketeryPickupPointDeliverySelected() {
+	return getSelectedPacketeryBox().find('.open-packeta-widget').length > 0;
+}
+
 jQuery(function() {
 	jQuery('body').off('click.packeteryOpenWidget').on('click.packeteryOpenWidget', '.zasilkovna_box .open-packeta-widget', function () {
 		var packetery = window.packetery;
@@ -35,7 +39,8 @@ jQuery(function() {
 		var opts = {
 			appIdentity: packetery.version,
 			country: packetery.country,
-			language: packetery.language
+			language: packetery.language,
+			carriers: getSelectedPacketeryBox().data('widget-carrier-id')
 		};
 
 		Packeta.Widget.pick(packetery.apiKey, function(pickupPoint){
