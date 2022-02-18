@@ -697,6 +697,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $document = JFactory::getDocument();
 
         $document->addStyleSheet($this->model->_media_url . 'css/packetery.css?v=' . filemtime($this->model->_media_path . 'css/packetery.css'));
+        $document->addScript('https://widget.packeta.com/v6/www/js/library.js');
+        $document->addScript($this->model->_media_url . 'js/widget.js?v=' . filemtime($this->model->_media_path . 'js/widget.js'));
 
         // If user set Shipping address same as Billing we take the billing address
         // (shipping address may contain other data but that is discarded)
@@ -793,18 +795,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             }
         }
 
+        if (empty($html)) {
+            return FALSE;
+        }
+
         $renderer = new \VirtueMartModelZasilkovna\Box\Renderer();
         $renderer->setTemplate($activeCheckout->getTailBlock());
-
-        $tailBlockJsPath = null;
-        if (is_file($activeCheckout->getTailBlockJs())) {
-            $tailBlockJsPath = $this->createSignalUrl(
-                'provideCheckoutTailBlockJsFile',
-                [
-                    'v' => filemtime($activeCheckout->getTailBlockJs())
-                ]
-            );
-        }
 
         $renderer->setVariables(
             [
@@ -813,9 +809,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 'country' => $code,
                 'language' => $langCode,
                 'version' => $this->getVersionString(),
-                'widgetJsUrl' => $this->model->_media_url . 'js/widget.js?v=' . filemtime($this->model->_media_path . 'js/widget.js'),
                 'errorPickupPointNotSelected' => \JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPMENT_NOT_SELECTED'),
-                'tailBlockJsPath' => $tailBlockJsPath,
                 'carrierId' => $zasMethod->getCarrierId(),
             ]
         );
@@ -823,12 +817,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $htmlKeys = array_keys($html);
         $key = array_pop($htmlKeys);
 
-        if ($key === null) {
-            $key = 0;
-            $html[$key] = '';
+        if ($key) {
+            $html[$key] .= $renderer->renderToString();
         }
 
-        $html[$key] .= $renderer->renderToString();
         $htmlIn[] = $html;
 
         return TRUE;
