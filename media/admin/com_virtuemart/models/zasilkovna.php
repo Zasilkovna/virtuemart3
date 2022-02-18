@@ -227,7 +227,7 @@ class VirtueMartModelZasilkovna extends VmModel
      * @param \VirtueMartModelZasilkovna\ShipmentMethod $zasMethod
      * @return array
      */
-    public function getAllowedCountryCodes($zasMethod) {
+    public function getAllowedCountryCodes(\VirtueMartModelZasilkovna\ShipmentMethod $zasMethod) {
         $allowedCountryIds = $zasMethod->getAllowedCountries();
 
         $allowedCountryCodes = [];
@@ -244,7 +244,7 @@ class VirtueMartModelZasilkovna extends VmModel
      * @param \VirtueMartModelZasilkovna\ShipmentMethod $zasMethod
      * @return array
      */
-    public function getBlockedCountryCodes($zasMethod) {
+    public function getBlockedCountryCodes(\VirtueMartModelZasilkovna\ShipmentMethod $zasMethod) {
         $blockingCountries = $zasMethod->getBlockingCountries();
 
         $blockedCountryCodes = [];
@@ -263,8 +263,17 @@ class VirtueMartModelZasilkovna extends VmModel
      * @return bool
      */
     public function hasPacketaPickupPointCountryCode(array $allowedCountryCodes, array $blockedCountryCodes) {
-        $baseCountries = ['CZ', 'SK', 'RO', 'HU'];
-        $baseCountriesDiff = array_diff($baseCountries, $blockedCountryCodes);
+        return $this->hasShipmentCountryCodes(['CZ', 'SK', 'RO', 'HU'], $allowedCountryCodes, $blockedCountryCodes);
+    }
+
+    /**
+     * @param array $countryCodesToTest
+     * @param array $allowedCountryCodes
+     * @param array $blockedCountryCodes
+     * @return bool
+     */
+    public function hasShipmentCountryCodes(array $countryCodesToTest, array $allowedCountryCodes, array $blockedCountryCodes) {
+        $baseCountriesDiff = array_diff($countryCodesToTest, $blockedCountryCodes);
         $packetaCountries = array_intersect($baseCountriesDiff, $allowedCountryCodes);
 
         if (!empty($packetaCountries) || (empty($allowedCountryCodes) && !empty($baseCountriesDiff))) {

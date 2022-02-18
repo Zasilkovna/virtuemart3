@@ -6,13 +6,8 @@ jimport('joomla.form.formfield');
 
 class JFormFieldVmZasilkovnaCarriers extends JFormFieldList {
 
-	/**
-	 * Element name
-	 *
-	 * @access    protected
-	 * @var        string
-	 */
-	var $type = 'vmZasilkovnaCarriers';
+    /** @var string */
+    protected $type = 'vmZasilkovnaCarriers';
 
     /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
     private $carrierRepository;
@@ -26,23 +21,41 @@ class JFormFieldVmZasilkovnaCarriers extends JFormFieldList {
         $this->model = \VmModel::getModel('zasilkovna');
     }
 
-    public function getFirstCarrierId($options) {
+    /**
+     * @param array $options
+     * @return string
+     */
+    public function getFirstCarrierId(array $options) {
         $carrierOptionsKeys = array_keys($options);
         $carrierOptionsKey = array_shift($carrierOptionsKeys);
         return (string) $carrierOptionsKey;
     }
 
-    public function getOptionsForShipment($shipmentMethodId) {
+    /**
+     * @param int $shipmentMethodId
+     * @param bool $includePrompt
+     * @return array
+     */
+    public function getOptionsForShipment($shipmentMethodId, $includePrompt = false) {
         $zasMethod = $this->model->getPacketeryShipmentMethod($shipmentMethodId);
-        return $this->getOptionsForPacketeryShipmentMethod($zasMethod);
+        return $this->getOptionsForPacketeryShipmentMethod($zasMethod, $includePrompt);
     }
 
-    public function getOptionsForPacketeryShipmentMethod($zasMethod) {
+    /**
+     * @param \VirtueMartModelZasilkovna\ShipmentMethod $zasMethod
+     * @param bool $includePrompt
+     * @return array
+     */
+    public function getOptionsForPacketeryShipmentMethod(\VirtueMartModelZasilkovna\ShipmentMethod $zasMethod, $includePrompt = false) {
         $allowedCountryCodes = $this->model->getAllowedCountryCodes($zasMethod);
         $blockedCountryCodes = $this->model->getBlockedCountryCodes($zasMethod);
         $carriers = $this->carrierRepository->getAllActiveCarriers($allowedCountryCodes, $blockedCountryCodes);
 
         $fields = [];
+
+        if ($includePrompt) {
+            $fields[] = JHtml::_('select.option', '', JText::_('PLG_VMSHIPMENT_PACKETERY_SELECT_CARRIER'));
+        }
 
         if ($this->model->hasPacketaPickupPointCountryCode($allowedCountryCodes, $blockedCountryCodes)) {
             $fields[\VirtueMartModelZasilkovna\Carrier\Repository::FORM_FIELD_PACKETA_PICKUP_POINTS] = JHtml::_('select.option', \VirtueMartModelZasilkovna\Carrier\Repository::FORM_FIELD_PACKETA_PICKUP_POINTS, JText::_('PLG_VMSHIPMENT_PACKETERY_PICKUP_POINT_OPTION_LABEL'));
@@ -68,6 +81,6 @@ class JFormFieldVmZasilkovnaCarriers extends JFormFieldList {
             }
         }
 
-        return $this->getOptionsForShipment($shipmentMethodId);
+        return $this->getOptionsForShipment($shipmentMethodId, true);
     }
 }

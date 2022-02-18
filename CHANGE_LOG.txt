@@ -1,3 +1,6 @@
+x.x.x - Added: home delivery support
+      - Updated: external pickup points are no longer available with internal pickup points
+
 1.4.0 - Added: manual trigger for carrier list update via Packeta API
       - Added: carrier v4 import
 

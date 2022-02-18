@@ -659,6 +659,19 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 return false;
             }
 
+            $selectedDestinationAddress = $this->getAddressFromCart($cart);
+            if(!$selectedDestinationAddress || !isset($selectedDestinationAddress['virtuemart_country_id'])) {
+                return false;
+            }
+
+            $selectedCountryCode = ShopFunctions::getCountryByID($selectedDestinationAddress['virtuemart_country_id'], 'country_2_code');
+            $allowedCountryCodes = $this->model->getAllowedCountryCodes($zasMethod);
+            $blockedCountryCodes = $this->model->getBlockedCountryCodes($zasMethod);
+
+            if (!$this->model->hasShipmentCountryCodes([$selectedCountryCode], $allowedCountryCodes, $blockedCountryCodes)) {
+                return false;
+            }
+
             return true;
         }
 
@@ -1040,7 +1053,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $carrierFormFieldList = new \JFormFieldVmZasilkovnaCarriers();
         $carrierOptions = $carrierFormFieldList->getOptionsForPacketeryShipmentMethod($method);
         if (empty($carrierOptions) || !isset($carrierOptions[$data[\VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID]])) {
-            $data[\VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID] = $carrierFormFieldList->getFirstCarrierId($carrierOptions);
+            $data[\VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID] = '';
             $data['published'] = '0';
             vmWarn(JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPPING_EMPTY_CARRIER_WARNING'));
             return;
