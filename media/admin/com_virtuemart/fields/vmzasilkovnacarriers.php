@@ -70,6 +70,7 @@ class JFormFieldVmZasilkovnaCarriers extends JFormFieldList {
 
     /**
      * @return array
+     * @throws \Exception
      */
     protected function getOptions() {
         $shipmentMethodId = null;

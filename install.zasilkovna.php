@@ -158,7 +158,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	 * @param   string $route Which action is happening (install|uninstall|discover_install)
 	 * @param   JAdapterInstance $adapter The object responsible for running this script
 	 *
-	 * @return  boolean  True on success
+	 * @return  void
 	 */
 	public function postflight($route, JAdapterInstance $adapter) {
 		$vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
@@ -198,6 +198,8 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
     /**
      * Adds packeteryCarrierId param for VM3 shipment methods related to Packeta.
+     *
+     * @return void
      */
     private function fixShipmentMethods() {
         /** @var \VirtueMartModelZasilkovna $model */

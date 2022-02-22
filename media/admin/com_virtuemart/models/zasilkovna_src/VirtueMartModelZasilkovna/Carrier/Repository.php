@@ -90,7 +90,7 @@ class Repository
             }
         }
 
-        $db->setQuery("SELECT * FROM #__virtuemart_zasilkovna_carriers WHERE " . implode(' AND ', $andWhere));
+        $db->setQuery("SELECT * FROM #__virtuemart_zasilkovna_carriers WHERE " . implode(' AND ', $andWhere) . " ORDER BY {$db->quoteName('name')} ASC");
         return $db->loadAssocList();
     }
 
