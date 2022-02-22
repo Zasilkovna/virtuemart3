@@ -220,7 +220,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 
             if (empty($options) || $firstCarrierId !== \VirtueMartModelZasilkovna\Carrier\Repository::FORM_FIELD_PACKETA_PICKUP_POINTS) {
                 $model->updateShipmentMethodParams($methodId, [
-                    \VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID => ''
+                    \VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID => '""'
                 ]);
                 $model->publishShipmentMethods([$methodId], 0);
                 echo 'Unable to attach carrier to shipment method ' . $methodId . '. Shipment method was unpublished.';
@@ -228,7 +228,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
             }
 
             $model->updateShipmentMethodParams($methodId, [
-                \VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID => $firstCarrierId
+                \VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID => '"' . $firstCarrierId . '"'
             ]);
         }
     }

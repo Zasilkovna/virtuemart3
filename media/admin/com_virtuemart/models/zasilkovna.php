@@ -305,7 +305,7 @@ class VirtueMartModelZasilkovna extends VmModel
                 continue;
             }
 
-            $paramsTransformed[$key] = json_decode($value, true);
+            $paramsTransformed[$key] = $value;
         }
 
         return $paramsTransformed;
@@ -322,7 +322,7 @@ class VirtueMartModelZasilkovna extends VmModel
 
         $newParamsTransformed = [];
         foreach ($newParams as $newParamKey => $newParam) {
-            $newParamsTransformed[] = $newParamKey . '=' . json_encode($newParam);
+            $newParamsTransformed[] = $newParamKey . '=' . $newParam;
         }
 
         $newParamsTransformedImploded = implode('|', $newParamsTransformed);
