@@ -297,7 +297,9 @@ class VirtueMartModelZasilkovna extends VmModel
         $paramsTransformed = [];
 
         foreach ($paramsExploded as $item) {
-            list($key, $value) = explode('=', $item); // may include "
+            $itemExploded = explode('=', $item); // may include "
+            $key = array_shift($itemExploded);
+            $value = (string)array_shift($itemExploded);
 
             if (!$key) {
                 continue;

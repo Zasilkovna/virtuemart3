@@ -829,10 +829,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         $htmlKeys = array_keys($html);
         $key = array_pop($htmlKeys);
-
-        if ($key) {
-            $html[$key] .= $renderer->renderToString();
-        }
+        $html[$key] .= $renderer->renderToString();
 
         $htmlIn[] = $html;
 
