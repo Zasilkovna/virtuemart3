@@ -214,6 +214,127 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
+     * @param $shipmentMethodId
+     * @return \VirtueMartModelZasilkovna\ShipmentMethod
+     */
+    public function getPacketeryShipmentMethod($shipmentMethodId) {
+        $model = \VmModel::getModel('shipmentmethod');
+        $shipment = $model->getShipment($shipmentMethodId);
+        return \VirtueMartModelZasilkovna\ShipmentMethod::fromRandom($shipment);
+    }
+
+    /**
+     * @param \VirtueMartModelZasilkovna\ShipmentMethod $zasMethod
+     * @return array
+     */
+    public function getAllowedCountryCodes(\VirtueMartModelZasilkovna\ShipmentMethod $zasMethod) {
+        $allowedCountryIds = $zasMethod->getAllowedCountries();
+
+        $allowedCountryCodes = [];
+        if ($allowedCountryIds) {
+            foreach ($allowedCountryIds as $allowedCountryId) {
+                $allowedCountryCodes[] = \VirtueMartModelCountry::getCountryFieldByID($allowedCountryId, 'country_2_code');
+            }
+        }
+
+        return $allowedCountryCodes;
+    }
+
+    /**
+     * @param \VirtueMartModelZasilkovna\ShipmentMethod $zasMethod
+     * @return array
+     */
+    public function getBlockedCountryCodes(\VirtueMartModelZasilkovna\ShipmentMethod $zasMethod) {
+        $blockingCountries = $zasMethod->getBlockingCountries();
+
+        $blockedCountryCodes = [];
+        if ($blockingCountries) {
+            foreach ($blockingCountries as $allowedCountryId) {
+                $blockedCountryCodes[] = \VirtueMartModelCountry::getCountryFieldByID($allowedCountryId, 'country_2_code');
+            }
+        }
+
+        return $blockedCountryCodes;
+    }
+
+    /**
+     * @param array $allowedCountryCodes
+     * @param array $blockedCountryCodes
+     * @return bool
+     */
+    public function hasPacketaPickupPointCountryCode(array $allowedCountryCodes, array $blockedCountryCodes) {
+        return $this->hasShipmentCountryCodes(['CZ', 'SK', 'RO', 'HU'], $allowedCountryCodes, $blockedCountryCodes);
+    }
+
+    /**
+     * @param array $countryCodesToTest
+     * @param array $allowedCountryCodes
+     * @param array $blockedCountryCodes
+     * @return bool
+     */
+    public function hasShipmentCountryCodes(array $countryCodesToTest, array $allowedCountryCodes, array $blockedCountryCodes) {
+        $baseCountriesDiff = array_diff($countryCodesToTest, $blockedCountryCodes);
+        $packetaCountries = array_intersect($baseCountriesDiff, $allowedCountryCodes);
+
+        if (!empty($packetaCountries) || (empty($allowedCountryCodes) && !empty($baseCountriesDiff))) {
+            return true;
+        }
+
+        return false;
+    }
+
+    /**
+     * @param int $methodId
+     * @return array
+     */
+    public function getShipmentMethodTransformedParams($methodId) {
+        $db = JFactory::getDBO();
+        $db->setQuery(
+            "SELECT `shipment_params` FROM `#__virtuemart_shipmentmethods` WHERE `virtuemart_shipmentmethod_id` = ".(int)$methodId
+        );
+        $params = $db->loadResult();
+        $paramsExploded = explode('|', $params);
+        $paramsTransformed = [];
+
+        foreach ($paramsExploded as $item) {
+            $itemExploded = explode('=', $item); // may include "
+            $key = array_shift($itemExploded);
+            $value = (string)array_shift($itemExploded);
+
+            if (!$key) {
+                continue;
+            }
+
+            $paramsTransformed[$key] = $value;
+        }
+
+        return $paramsTransformed;
+    }
+
+    /**
+     * @param int $methodId
+     * @param array $newParams
+     * @return void
+     */
+    public function updateShipmentMethodParams($methodId, array $newParams) {
+        $paramsTransformed = $this->getShipmentMethodTransformedParams($methodId);
+        $newParams = array_merge_recursive($newParams, $paramsTransformed);
+
+        $newParamsTransformed = [];
+        foreach ($newParams as $newParamKey => $newParam) {
+            $newParamsTransformed[] = $newParamKey . '=' . $newParam;
+        }
+
+        $newParamsTransformedImploded = implode('|', $newParamsTransformed);
+
+        $db = JFactory::getDBO();
+        $db->setQuery(
+            "UPDATE #__virtuemart_shipmentmethods SET shipment_params='" . $db->escape($newParamsTransformedImploded) . "' WHERE virtuemart_shipmentmethod_id=" . (int)$methodId
+        );
+        $db->execute();
+    }
+
+    /**
      * @param $currency_id
      * @return mixed
      */

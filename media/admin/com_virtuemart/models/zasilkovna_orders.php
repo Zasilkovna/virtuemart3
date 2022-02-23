@@ -28,6 +28,8 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     /** @var VirtueMartModelZasilkovna */
     private $zas_model;
 
+    /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
+    private $carrierRepository;
 
     /**
      * VirtueMartModelZasilkovna_orders constructor.
@@ -38,6 +40,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $this->zas_model = VmModel::getModel('zasilkovna');
         $this->setMainTable('orders');
         $this->addvalidOrderingFieldName(array('order_name', 'payment_method', 'virtuemart_order_id'));
+        $this->carrierRepository = new \VirtueMartModelZasilkovna\Carrier\Repository();
     }
 
     public function printLabels($orders_id_arr, $format = 'A7 on A4', $offset = '0') {
@@ -114,6 +117,13 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 
                 if (!empty($order['carrier_point'])) {
                     $attributes['carrierPickupPoint'] = $order['carrier_point'];
+                }
+
+                if ($order['shipping_method'] === \VirtueMartModelZasilkovna\ShippingMethods::HOME_DELIVERY) {
+                    $attributes['street'] = $order['recipient_street'];
+                    $attributes['houseNumber'] = $order['recipient_house_number'];
+                    $attributes['city'] = $order['recipient_city'];
+                    $attributes['zip'] = $order['recipient_zip'];
                 }
 
                 $packet = $gw->createPacket($apiPassword, $attributes);
@@ -343,7 +353,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
 
         $ordersForINStatement = implode("','", $orderNumbers);
-        $q = "SELECT o.order_number,curr.currency_code_3 order_currency_name,
+        $q = "SELECT o.order_number,plg.shipping_method,curr.currency_code_3 order_currency_name,
         plg.zasilkovna_packet_price order_total,oi.first_name,oi.last_name,
         oi_bt.email,IFNULL(oi.phone_1, oi_bt.phone_1) as phone_1,IFNULL(oi.phone_2, oi_bt.phone_2) as phone_2,plg.packet_cod,
        	plg.branch_id,plg.zasilkovna_packet_id, plg.carrier_pickup_point,
@@ -360,22 +370,6 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $ordersForExport = array();
         foreach($rows as $key => $row) {
             $orderForExport = array();
-
-            $streetMatches = array();
-
-            $match = preg_match('/^(.*[^0-9]+) (([1-9][0-9]*)\/)?([1-9][0-9]*[a-cA-C]?)$/', $row['address'], $streetMatches);
-
-            if (!$match) {
-                $houseNumber = null;
-                $street = $row['address'];
-            } elseif (!isset($streetMatches[4])) {
-                $houseNumber = null;
-                $street = $streetMatches[1];
-            } else {
-                $houseNumber = (!empty($streetMatches[3])) ? $streetMatches[3] . "/" . $streetMatches[4] : $streetMatches[4];
-                $street = $streetMatches[1];
-            }
-
 
             $phone = "";
             foreach (array('phone_2', 'phone_1') as $field)
@@ -398,6 +392,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 			 */
 
 			$orderForExport['order_number'] = $row['order_number'];
+			$orderForExport['shipping_method'] = ($row['shipping_method'] ?: \VirtueMartModelZasilkovna\ShippingMethods::PICKUP_POINT_DELIVERY);
 			$orderForExport['recipient_firstname'] = $row['first_name'];
             $orderForExport['recipient_lastname'] = $row['last_name'];
             $orderForExport['recipient_company'] = "";
@@ -409,15 +404,22 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $orderForExport['weight'] = $row['weight'];
             $orderForExport['point_id'] = $row['branch_id'];
             $orderForExport['adult_content'] = $row['adult_content'];
-            $orderForExport['recipient_street'] = $street;
-            $orderForExport['recipient_house_number'] = $houseNumber;
-            $orderForExport['recipient_city'] = $row["city"];
-            $orderForExport['recipient_zip'] = $row['zip_code'];
+            $orderForExport['recipient_street'] = null;
+            $orderForExport['recipient_house_number'] = null;
+            $orderForExport['recipient_city'] = null;
+            $orderForExport['recipient_zip'] = null;
             $orderForExport['carrier_point'] = $row['carrier_pickup_point'];
             $orderForExport['width'] = "";
             $orderForExport['height'] = "";
             $orderForExport['depth'] = "";
             $orderForExport['zasilkovna_packet_id'] = $row['zasilkovna_packet_id'];
+
+            if ($row['shipping_method'] === \VirtueMartModelZasilkovna\ShippingMethods::HOME_DELIVERY) {
+                $orderForExport['recipient_street'] = $row['address'];
+                $orderForExport['recipient_house_number'] = null;
+                $orderForExport['recipient_city'] = $row["city"];
+                $orderForExport['recipient_zip'] = $row['zip_code'];
+            }
 
             $ordersForExport[] = $orderForExport;
         }

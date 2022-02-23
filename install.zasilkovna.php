@@ -158,7 +158,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	 * @param   string $route Which action is happening (install|uninstall|discover_install)
 	 * @param   JAdapterInstance $adapter The object responsible for running this script
 	 *
-	 * @return  boolean  True on success
+	 * @return  void
 	 */
 	public function postflight($route, JAdapterInstance $adapter) {
 		$vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
@@ -192,7 +192,46 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0', '<')) {
             $this->migratePricingRules();
         }
+
+        $this->fixShipmentMethods();
 	}
+
+    /**
+     * Adds packeteryCarrierId param for VM3 shipment methods related to Packeta.
+     *
+     * @return void
+     */
+    private function fixShipmentMethods() {
+        /** @var \VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $methodIds = $model->getShipmentMethodIds();
+
+        foreach ($methodIds as $methodId) {
+            $params = $model->getShipmentMethodTransformedParams($methodId);
+
+            if (array_key_exists(\VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID, $params)) {
+                continue;
+            }
+
+            $zasMethod = $model->getPacketeryShipmentMethod($methodId);
+            $fieldList = new JFormFieldVmZasilkovnaCarriers();
+            $options = $fieldList->getOptionsForPacketeryShipmentMethod($zasMethod);
+            $firstCarrierId = $fieldList->getFirstCarrierId($options);
+
+            if (empty($options) || $firstCarrierId !== \VirtueMartModelZasilkovna\Carrier\Repository::FORM_FIELD_PACKETA_PICKUP_POINTS) {
+                $model->updateShipmentMethodParams($methodId, [
+                    \VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID => '""'
+                ]);
+                $model->publishShipmentMethods([$methodId], 0);
+                echo 'Unable to attach carrier to shipment method ' . $methodId . '. Shipment method was unpublished.';
+                continue;
+            }
+
+            $model->updateShipmentMethodParams($methodId, [
+                \VirtueMartModelZasilkovna\ShipmentMethod::CARRIER_ID => '"' . $firstCarrierId . '"'
+            ]);
+        }
+    }
 
     /**
      * @param string $tableLike
@@ -477,6 +516,7 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
         recurse_delete($vm_admin_path . DS . 'views' . DS . 'zasilkovna' . DS);
         recurse_delete($vm_admin_path . DS . 'controllers' . DS . 'zasilkovna.php');
         recurse_delete($vm_admin_path . DS . 'fields' . DS . 'vmzasilkovnacountries.php');
+        recurse_delete($vm_admin_path . DS . 'fields' . DS . 'vmzasilkovnacarriers.php');
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'en-GB' . DS . 'en-GB.plg_vmshipment_zasilkovna.ini');
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'cs-CZ' . DS . 'cs-CZ.plg_vmshipment_zasilkovna.ini');
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'sk-SK' . DS . 'sk-SK.plg_vmshipment_zasilkovna.ini', true);

@@ -4,6 +4,8 @@ namespace VirtueMartModelZasilkovna;
 
 class ShipmentMethod
 {
+    const CARRIER_ID = 'packeteryCarrierId';
+
     /** @var \stdClass */
     private $method;
 
@@ -223,6 +225,33 @@ class ShipmentMethod
     public function getBlockingCountries()
     {
         return $this->method->blocking_countries;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCarrierId()
+    {
+        $value = null;
+        $params = $this->getParams();
+
+        if (isset($params->{self::CARRIER_ID}) && $params->{self::CARRIER_ID}) {
+            $value = (string) $params->{self::CARRIER_ID};
+        }
+
+        return $value;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getWidgetCarrierId() {
+        $value = $this->getCarrierId();
+        if ($value === \VirtueMartModelZasilkovna\Carrier\Repository::FORM_FIELD_PACKETA_PICKUP_POINTS) {
+            return 'packeta';
+        }
+
+        return $value;
     }
 
     /**

@@ -1,5 +1,7 @@
 1.4.0 - Added: manual trigger for carrier list update via Packeta API
       - Added: carrier v4 import
+      - Added: home delivery support
+      - Updated: external pickup points are no longer available together with internal pickup points
 
 1.3.1 - Fixed: SQL input escaping added in places where SQL is constructed
       - Updated: Schema migration simplified by using GenericTableUpdater
