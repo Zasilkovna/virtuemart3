@@ -2,14 +2,19 @@
 
 namespace VirtueMartModelZasilkovna;
 
+use VirtueMartModelCountry;
+
 class ShipmentMethod
 {
     /** @var \stdClass */
     private $method;
+    /** @var Carrier\Repository */
+    private $carrierRepository;
 
     public function __construct(\stdClass $method)
     {
         $this->method = $method;
+        $this->carrierRepository = new Carrier\Repository();
     }
 
     /**
@@ -186,8 +191,8 @@ class ShipmentMethod
             }
         }
 
-        $blockingCountries = ($this->getBlockingCountries() ?: []);
-        $allowedCountries = ($this->getAllowedCountries() ?: []);
+        $blockingCountries = ($this->getBlockingCountries());
+        $allowedCountries = ($this->getAllowedCountries());
 
         $blockingCountries = array_diff($blockingCountries, $allowedCountries); // when user allowes and blocks same countries
         $allowedCountries = array_diff($allowedCountries, $blockingCountries); // when user allowes and blocks same countries
@@ -206,6 +211,37 @@ class ShipmentMethod
             }
         }
 
+        $shippingType = $this->getShippingType();
+        $hdCarrierId = $this->getHdCarrierId();
+        if ($shippingType === 'pickuppoints') {
+            $this->resetHdCarrier();
+        }
+        if ($shippingType === 'hdcarriers' ) {
+            if (empty($hdCarrierId)) {
+                $report->addError(ShipmentValidationReport::ERROR_CODE_NO_HD_CARRIER_SELECTED);
+            } else {
+                $carrier = $this->carrierRepository->getCarrier($hdCarrierId);
+                if ($carrier === null || $carrier->deleted === 1) {
+                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_NOT_EXISTS);
+
+                    return $report;
+                }
+                $vmCarrierCountry = VirtueMartModelCountry::getCountryByCode(strtoupper($carrier->country));
+
+                if (!$vmCarrierCountry->published) {
+                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_NO_PUBLISHED_COUNTRY);
+                }
+                $carrierVmCountryId = $vmCarrierCountry->virtuemart_country_id;
+                if (!empty($allowedCountries) && !in_array($carrierVmCountryId, $allowedCountries, true)) {
+                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
+                }
+                if ((empty($allowedCountries) || in_array($carrierVmCountryId, $allowedCountries, true)) && in_array($carrierVmCountryId, $blockingCountries, true)) {
+                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_IN_BLOCKING_COUNTRIES);
+                }
+            }
+
+        }
+
         return $report;
     }
 
@@ -214,7 +250,7 @@ class ShipmentMethod
      */
     public function getAllowedCountries()
     {
-        return $this->method->countries;
+        return $this->method->countries ?: [];
     }
 
     /**
@@ -222,7 +258,7 @@ class ShipmentMethod
      */
     public function getBlockingCountries()
     {
-        return $this->method->blocking_countries;
+        return $this->method->blocking_countries ?: [];
     }
 
     /**
@@ -379,6 +415,20 @@ class ShipmentMethod
     public function getParams()
     {
         return $this->method;
+    }
+
+    public function getShippingType()
+    {
+        return (string) $this->getParams()->shipping_type;
+    }
+
+    public function getHdCarrierId()
+    {
+        return $this->getParams()->hd_carrier;
+    }
+    public function resetHdCarrier()
+    {
+        $this->method->hd_carrier = null;
     }
 }
 
