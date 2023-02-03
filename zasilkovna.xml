@@ -25,9 +25,6 @@
         <filename plugin="zasilkovna">zasilkovna.php</filename>
         <filename plugin="zasilkovna">install.sql</filename>
     </files>
-    <config>
-
-    </config>
     <vmconfig>
         <fields name="params">
             <fieldset name="global" addrulepath="components/com_zasilkovna/models/rules">

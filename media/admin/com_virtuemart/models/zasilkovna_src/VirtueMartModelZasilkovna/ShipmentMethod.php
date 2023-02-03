@@ -272,15 +272,25 @@ class ShipmentMethod
         return $this->method;
     }
 
+    /**
+     * @return string
+     */
     public function getShippingType()
     {
         return (string) $this->getParams()->shipping_type;
     }
 
+    /**
+     * @return int|null
+     */
     public function getHdCarrierId()
     {
-        return $this->getParams()->hd_carrier;
+        return $this->getParams()->hd_carrier ? (int) $this->getParams()->hd_carrier : null;
     }
+
+    /**
+     * @return void
+     */
     public function resetHdCarrier()
     {
         $this->method->hd_carrier = null;
