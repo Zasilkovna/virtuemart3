@@ -489,7 +489,8 @@ class VirtueMartModelZasilkovna extends VmModel
      * @param $shipmentMethodId
      * @return \VirtueMartModelZasilkovna\ShipmentMethod
      */
-    public function getPacketeryShipmentMethod($shipmentMethodId) {
+    public function getPacketeryShipmentMethod($shipmentMethodId)
+    {
         $model = \VmModel::getModel('shipmentmethod');
         $shipment = $model->getShipment($shipmentMethodId);
         return \VirtueMartModelZasilkovna\ShipmentMethod::fromRandom($shipment);
@@ -501,24 +502,24 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function getFilteredHdCarriers($shipmentMethodId)
     {
-        if (!$shipmentMethodId) { 
+        if (!$shipmentMethodId) {
             return [];
         }
 
         $method = $this->getPacketeryShipmentMethod($shipmentMethodId);
-        $hdCarriers = $this->carrierRepository->getHdCarriers();
+        $hdCarriers = $this->carrierRepository->getActiveHdCarriersForPublishedCountries();
         $countries = $method->getAllowedCountries();
         $blockingCountries = $method->getBlockingCountries();
         if (empty($countries)) {
             $hdCarriers = array_filter($hdCarriers,
-                static function($hdCarrier) use ($blockingCountries) {
-                    return !in_array($hdCarrier['vm_country'], $blockingCountries , true );
+                static function ($hdCarrier) use ($blockingCountries) {
+                    return !in_array($hdCarrier['vm_country'], $blockingCountries, true);
                 });
         } else {
             $allowedCountries = array_diff($countries, $blockingCountries);
             $hdCarriers = array_filter($hdCarriers,
-                static function($hdCarrier) use ($allowedCountries) {
-                    return in_array($hdCarrier['vm_country'], $allowedCountries , true );
+                static function ($hdCarrier) use ($allowedCountries) {
+                    return in_array($hdCarrier['vm_country'], $allowedCountries, true);
                 });
         }
 

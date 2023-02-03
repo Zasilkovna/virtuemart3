@@ -29,6 +29,7 @@ if(!class_exists('VirtueMartModelVendor')) {
 }
 
 require_once VMPATH_ADMIN . '/fields/vmzasilkovnacountries.php';
+require_once VMPATH_ADMIN . '/fields/vmzasilkovnahdcarriers.php';
 
 class plgVmShipmentZasilkovna extends vmPSPlugin
 {
@@ -47,6 +48,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
     /** @var \VirtueMartModelZasilkovna\ShipmentMethodStorage */
     private $shipmentMethodStorage;
+
+    /** @var \VirtueMartModelZasilkovna\ShipmentMethodValidator */
+    protected $shipmentMethodValidator;
 
     /**
      * plgVmShipmentZasilkovna constructor.
@@ -73,6 +77,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $this->session = JFactory::getSession();
         $this->checkoutModuleDetector = new \VirtueMartModelZasilkovna\CheckoutModuleDetector();
         $this->shipmentMethodStorage = new \VirtueMartModelZasilkovna\ShipmentMethodStorage($this->session);
+        $this->shipmentMethodValidator = new \VirtueMartModelZasilkovna\ShipmentMethodValidator();
     }
 
     /**
@@ -1008,7 +1013,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $method = ShipmentMethod::fromRandom($data);
-        $report = $method->validate();
+        $report = $this->shipmentMethodValidator->validate($method);;
 
         if ($report->isValid() === false) {
             foreach ($report->getErrors() as $error) {

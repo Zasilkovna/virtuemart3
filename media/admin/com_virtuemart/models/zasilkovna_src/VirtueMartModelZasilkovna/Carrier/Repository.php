@@ -64,7 +64,8 @@ class Repository
      *
      * @return array
      */
-    public function getHdCarriers() {
+    public function getActiveHdCarriersForPublishedCountries()
+    {
         $db = \JFactory::getDBO();
         $db->setQuery("
             SELECT vzc.id,
@@ -93,8 +94,8 @@ class Repository
         $db->setQuery(
             sprintf(
                 "SELECT * FROM #__virtuemart_zasilkovna_carriers WHERE id = %d",
-                (int) $carrierId
-                )
+                (int)$carrierId
+            )
         );
         return $db->loadObject(\stdClass::class);
     }

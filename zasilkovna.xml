@@ -25,10 +25,26 @@
         <filename plugin="zasilkovna">zasilkovna.php</filename>
         <filename plugin="zasilkovna">install.sql</filename>
     </files>
+    <config>
+
+    </config>
     <vmconfig>
         <fields name="params">
+            <fieldset name="global" addrulepath="components/com_zasilkovna/models/rules">
+                <field name="shipping_type" type="radio" default="pickuppoints"
+                       required="true"
+                       label="PLG_VMSHIPMENT_PACKETERY_CONFIG_SHIPPING_TYPE"
+                       description="PLG_VMSHIPMENT_PACKETERY_CONFIG_SHIPPING_TYPE_DESCRIPTION">
+                    <option value="pickuppoints">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS</option>
+                    <option value="hdcarriers">PLG_VMSHIPMENT_PACKETERY_CONFIG_TO_HD</option>
+                </field>
+                <field name="hd_carrier"
+                       type="vmzasilkovnahdcarriers"
+                       showon="shipping_type:hdcarriers"
+                       label="PLG_VMSHIPMENT_PACKETERY_CONFIG_CARRIER"
+                       required="true"
+                       validate="carrier"/>
 
-            <fieldset name="global">
                 <field name="maxWeight" type="number" step="0.001" label="PLG_VMSHIPMENT_PACKETERY_CONFIG_MAX_WEIGHT"
                        required="true"
                        description="PLG_VMSHIPMENT_PACKETERY_CONFIG_MAX_WEIGHT_LABEL" default="10"/>

@@ -2,8 +2,6 @@
 
 namespace VirtueMartModelZasilkovna;
 
-use VirtueMartModelCountry;
-
 class ShipmentMethod
 {
     /** @var \stdClass */
@@ -100,149 +98,6 @@ class ShipmentMethod
         }
 
         return new self($method);
-    }
-
-    /**
-     * @param $weightRule
-     * @param $maxWeight
-     * @return \VirtueMartModelZasilkovna\ShipmentValidationReport
-     */
-    private function validateWeightRule($weightRule, $maxWeight)
-    {
-        $weightRulesReport = new ShipmentValidationReport();
-
-        if (empty($weightRule->price) && !is_numeric($weightRule->price)) {
-            $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_WEIGHT_PRICE_MISSING);
-        } else {
-            if (!is_numeric($weightRule->price)) {
-                $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
-            }
-        }
-
-        if (empty($weightRule->maxWeightKg) && !is_numeric($weightRule->maxWeightKg)) {
-            $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_WEIGHT_MISSING);
-        } else {
-            if (!is_numeric($weightRule->maxWeightKg)) {
-                $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
-            } else {
-                if ($weightRule->maxWeightKg > $maxWeight) {
-                    $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_WEIGHT_EXCEEDED);
-                }
-            }
-        }
-
-        return $weightRulesReport;
-    }
-
-    /**
-     * @return ShipmentValidationReport
-     */
-    public function validate()
-    {
-        $report = new ShipmentValidationReport();
-
-        $globalDefaultPrice = $this->getGlobalDefaultPrice();
-        if (empty($globalDefaultPrice) && !is_numeric($globalDefaultPrice)) {
-            $report->addError(ShipmentValidationReport::ERROR_CODE_GLOBAL_DEFAULT_PRICE_MISSING);
-        } else {
-            if (!is_numeric($globalDefaultPrice)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
-            }
-        }
-
-        $globalMaxWeight = $this->getGlobalMaxWeight();
-        if (empty($globalMaxWeight) && !is_numeric($globalMaxWeight)) {
-            $report->addError(ShipmentValidationReport::ERROR_CODE_GLOBAL_MAX_WEIGHT_MISSING);
-        } else {
-            if (!is_numeric($globalMaxWeight)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
-            }
-        }
-
-        $weightsFE = ($this->getGlobalWeightRules() ?: []);
-        foreach ($weightsFE as $weightRule) {
-            $weightRulesReport = $this->validateWeightRule($weightRule, $globalMaxWeight);
-
-            if ($weightRulesReport->isValid() === false) {
-                $report->merge($weightRulesReport);
-                break;
-            }
-        }
-
-        $rules = ($this->getPricingRules() ?: []);
-        $countries = [];
-
-        foreach ($rules as $countryRule) {
-            if (array_key_exists($countryRule->country, $countries)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_DUPLICATE_COUNTRIES); // multiple country definitions not allowed
-                break;
-            }
-
-            $countries[$countryRule->country] = $countryRule->country;
-
-            $countryWeightRules = ($this->getCountryWeightRules($countryRule->country) ?: []);
-            foreach ($countryWeightRules as $weightRule) {
-                $weightRulesReport = $this->validateWeightRule($weightRule, $globalMaxWeight);
-
-                if ($weightRulesReport->isValid() === false) {
-                    $report->merge($weightRulesReport);
-                    break;
-                }
-            }
-        }
-
-        $blockingCountries = ($this->getBlockingCountries());
-        $allowedCountries = ($this->getAllowedCountries());
-
-        $blockingCountries = array_diff($blockingCountries, $allowedCountries); // when user allowes and blocks same countries
-        $allowedCountries = array_diff($allowedCountries, $blockingCountries); // when user allowes and blocks same countries
-
-        if (!empty($allowedCountries)) {
-            $diff = array_diff($countries, $allowedCountries);
-            if (!empty($diff)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_ALLOWED_COUNTRIES_ONLY);
-            }
-        }
-
-        if (!empty($blockingCountries)) {
-            $diff = array_diff($countries, $blockingCountries);
-            if (count($diff) !== count($countries)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_NO_BLOCKED_COUNTRY);
-            }
-        }
-
-        $shippingType = $this->getShippingType();
-        $hdCarrierId = $this->getHdCarrierId();
-        if ($shippingType === 'pickuppoints') {
-            $this->resetHdCarrier();
-        }
-        if ($shippingType === 'hdcarriers' ) {
-            if (empty($hdCarrierId)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_NO_HD_CARRIER_SELECTED);
-            } else {
-                $carrier = $this->carrierRepository->getCarrier($hdCarrierId);
-                if ($carrier === null || $carrier->deleted === 1) {
-                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_NOT_EXISTS);
-
-                    return $report;
-                }
-                $vmCarrierCountry = VirtueMartModelCountry::getCountryByCode(strtoupper($carrier->country));
-
-                if (!$vmCarrierCountry->published) {
-                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_NO_PUBLISHED_COUNTRY);
-                }
-                $carrierVmCountryId = $vmCarrierCountry->virtuemart_country_id;
-                if (!empty($allowedCountries) && !in_array($carrierVmCountryId, $allowedCountries, true)) {
-                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
-                }
-                if ((empty($allowedCountries) || in_array($carrierVmCountryId, $allowedCountries, true)) && in_array($carrierVmCountryId, $blockingCountries, true)) {
-                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_IN_BLOCKING_COUNTRIES);
-                }
-            }
-
-        }
-
-        return $report;
     }
 
     /**
@@ -404,7 +259,7 @@ class ShipmentMethod
     /**
      * @return mixed
      */
-    private function getPricingRules()
+    public function getPricingRules()
     {
         return $this->getParams()->pricingRules;
     }
@@ -429,6 +284,14 @@ class ShipmentMethod
     public function resetHdCarrier()
     {
         $this->method->hd_carrier = null;
+    }
+
+    /**
+     * @return Carrier\Repository
+     */
+    public function getCarrierRepository()
+    {
+        return $this->carrierRepository;
     }
 }
 
