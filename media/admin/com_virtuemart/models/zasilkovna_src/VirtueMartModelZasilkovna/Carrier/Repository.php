@@ -88,12 +88,12 @@ class Repository
      * @param $carrierId
      * @return null|\stdClass
      */
-    public function getCarrierData($carrierId)
+    public function getCarrierById($carrierId)
     {
         $db = \JFactory::getDBO();
         $db->setQuery(
             sprintf(
-                "SELECT id, country, deleted FROM #__virtuemart_zasilkovna_carriers WHERE id = %d",
+                "SELECT id, name, country, deleted FROM #__virtuemart_zasilkovna_carriers WHERE id = %d",
                 (int)$carrierId
             )
         );

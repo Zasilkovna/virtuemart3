@@ -15,8 +15,6 @@ class ShipmentValidationReport
     const ERROR_CODE_NO_BLOCKED_COUNTRY = 'NO_BLOCKED_COUNTRY';
     const ERROR_CODE_NO_HD_CARRIER_SELECTED = 'NO_HD_CARRIER_SELECTED';
     const ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES = 'HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES';
-    const ERROR_CODE_HD_CARRIER_IS_IN_BLOCKING_COUNTRIES = 'HD_CARRIER_IS_IN_BLOCKING_COUNTRIES';
-    const ERROR_CODE_HD_CARRIER_NO_PUBLISHED_COUNTRY = 'HD_CARRIER_NO_PUBLISHED_COUNTRY';
     const ERROR_CODE_HD_CARRIER_NOT_EXISTS = 'HD_CARRIER_NOT_EXISTS';
     const ERROR_CODE_HD_CARRIER_REDUNDANT_FOR_PP= 'HD_CARRIER_REDUNDANT_FOR_PP';
     /** @var array */
@@ -40,12 +38,14 @@ class ShipmentValidationReport
 
     /**
      * @param $code
+     * @param array $params
      */
-    public function addError($code)
+    public function addError($code, array $params = [])
     {
         $this->errors[] = (object)[
             'code' => $code,
             'translationCode' => $this->getTranslationCode($code),
+            'params' => $params,
         ];
     }
 

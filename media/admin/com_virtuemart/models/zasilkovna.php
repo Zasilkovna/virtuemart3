@@ -510,6 +510,7 @@ class VirtueMartModelZasilkovna extends VmModel
         $hdCarriers = $this->carrierRepository->getActiveHdCarriersForPublishedCountries();
         $countries = $method->getAllowedCountries();
         $blockingCountries = $method->getBlockingCountries();
+
         if (empty($countries)) {
             $hdCarriers = array_filter($hdCarriers,
                 static function ($hdCarrier) use ($blockingCountries) {

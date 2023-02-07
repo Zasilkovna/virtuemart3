@@ -2,14 +2,12 @@
 
 namespace VirtueMartModelZasilkovna;
 
-use VirtueMartModelCountry;
-
 class ShipmentMethodValidator
 {
     /**
      * @param $weightRule
      * @param $maxWeight
-     * @return \VirtueMartModelZasilkovna\ShipmentValidationReport
+     * @return ShipmentValidationReport
      */
     public function validateWeightRule($weightRule, $maxWeight)
     {
@@ -43,7 +41,8 @@ class ShipmentMethodValidator
     public function validate($shipmentMethod)
     {
         $report = new ShipmentValidationReport();
-        $globalMaxWeight = $shipmentMethod->getGlobalMaxWeightKg();
+        $globalMaxWeight = $shipmentMethod->getGlobalMaxWeight();
+
         $this->validateGlobalWeightRules($report, $shipmentMethod, $globalMaxWeight);
 
         $this->validateCountryWeightRulesAndCountries($report, $shipmentMethod, $globalMaxWeight);
@@ -150,7 +149,7 @@ class ShipmentMethodValidator
         $blockingCountries = $shipmentMethod->getBlockingCountries();
         $allowedCountries = $shipmentMethod->getAllowedCountries();
 
-        if ($shippingType === 'pickuppoints' && $hdCarrierId !== null) {
+        if ($shippingType === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS && $hdCarrierId !== null) {
             $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_REDUNDANT_FOR_PP);
         }
 
@@ -158,16 +157,20 @@ class ShipmentMethodValidator
             if (empty($hdCarrierId)) {
                 $report->addError(ShipmentValidationReport::ERROR_CODE_NO_HD_CARRIER_SELECTED);
             } else {
-                $carrierData = $shipmentMethod->getCarrierRepository()->getCarrierData($hdCarrierId);
-                if ($carrierData === null || $carrierData->deleted === 1) {
-                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_NOT_EXISTS);
+                $carrier = $shipmentMethod->getCarrierRepository()->getCarrierById($hdCarrierId);
+                if ($carrier === null || $carrier->deleted === 1) {
+                    $report->addError(
+                        ShipmentValidationReport::ERROR_CODE_HD_CARRIER_NOT_EXISTS,
+                        $carrier->name ?  [$carrier->name] : ['ID: ' . $hdCarrierId]
+                    );
 
-
+                    return;
                 }
-                $vmCarrierCountry = VirtueMartModelCountry::getCountryByCode(strtoupper($carrierData->country));
+
+                $vmCarrierCountry = \VirtueMartModelCountry::getCountryByCode(strtoupper($carrier->country));
 
                 if (!$vmCarrierCountry->published) {
-                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_NO_PUBLISHED_COUNTRY);
+                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
                 $carrierVmCountryId = $vmCarrierCountry->virtuemart_country_id;
                 if (!empty($allowedCountries) && !in_array($carrierVmCountryId, $allowedCountries, true)) {
@@ -175,10 +178,9 @@ class ShipmentMethodValidator
                 }
                 if ((empty($allowedCountries) || in_array($carrierVmCountryId, $allowedCountries,
                             true)) && in_array($carrierVmCountryId, $blockingCountries, true)) {
-                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_IN_BLOCKING_COUNTRIES);
+                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
             }
-
         }
     }
 }

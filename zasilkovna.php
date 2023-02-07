@@ -1013,15 +1013,19 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $method = ShipmentMethod::fromRandom($data);
-        if ($method->getShippingType() === 'pickuppoints'){
+        if ($method->getShippingType() === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS){
                 $method->resetHdCarrier();
             }
 
-        $report = $this->shipmentMethodValidator->validate($method);;
+        $report = $this->shipmentMethodValidator->validate($method);
 
         if ($report->isValid() === false) {
             foreach ($report->getErrors() as $error) {
-                vmError(JText::_($error->translationCode));
+                if ($error->params && count($error->params) > 0) {
+                    vmError(JText::sprintf($error->translationCode, ...$error->params));
+                } else {
+                    vmError(JText::_($error->translationCode));
+                }
             }
 
             $app = JFactory::getApplication();
