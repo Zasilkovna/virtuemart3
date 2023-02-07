@@ -6,8 +6,7 @@ class ShipmentMethod
 {
     /** @var \stdClass */
     private $method;
-    /** @var Carrier\Repository */
-    private $carrierRepository;
+
 
     const SHIPPING_TYPE_PICKUPPOINTS = 'pickuppoints'; // this value is also used in the zasilkovna.xml
     const SHIPPING_TYPE_HDCARRIERS = 'hdcarriers'; // this value is also used in the zasilkovna.xml
@@ -15,7 +14,6 @@ class ShipmentMethod
     public function __construct(\stdClass $method)
     {
         $this->method = $method;
-        $this->carrierRepository = new Carrier\Repository();
     }
 
     /**
@@ -299,12 +297,4 @@ class ShipmentMethod
         $this->method->hd_carrier = null;
     }
 
-    /**
-     * @return Carrier\Repository
-     */
-    public function getCarrierRepository()
-    {
-        return $this->carrierRepository;
-    }
 }
-

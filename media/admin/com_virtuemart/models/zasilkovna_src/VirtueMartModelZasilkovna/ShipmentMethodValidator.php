@@ -4,6 +4,14 @@ namespace VirtueMartModelZasilkovna;
 
 class ShipmentMethodValidator
 {
+    /** @var Carrier\Repository */
+    private $carrierRepository;
+
+    public function __construct()
+    {
+        $this->carrierRepository = new Carrier\Repository();
+    }
+
     /**
      * @param \stdClass $weightRule
      * @param float $maxWeight
@@ -154,7 +162,7 @@ class ShipmentMethodValidator
             if (empty($hdCarrierId)) {
                 $report->addError(ShipmentValidationReport::ERROR_CODE_NO_HD_CARRIER_SELECTED);
             } else {
-                $carrier = $shipmentMethod->getCarrierRepository()->getCarrierById($hdCarrierId);
+                $carrier = $this->carrierRepository->getCarrierById($hdCarrierId);
                 if ($carrier === null || $carrier->deleted === 1) {
                     $report->addError(
                         ShipmentValidationReport::ERROR_CODE_HD_CARRIER_NOT_EXISTS,
