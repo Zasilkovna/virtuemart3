@@ -153,7 +153,7 @@ class ShipmentMethodValidator
             $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_REDUNDANT_FOR_PP);
         }
 
-        if ($shippingType === 'hdcarriers') {
+        if ($shippingType === ShipmentMethod::SHIPPING_TYPE_HDCARRIERS) {
             if (empty($hdCarrierId)) {
                 $report->addError(ShipmentValidationReport::ERROR_CODE_NO_HD_CARRIER_SELECTED);
             } else {

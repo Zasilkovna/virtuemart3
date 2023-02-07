@@ -10,6 +10,7 @@ class ShipmentMethod
     private $carrierRepository;
 
     const SHIPPING_TYPE_PICKUPPOINTS = 'pickuppoints'; // this value is also used in the zasilkovna.xml
+    const SHIPPING_TYPE_HDCARRIERS = 'hdcarriers'; // this value is also used in the zasilkovna.xml
 
     public function __construct(\stdClass $method)
     {
