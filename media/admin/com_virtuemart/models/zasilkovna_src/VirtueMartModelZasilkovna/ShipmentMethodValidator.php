@@ -5,8 +5,8 @@ namespace VirtueMartModelZasilkovna;
 class ShipmentMethodValidator
 {
     /**
-     * @param $weightRule
-     * @param $maxWeight
+     * @param \stdClass $weightRule
+     * @param float $maxWeight
      * @return ShipmentValidationReport
      */
     public function validateWeightRule($weightRule, $maxWeight)
@@ -35,17 +35,16 @@ class ShipmentMethodValidator
     }
 
     /**
-     * @param $shipmentMethod
+     * @param ShipmentMethod $shipmentMethod
      * @return ShipmentValidationReport
      */
-    public function validate($shipmentMethod)
+    public function validate(ShipmentMethod $shipmentMethod)
     {
         $report = new ShipmentValidationReport();
-        $globalMaxWeight = $shipmentMethod->getGlobalMaxWeight();
 
-        $this->validateGlobalWeightRules($report, $shipmentMethod, $globalMaxWeight);
+        $this->validateGlobalWeightRules($report, $shipmentMethod);
 
-        $this->validateCountryWeightRulesAndCountries($report, $shipmentMethod, $globalMaxWeight);
+        $this->validateCountryWeightRulesAndCountries($report, $shipmentMethod);
 
         $this->validateHdCarrier($report, $shipmentMethod);
 
@@ -55,14 +54,13 @@ class ShipmentMethodValidator
     /**
      * @param ShipmentValidationReport $report
      * @param ShipmentMethod $shipmentMethod
-     * @param $globalMaxWeight
      * @return void
      */
     private function validateGlobalWeightRules(
         ShipmentValidationReport $report,
-        ShipmentMethod $shipmentMethod,
-        $globalMaxWeight
+        ShipmentMethod $shipmentMethod
     ) {
+        $globalMaxWeight = $shipmentMethod->getGlobalMaxWeight();
 
         if (empty($globalMaxWeight) && !is_numeric($globalMaxWeight)) {
             $report->addError(ShipmentValidationReport::ERROR_CODE_GLOBAL_MAX_WEIGHT_MISSING);
@@ -84,14 +82,13 @@ class ShipmentMethodValidator
     /**
      * @param ShipmentValidationReport $report
      * @param ShipmentMethod $shipmentMethod
-     * @param $globalMaxWeight
      * @return void
      */
     private function validateCountryWeightRulesAndCountries(
         ShipmentValidationReport $report,
-        ShipmentMethod $shipmentMethod,
-        $globalMaxWeight
+        ShipmentMethod $shipmentMethod
     ) {
+        $globalMaxWeight = $shipmentMethod->getGlobalMaxWeight();
         $rules = ($shipmentMethod->getPricingRules() ?: []);
         $countries = [];
 
@@ -161,7 +158,7 @@ class ShipmentMethodValidator
                 if ($carrier === null || $carrier->deleted === 1) {
                     $report->addError(
                         ShipmentValidationReport::ERROR_CODE_HD_CARRIER_NOT_EXISTS,
-                        $carrier->name ?  [$carrier->name] : ['ID: ' . $hdCarrierId]
+                        $carrier->name ? [$carrier->name] : ['ID: ' . $hdCarrierId]
                     );
 
                     return;

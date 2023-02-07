@@ -104,7 +104,7 @@ class ShipmentMethod
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getAllowedCountries()
     {
@@ -112,7 +112,7 @@ class ShipmentMethod
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getBlockingCountries()
     {
@@ -213,7 +213,7 @@ class ShipmentMethod
         return $this->getParams()->maxWeight;
     }
 
-    /** Global weight rules are ment for unspecified countries
+    /** Global weight rules are meant for unspecified countries
      *
      * @return iterable|null
      */

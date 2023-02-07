@@ -1013,9 +1013,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $method = ShipmentMethod::fromRandom($data);
-        if ($method->getShippingType() === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS){
-                $method->resetHdCarrier();
-            }
+        if ($method->getShippingType() === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS) {
+            $method->resetHdCarrier();
+        }
 
         $report = $this->shipmentMethodValidator->validate($method);
 

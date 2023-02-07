@@ -486,7 +486,7 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param $shipmentMethodId
+     * @param int $shipmentMethodId
      * @return \VirtueMartModelZasilkovna\ShipmentMethod
      */
     public function getPacketeryShipmentMethod($shipmentMethodId)
@@ -497,7 +497,7 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param $shipmentMethodId
+     * @param int|null $shipmentMethodId
      * @return array
      */
     public function getFilteredHdCarriers($shipmentMethodId)

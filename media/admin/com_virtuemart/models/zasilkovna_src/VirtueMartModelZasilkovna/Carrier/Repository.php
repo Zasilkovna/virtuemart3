@@ -85,7 +85,7 @@ class Repository
     }
 
     /**
-     * @param $carrierId
+     * @param int|string
      * @return null|\stdClass
      */
     public function getCarrierById($carrierId)
@@ -97,6 +97,7 @@ class Repository
                 (int)$carrierId
             )
         );
+
         return $db->loadObject(\stdClass::class);
     }
 
