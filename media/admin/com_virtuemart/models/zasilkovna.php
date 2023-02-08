@@ -493,6 +493,7 @@ class VirtueMartModelZasilkovna extends VmModel
     {
         $model = \VmModel::getModel('shipmentmethod');
         $shipment = $model->getShipment($shipmentMethodId);
+
         return \VirtueMartModelZasilkovna\ShipmentMethod::fromRandom($shipment);
     }
 
@@ -500,7 +501,7 @@ class VirtueMartModelZasilkovna extends VmModel
      * @param int|null $shipmentMethodId
      * @return array
      */
-    public function getFilteredHdCarriers($shipmentMethodId)
+    public function getAvailableHdCarriersByShipmentId($shipmentMethodId)
     {
         if (!$shipmentMethodId) {
             return [];
