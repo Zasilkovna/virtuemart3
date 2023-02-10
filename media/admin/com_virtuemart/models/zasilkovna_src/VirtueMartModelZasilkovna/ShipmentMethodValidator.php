@@ -128,15 +128,15 @@ class ShipmentMethodValidator
             $blockingCountries); // when user allowes and blocks same countries
 
         if (!empty($allowedCountries)) {
-            $diff = array_diff($countries, $allowedCountries);
-            if (!empty($diff)) {
+            $notAllowedCountries = array_diff($countries, $allowedCountries);
+            if (!empty($notAllowedCountries)) {
                 $report->addError(ShipmentValidationReport::ERROR_CODE_ALLOWED_COUNTRIES_ONLY);
             }
         }
 
         if (!empty($blockingCountries)) {
-            $diff = array_diff($countries, $blockingCountries);
-            if (count($diff) !== count($countries)) {
+            $notBlockingCountries = array_diff($countries, $blockingCountries);
+            if (count($notBlockingCountries) !== count($countries)) {
                 $report->addError(ShipmentValidationReport::ERROR_CODE_NO_BLOCKED_COUNTRY);
             }
         }
@@ -155,17 +155,17 @@ class ShipmentMethodValidator
         $allowedCountries = $shipmentMethod->getAllowedCountries();
 
         if ($shippingType === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS && $hdCarrierId !== null) {
-            $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_REDUNDANT_FOR_PP);
+            $report->addError('HD_CARRIER_REDUNDANT_FOR_PP');
         }
 
         if ($shippingType === ShipmentMethod::SHIPPING_TYPE_HDCARRIERS) {
-            if (empty($hdCarrierId)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_NO_HD_CARRIER_SELECTED);
+            if ($hdCarrierId === null) {
+                $report->addError('NO_HD_CARRIER_SELECTED');
             } else {
                 $carrier = $this->carrierRepository->getCarrierById($hdCarrierId);
                 if ($carrier === null || $carrier->deleted === 1) {
                     $report->addError(
-                        ShipmentValidationReport::ERROR_CODE_HD_CARRIER_NOT_EXISTS,
+                        'HD_CARRIER_NOT_EXISTS',
                         $carrier->name ? [$carrier->name] : ['ID: ' . $hdCarrierId]
                     );
 

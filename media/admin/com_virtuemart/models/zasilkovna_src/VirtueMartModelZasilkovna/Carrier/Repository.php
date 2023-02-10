@@ -85,7 +85,7 @@ class Repository
     }
 
     /**
-     * @param int|string
+     * @param int $carrierId
      * @return null|\stdClass
      */
     public function getCarrierById($carrierId)
@@ -94,7 +94,7 @@ class Repository
         $db->setQuery(
             sprintf(
                 "SELECT id, name, country, deleted FROM #__virtuemart_zasilkovna_carriers WHERE id = %d",
-                (int)$carrierId
+                $carrierId
             )
         );
 

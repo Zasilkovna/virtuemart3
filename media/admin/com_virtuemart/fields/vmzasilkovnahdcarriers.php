@@ -17,6 +17,7 @@ class JFormFieldVmZasilkovnaHdCarriers extends JFormFieldList
 
     /**
      * @return array
+     * @throws Exception
      */
     protected function getOptions()
     {
@@ -36,18 +37,17 @@ class JFormFieldVmZasilkovnaHdCarriers extends JFormFieldList
 
     /**
      * @return int|null
+     * @throws Exception
      */
     public function getShipmentMethodId()
     {
         $shipmentMethodId = null;
         $input = JFactory::getApplication()->input;
 
-        if ($input->getString('view') === 'shipmentmethod') {
             $shipmentIdArray = $input->get('cid', null, 'array');
             if ($shipmentIdArray && count($shipmentIdArray) === 1) {
                 $shipmentMethodId = (int) $shipmentIdArray[0];
             }
-        }
 
         return $shipmentMethodId;
     }
