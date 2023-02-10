@@ -37,7 +37,6 @@
                 </field>
                 <field name="hd_carrier"
                        type="vmzasilkovnahdcarriers"
-                       showon="shipping_type:hdcarriers"
                        label="PLG_VMSHIPMENT_PACKETERY_CONFIG_CARRIER"
                        required="true"
                        validate="carrier"/>
