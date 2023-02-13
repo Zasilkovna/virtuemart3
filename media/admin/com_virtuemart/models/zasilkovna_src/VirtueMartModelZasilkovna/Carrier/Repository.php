@@ -60,6 +60,48 @@ class Repository
     }
 
     /**
+     * Gets all active HD carriers for published countries.
+     *
+     * @return array
+     */
+    public function getActiveHdCarriersForPublishedCountries()
+    {
+        $db = \JFactory::getDBO();
+        $db->setQuery("
+            SELECT vzc.id,
+                   vzc.name,
+                   vzc.country,
+                   vc.virtuemart_country_id AS vm_country
+            FROM #__virtuemart_zasilkovna_carriers vzc
+            LEFT JOIN #__virtuemart_countries vc 
+                ON UCASE(vzc.country) = vc.country_2_code
+            WHERE vzc.deleted = 0 
+                AND vzc.is_pickup_points = 0
+                AND vc.published = 1
+            ORDER BY vzc.country
+            ");
+
+        return $db->loadAssocList();
+    }
+
+    /**
+     * @param int $carrierId
+     * @return null|\stdClass
+     */
+    public function getCarrierById($carrierId)
+    {
+        $db = \JFactory::getDBO();
+        $db->setQuery(
+            sprintf(
+                "SELECT id, name, country, deleted FROM #__virtuemart_zasilkovna_carriers WHERE id = %d",
+                $carrierId
+            )
+        );
+
+        return $db->loadObject(\stdClass::class);
+    }
+
+    /**
      * @param array $carrierIds
      * @return void
      */

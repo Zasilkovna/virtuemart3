@@ -485,4 +485,46 @@ class VirtueMartModelZasilkovna extends VmModel
         $language->load('plg_vmshipment_zasilkovna', JPATH_SITE, NULL, true);
     }
 
+    /**
+     * @param int $shipmentMethodId
+     * @return \VirtueMartModelZasilkovna\ShipmentMethod
+     */
+    public function getPacketeryShipmentMethod($shipmentMethodId)
+    {
+        $model = \VmModel::getModel('shipmentmethod');
+        $shipment = $model->getShipment($shipmentMethodId);
+
+        return \VirtueMartModelZasilkovna\ShipmentMethod::fromRandom($shipment);
+    }
+
+    /**
+     * @param int|null $shipmentMethodId
+     * @return array
+     */
+    public function getAvailableHdCarriersByShipmentId($shipmentMethodId)
+    {
+        if (!$shipmentMethodId) {
+            return [];
+        }
+
+        $method = $this->getPacketeryShipmentMethod($shipmentMethodId);
+        $hdCarriers = $this->carrierRepository->getActiveHdCarriersForPublishedCountries();
+        $countries = $method->getAllowedCountries();
+        $blockingCountries = $method->getBlockingCountries();
+
+        if (empty($countries)) {
+            $hdCarriers = array_filter($hdCarriers,
+                static function ($hdCarrier) use ($blockingCountries) {
+                    return !in_array($hdCarrier['vm_country'], $blockingCountries, true);
+                });
+        } else {
+            $allowedCountries = array_diff($countries, $blockingCountries);
+            $hdCarriers = array_filter($hdCarriers,
+                static function ($hdCarrier) use ($allowedCountries) {
+                    return in_array($hdCarrier['vm_country'], $allowedCountries, true);
+                });
+        }
+
+        return $hdCarriers;
+    }
 }

@@ -7,6 +7,10 @@ class ShipmentMethod
     /** @var \stdClass */
     private $method;
 
+
+    const SHIPPING_TYPE_PICKUPPOINTS = 'pickuppoints'; // this value is also used in the zasilkovna.xml
+    const SHIPPING_TYPE_HDCARRIERS = 'hdcarriers'; // this value is also used in the zasilkovna.xml
+
     public function __construct(\stdClass $method)
     {
         $this->method = $method;
@@ -98,131 +102,19 @@ class ShipmentMethod
     }
 
     /**
-     * @param $weightRule
-     * @param $maxWeight
-     * @return \VirtueMartModelZasilkovna\ShipmentValidationReport
-     */
-    private function validateWeightRule($weightRule, $maxWeight)
-    {
-        $weightRulesReport = new ShipmentValidationReport();
-
-        if (empty($weightRule->price) && !is_numeric($weightRule->price)) {
-            $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_WEIGHT_PRICE_MISSING);
-        } else {
-            if (!is_numeric($weightRule->price)) {
-                $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
-            }
-        }
-
-        if (empty($weightRule->maxWeightKg) && !is_numeric($weightRule->maxWeightKg)) {
-            $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_WEIGHT_MISSING);
-        } else {
-            if (!is_numeric($weightRule->maxWeightKg)) {
-                $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
-            } else {
-                if ($weightRule->maxWeightKg > $maxWeight) {
-                    $weightRulesReport->addError(ShipmentValidationReport::ERROR_CODE_WEIGHT_EXCEEDED);
-                }
-            }
-        }
-
-        return $weightRulesReport;
-    }
-
-    /**
-     * @return ShipmentValidationReport
-     */
-    public function validate()
-    {
-        $report = new ShipmentValidationReport();
-
-        $globalDefaultPrice = $this->getGlobalDefaultPrice();
-        if (empty($globalDefaultPrice) && !is_numeric($globalDefaultPrice)) {
-            $report->addError(ShipmentValidationReport::ERROR_CODE_GLOBAL_DEFAULT_PRICE_MISSING);
-        } else {
-            if (!is_numeric($globalDefaultPrice)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
-            }
-        }
-
-        $globalMaxWeight = $this->getGlobalMaxWeight();
-        if (empty($globalMaxWeight) && !is_numeric($globalMaxWeight)) {
-            $report->addError(ShipmentValidationReport::ERROR_CODE_GLOBAL_MAX_WEIGHT_MISSING);
-        } else {
-            if (!is_numeric($globalMaxWeight)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
-            }
-        }
-
-        $weightsFE = ($this->getGlobalWeightRules() ?: []);
-        foreach ($weightsFE as $weightRule) {
-            $weightRulesReport = $this->validateWeightRule($weightRule, $globalMaxWeight);
-
-            if ($weightRulesReport->isValid() === false) {
-                $report->merge($weightRulesReport);
-                break;
-            }
-        }
-
-        $rules = ($this->getPricingRules() ?: []);
-        $countries = [];
-
-        foreach ($rules as $countryRule) {
-            if (array_key_exists($countryRule->country, $countries)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_DUPLICATE_COUNTRIES); // multiple country definitions not allowed
-                break;
-            }
-
-            $countries[$countryRule->country] = $countryRule->country;
-
-            $countryWeightRules = ($this->getCountryWeightRules($countryRule->country) ?: []);
-            foreach ($countryWeightRules as $weightRule) {
-                $weightRulesReport = $this->validateWeightRule($weightRule, $globalMaxWeight);
-
-                if ($weightRulesReport->isValid() === false) {
-                    $report->merge($weightRulesReport);
-                    break;
-                }
-            }
-        }
-
-        $blockingCountries = ($this->getBlockingCountries() ?: []);
-        $allowedCountries = ($this->getAllowedCountries() ?: []);
-
-        $blockingCountries = array_diff($blockingCountries, $allowedCountries); // when user allowes and blocks same countries
-        $allowedCountries = array_diff($allowedCountries, $blockingCountries); // when user allowes and blocks same countries
-
-        if (!empty($allowedCountries)) {
-            $diff = array_diff($countries, $allowedCountries);
-            if (!empty($diff)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_ALLOWED_COUNTRIES_ONLY);
-            }
-        }
-
-        if (!empty($blockingCountries)) {
-            $diff = array_diff($countries, $blockingCountries);
-            if (count($diff) !== count($countries)) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_NO_BLOCKED_COUNTRY);
-            }
-        }
-
-        return $report;
-    }
-
-    /**
-     * @return mixed
+     * @return array
      */
     public function getAllowedCountries()
     {
-        return $this->method->countries;
+        return $this->method->countries ?: [];
     }
 
     /**
-     * @return mixed
+     * @return array
      */
     public function getBlockingCountries()
     {
-        return $this->method->blocking_countries;
+        return $this->method->blocking_countries ?: [];
     }
 
     /**
@@ -319,7 +211,7 @@ class ShipmentMethod
         return $this->getParams()->maxWeight;
     }
 
-    /** Global weight rules are ment for unspecified countries
+    /** Global weight rules are meant for unspecified countries
      *
      * @return iterable|null
      */
@@ -368,7 +260,7 @@ class ShipmentMethod
     /**
      * @return mixed
      */
-    private function getPricingRules()
+    public function getPricingRules()
     {
         return $this->getParams()->pricingRules;
     }
@@ -380,5 +272,29 @@ class ShipmentMethod
     {
         return $this->method;
     }
-}
 
+    /**
+     * @return string
+     */
+    public function getShippingType()
+    {
+        return (string) $this->getParams()->shipping_type;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getHdCarrierId()
+    {
+        return $this->getParams()->hd_carrier ? (int) $this->getParams()->hd_carrier : null;
+    }
+
+    /**
+     * @return void
+     */
+    public function resetHdCarrier()
+    {
+        $this->method->hd_carrier = null;
+    }
+
+}

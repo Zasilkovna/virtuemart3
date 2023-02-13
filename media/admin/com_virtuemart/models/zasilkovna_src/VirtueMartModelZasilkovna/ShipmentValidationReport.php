@@ -13,6 +13,7 @@ class ShipmentValidationReport
     const ERROR_CODE_DUPLICATE_COUNTRIES = 'DUPLICATE_COUNTRIES';
     const ERROR_CODE_ALLOWED_COUNTRIES_ONLY = 'ALLOWED_COUNTRIES_ONLY';
     const ERROR_CODE_NO_BLOCKED_COUNTRY = 'NO_BLOCKED_COUNTRY';
+    const ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES = 'HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES';
 
     /** @var array */
     private $errors = [];
@@ -35,12 +36,14 @@ class ShipmentValidationReport
 
     /**
      * @param $code
+     * @param array $params
      */
-    public function addError($code)
+    public function addError($code, array $params = [])
     {
         $this->errors[] = (object)[
             'code' => $code,
             'translationCode' => $this->getTranslationCode($code),
+            'params' => $params,
         ];
     }
 
