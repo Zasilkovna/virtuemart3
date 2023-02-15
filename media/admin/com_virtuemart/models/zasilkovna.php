@@ -5,6 +5,8 @@
  * @link http://www.zasilkovna.cz
  */
 
+use VirtueMartModelZasilkovna\Carrier\Vendors;
+
 defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmodel.php');
@@ -527,4 +529,40 @@ class VirtueMartModelZasilkovna extends VmModel
 
         return $hdCarriers;
     }
+
+    /**
+     * @param $shipmentMethodId
+     * @return array
+     */
+    public function getVendorsByShipmentId($shipmentMethodId)
+    {
+        /** @var \VirtueMartModelZasilkovna\ShipmentMethod $method */
+        $method = $this->getPacketeryShipmentMethod($shipmentMethodId);
+        $vendors = $this->carrierRepository->getVendorCarriersByCountry(\VirtueMartModelZasilkovna\CountryMapper::toCC(175));
+//        echo '<pre>';
+//        print_r($vendors);
+//        echo '</pre>';
+        if ($method->isHdCarrier()) {
+            return [];
+        }
+
+        $countries = $method->getAllowedCountries();
+        $blockingCountries = $method->getBlockingCountries();
+
+//        if (empty($countries)) {
+//            $vendors = array_filter($vendors,
+//                static function ($vendor) use ($blockingCountries) {
+//                    return !in_array($vendor['country_id'], $blockingCountries, true);
+//                });
+//        } else {
+//            $allowedCountries = array_diff($countries, $blockingCountries);
+//            $vendors = array_filter($vendors,
+//                static function ($vendor) use ($allowedCountries) {
+//                    return in_array($vendor['country_id'], $allowedCountries, true);
+//                });
+//        }
+
+        return $vendors;
+    }
+
 }

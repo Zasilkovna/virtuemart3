@@ -49,7 +49,10 @@ class ShipmentMethodValidator
     public function validate(ShipmentMethod $shipmentMethod)
     {
         $report = new ShipmentValidationReport();
-
+//        echo "<pre>";
+//        print_r($shipmentMethod->getPpVendors());
+//        echo "</pre>";
+//        die(1);
         $this->validateGlobalWeightRules($report, $shipmentMethod);
 
         $this->validateCountryWeightRulesAndCountries($report, $shipmentMethod);

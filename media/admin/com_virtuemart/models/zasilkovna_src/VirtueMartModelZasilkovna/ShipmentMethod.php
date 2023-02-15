@@ -297,4 +297,14 @@ class ShipmentMethod
         $this->method->hd_carrier = null;
     }
 
+    public function isHdCarrier()
+    {
+     return $this->getHdCarrierId() !== null;
+    }
+
+    public function getPpVendors()
+    {
+        return $this->getParams()->pp_vendors ?: [];
+    }
+
 }

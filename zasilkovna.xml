@@ -41,6 +41,13 @@
                        required="true"
                        validate="carrier"/>
 
+                <field name="pp_vendors"
+                       type="vmzasilkovnappvendors"
+                       label="PLG_VMSHIPMENT_PACKETERY_CONFIG_PP_VENDORS_LABEL"
+                       description="PLG_VMSHIPMENT_PACKETERY_CONFIG_PP_VENDORS_DESCRIPTION"
+                       showon="shipping_type:pickuppoints"
+                       multiple="true"/>
+
                 <field name="maxWeight" type="number" step="0.001" label="PLG_VMSHIPMENT_PACKETERY_CONFIG_MAX_WEIGHT"
                        required="true"
                        description="PLG_VMSHIPMENT_PACKETERY_CONFIG_MAX_WEIGHT_LABEL" default="10"/>
