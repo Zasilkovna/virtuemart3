@@ -278,7 +278,7 @@ class ShipmentMethod
      */
     public function getShippingType()
     {
-        return (string) $this->getParams()->shipping_type;
+        return (string) $this->getParams()->delivery_settings->shipping_type;
     }
 
     /**
@@ -286,7 +286,7 @@ class ShipmentMethod
      */
     public function getHdCarrierId()
     {
-        return $this->getParams()->hd_carrier ? (int) $this->getParams()->hd_carrier : null;
+        return $this->getParams()->delivery_settings->hd_carrier ? (int) $this->getParams()->delivery_settings->hd_carrier : null;
     }
 
     /**
@@ -294,7 +294,7 @@ class ShipmentMethod
      */
     public function resetHdCarrier()
     {
-        $this->method->hd_carrier = null;
+        $this->method->delivery_settings->hd_carrier = null;
     }
 
 }
