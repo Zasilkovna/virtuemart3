@@ -28,7 +28,11 @@
     <vmconfig>
         <fields name="params">
             <fieldset name="global" addrulepath="components/com_zasilkovna/models/rules">
-                <field name="delivery_settings" type="subform" multiple="false" min="1" label="PLG_VMSHIPMENT_PACKETERY_CONFIG_DELIVERY_SETTINGS">
+                <field name="delivery_settings"
+                       type="subform"
+                       label="PLG_VMSHIPMENT_PACKETERY_CONFIG_DELIVERY_SETTINGS"
+                       description="PLG_VMSHIPMENT_PACKETERY_CONFIG_DELIVERY_SETTINGS_DESCRIPTION"
+                >
                     <form>
                         <field name="shipping_type" type="radio" default="pickuppoints"
                                required="true"
@@ -40,7 +44,6 @@
                         <field name="hd_carrier"
                                type="vmzasilkovnahdcarriers"
                                label="PLG_VMSHIPMENT_PACKETERY_CONFIG_CARRIER"
-                               required="true"
                                validate="carrier"
                                showon="shipping_type:hdcarriers"/>
                     </form>
