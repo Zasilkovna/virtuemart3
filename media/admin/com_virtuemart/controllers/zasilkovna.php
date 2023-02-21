@@ -59,14 +59,20 @@ class VirtuemartControllerZasilkovna extends VmController
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
         $currentData = $model->loadConfig();
-        $model->updateConfig(array_replace_recursive($currentData, $data));
+
+        if (strlen($data['zasilkovna_api_pass']) !== 32) {
+            $msg = JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID');
+            $msgType = 'error';
+        } else {
+            $model->updateConfig(array_replace_recursive($currentData, $data));
+        }
 
         $redir = 'index.php?option=com_virtuemart';
         if(JRequest::getCmd('task') == 'apply') {
             $redir = $this->redirectPath;
         }
         $this->updateZasilkovnaOrders();
-        $this->setRedirect($redir);
+        $this->setRedirect($redir, $msg, $msgType);
     }
 
 

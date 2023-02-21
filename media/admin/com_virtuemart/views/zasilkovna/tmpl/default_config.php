@@ -17,11 +17,26 @@
     </legend>
     <table class="admintable">
         <tr>
-            <?php echo VmHTML::row('input', 'PLG_VMSHIPMENT_PACKETERY_API_PASS', 'zasilkovna_api_pass', $model->getConfig('zasilkovna_api_pass')); ?>
+            <td>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS'); ?>
+            </td>
+            <td>
+                <?php echo VmHTML::input('zasilkovna_api_pass', $model->getConfig('zasilkovna_api_pass')); ?><br>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_FIND_API_PASS_IN_CS'); ?> <br>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_NO_ACCOUNT_REGISTER_HERE'); ?>
+            </td>
         </tr>
+        <tr><td colspan="2">&nbsp;</td></tr>
         <tr>
-            <?php echo VmHTML::row('input', 'PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL', 'zasilkovna_eshop_label', $model->getConfig('zasilkovna_eshop_label')); ?>
+            <td>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL')?>
+            </td>
+            <td>
+                <?php echo VmHTML::input('zasilkovna_eshop_label', $model->getConfig('zasilkovna_eshop_label')); ?><br>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL_DESC'); ?>
+            </td>
         </tr>
+        <tr><td colspan="2">&nbsp;</td></tr>
         <tr>
             <?php echo VmHTML::row('value', 'PLG_VMSHIPMENT_PACKETERY_VERSION', $this->moduleVersion); ?>
         </tr>
