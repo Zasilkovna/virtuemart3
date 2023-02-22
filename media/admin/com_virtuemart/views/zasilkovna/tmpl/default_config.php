@@ -1,6 +1,8 @@
 <?php defined('_JEXEC') or die('Restricted access');
     /** @var VirtueMartModelZasilkovna $model */
     $model = VmModel::getModel('zasilkovna');
+    $document = JFactory::getDocument();
+    $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/admin.css?v=' . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css'));
 
     echo '<div id="zasilkovna-messages"></div>';
 
@@ -20,23 +22,21 @@
             <td>
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS'); ?>
             </td>
-            <td>
+            <td class="pb-10">
                 <?php echo VmHTML::input('zasilkovna_api_pass', $model->getConfig('zasilkovna_api_pass')); ?><br>
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_FIND_API_PASS_IN_CS'); ?> <br>
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_NO_ACCOUNT_REGISTER_HERE'); ?>
             </td>
         </tr>
-        <tr><td colspan="2">&nbsp;</td></tr>
         <tr>
             <td>
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL')?>
             </td>
-            <td>
+            <td class="pb-10">
                 <?php echo VmHTML::input('zasilkovna_eshop_label', $model->getConfig('zasilkovna_eshop_label')); ?><br>
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL_DESC'); ?>
             </td>
         </tr>
-        <tr><td colspan="2">&nbsp;</td></tr>
         <tr>
             <?php echo VmHTML::row('value', 'PLG_VMSHIPMENT_PACKETERY_VERSION', $this->moduleVersion); ?>
         </tr>
