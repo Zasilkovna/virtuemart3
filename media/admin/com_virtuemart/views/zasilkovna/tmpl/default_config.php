@@ -24,8 +24,8 @@
             </td>
             <td class="pb-10">
                 <?php echo VmHTML::input('zasilkovna_api_pass', $model->getConfig('zasilkovna_api_pass')); ?><br>
-                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_FIND_API_PASS_IN_CS'); ?> <br>
-                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_NO_ACCOUNT_REGISTER_HERE'); ?>
+                <?php echo JText::sprintf('PLG_VMSHIPMENT_PACKETERY_FIND_API_PASS_IN_CS', '<a href="https://client.packeta.com/support" target="_blank">','</a>'); ?><br>
+                <?php echo JText::sprintf('PLG_VMSHIPMENT_PACKETERY_NO_ACCOUNT_REGISTER_HERE','<a href="https://client.packeta.com/registration" target=\"_blank\">', '</a>'); ?>
             </td>
         </tr>
         <tr>
@@ -34,7 +34,12 @@
             </td>
             <td class="pb-10">
                 <?php echo VmHTML::input('zasilkovna_eshop_label', $model->getConfig('zasilkovna_eshop_label')); ?><br>
-                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL_DESC'); ?>
+                <?php echo JText::sprintf(
+                    'PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL_DESC',
+                    '<a href="https://client.packeta.com" target="_blank">',
+                    '</a>',
+                    '<a href="https://client.packeta.com/senders" target="_blank">'
+                ); ?>
             </td>
         </tr>
         <tr>
