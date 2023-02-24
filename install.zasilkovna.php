@@ -213,9 +213,9 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
             $oldColumns = $db->loadColumn();
         }
 
-        if ($this->pluginTableExists('%_virtuemart_zasilkovna_branches') && !$this->pluginTableExists('%_virtuemart_zasilkovna_carriers')) {
+        if ($this->pluginTableExists('%_virtuemart_zasilkovna_branches')) {
             $db = JFactory::getDBO();
-            $db->setQuery('RENAME TABLE `#__virtuemart_zasilkovna_branches` TO `#__virtuemart_zasilkovna_carriers`');
+            $db->setQuery('DROP TABLE `#__virtuemart_zasilkovna_branches`');
             $db->execute();
         }
 
