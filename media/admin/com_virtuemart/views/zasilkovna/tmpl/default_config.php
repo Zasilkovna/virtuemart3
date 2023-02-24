@@ -1,6 +1,8 @@
 <?php defined('_JEXEC') or die('Restricted access');
     /** @var VirtueMartModelZasilkovna $model */
     $model = VmModel::getModel('zasilkovna');
+    $document = JFactory::getDocument();
+    $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/admin.css?v=' . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css'));
 
     echo '<div id="zasilkovna-messages"></div>';
 
@@ -17,10 +19,28 @@
     </legend>
     <table class="admintable">
         <tr>
-            <?php echo VmHTML::row('input', 'PLG_VMSHIPMENT_PACKETERY_API_PASS', 'zasilkovna_api_pass', $model->getConfig('zasilkovna_api_pass')); ?>
+            <td>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS'); ?>
+            </td>
+            <td class="pb-10">
+                <?php echo VmHTML::input('zasilkovna_api_pass', $model->getConfig('zasilkovna_api_pass')); ?><br>
+                <?php echo JText::sprintf('PLG_VMSHIPMENT_PACKETERY_FIND_API_PASS_IN_CS', '<a href="https://client.packeta.com/support" target="_blank">','</a>'); ?><br>
+                <?php echo JText::sprintf('PLG_VMSHIPMENT_PACKETERY_NO_ACCOUNT_REGISTER_HERE','<a href="https://client.packeta.com/registration" target=\"_blank\">', '</a>'); ?>
+            </td>
         </tr>
         <tr>
-            <?php echo VmHTML::row('input', 'PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL', 'zasilkovna_eshop_label', $model->getConfig('zasilkovna_eshop_label')); ?>
+            <td>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL')?>
+            </td>
+            <td class="pb-10">
+                <?php echo VmHTML::input('zasilkovna_eshop_label', $model->getConfig('zasilkovna_eshop_label')); ?><br>
+                <?php echo JText::sprintf(
+                    'PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL_DESC',
+                    '<a href="https://client.packeta.com" target="_blank">',
+                    '</a>',
+                    '<a href="https://client.packeta.com/senders" target="_blank">'
+                ); ?>
+            </td>
         </tr>
         <tr>
             <?php echo VmHTML::row('value', 'PLG_VMSHIPMENT_PACKETERY_VERSION', $this->moduleVersion); ?>

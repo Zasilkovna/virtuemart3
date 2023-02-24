@@ -32,3 +32,6 @@ legend {
 .invalid {
     border-color: red !important;
 }
+.pb-10 {
+    padding-bottom: 10px;
+}

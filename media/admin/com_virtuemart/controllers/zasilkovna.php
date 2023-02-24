@@ -17,6 +17,8 @@
  */
 
 // Check to ensure this file is included in Joomla!
+use VirtueMartModelZasilkovna\FlashMessage;
+
 defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmController')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmcontroller.php');
@@ -34,41 +36,50 @@ class VirtuemartControllerZasilkovna extends VmController
     /**
      * Updates carriers.
      */
-    public function updateCarriers() {
+    public function updateCarriers()
+    {
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
+        $message = null;
+
         $model->updateCarriers();
         $model->raiseErrors();
-
+        
         if (empty($model->errors)) {
-            \Joomla\CMS\Factory::getApplication()->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATED'));
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATED'), FlashMessage::TYPE_MESSAGE);
         }
 
-        $this->setRedirect($this->redirectPath);
+        $this->setRedirectWithMessage($this->redirectPath, $message);
     }
 
     /**
      * Handle the save task.
      * @param int $data
+     * @throws Exception
      */
     public function save($data = 0)
     {
         vRequest::vmCheckToken();
         $data = vRequest::getPost();
+        $message = null;
 
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
         $currentData = $model->loadConfig();
-        $model->updateConfig(array_replace_recursive($currentData, $data));
+
+        if (strlen($data['zasilkovna_api_pass']) !== 32) {
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID'), FlashMessage::TYPE_ERROR);
+        } else {
+            $model->updateConfig(array_replace_recursive($currentData, $data));
+        }
 
         $redir = 'index.php?option=com_virtuemart';
-        if(JRequest::getCmd('task') == 'apply') {
+        if (JRequest::getCmd('task') === 'apply') {
             $redir = $this->redirectPath;
         }
         $this->updateZasilkovnaOrders();
-        $this->setRedirect($redir);
+        $this->setRedirectWithMessage($redir, $message);
     }
-
 
     /**
      * Save change packets info to zasilkovna plugin db.
@@ -102,7 +113,8 @@ class VirtuemartControllerZasilkovna extends VmController
         $this->setRedirect($this->redirectPath);
     }
 
-    public function printLabels() {
+    public function printLabels()
+    {
         $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
         $result = $zasOrdersModel->printLabels($_POST['printLabels'], $_POST['print_type'], $_POST['label_first_page_skip']);
         foreach($result as $error) {
@@ -121,38 +133,38 @@ class VirtuemartControllerZasilkovna extends VmController
         $zasOrdersModel->cancelOrderSubmitToZasilkovna($_GET['cancel_order_id']);
 
         // Create message content.
-        $msg = NULL;
+        $message = null;
 
-        if($this->setRedirect($this->redirectPath))
-        {
-            $msg = JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_SUBMIT_CANCELED');//"Všechny objednávky byly přidány do systému Zásilkovny.";
+        if ($this->setRedirect($this->redirectPath)) {
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_SUBMIT_CANCELED'), FlashMessage::TYPE_MESSAGE);
         }
 
-        $this->setRedirect($this->redirectPath, $msg, 'message');
+        $this->setRedirectWithMessage($this->redirectPath, $message);
     }
 
-    public function submitToZasilkovna() {
+    public function submitToZasilkovna()
+    {
         $this->updateZasilkovnaOrders();
         $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
         $result = $zasOrdersModel->submitToZasilkovna($_POST['exportOrders']);
         $exportedOrders = $result['exported'];
         $failedOrders = $result['failed'];
-        if(count($_POST['exportOrders']) == 0) {
-            $msg = JText::_('PLG_VMSHIPMENT_PACKETERY_NO_ORDERS_SELECTED');//"Žádné objednávky nebyly vybrány k odeslání.";
-            $type = 'error';
-        }
-        else if(count($_POST['exportOrders']) == count($exportedOrders)) {
-            $msg = JText::_('PLG_VMSHIPMENT_PACKETERY_ALL_ORDERS_SUBMITTED');//"Všechny objednávky byly přidány do systému Zásilkovny.";
-            $type = 'message';
-        }
-        else {
-            JError::raiseWarning(100, JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMITTED_ORDERS') . ": " . count($exportedOrders) . ". " . JText::_('PLG_VMSHIPMENT_PACKETERY_NOT_SUBMITTED_ORDERS') . ": (" . count($failedOrders) . "):");
-            foreach($failedOrders as $failedOrder) {
+        $message = null;
+
+        if (count($_POST['exportOrders']) === 0) {
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_NO_ORDERS_SELECTED'), FlashMessage::TYPE_ERROR);
+        } elseif (count($_POST['exportOrders']) === count($exportedOrders)) {
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ALL_ORDERS_SUBMITTED'), FlashMessage::TYPE_MESSAGE);
+        } else {
+            JError::raiseWarning(100,
+                JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMITTED_ORDERS') . ": " . count($exportedOrders) . ". " . JText::_('PLG_VMSHIPMENT_PACKETERY_NOT_SUBMITTED_ORDERS') . ": (" . count($failedOrders) . "):");
+            foreach ($failedOrders as $failedOrder) {
                 JError::raiseWarning(100, $failedOrder['order_number'] . ": " . $failedOrder['message']);
             }
-            $type = 'error';
+            $this->messageType = FlashMessage::TYPE_ERROR;
         }
-        $this->setRedirect($this->redirectPath, $msg, $type);
+
+        $this->setRedirectWithMessage($this->redirectPath, $message);
     }
 
     /**
@@ -162,9 +174,20 @@ class VirtuemartControllerZasilkovna extends VmController
      */
     public function remove()
     {
-        $msg = JText::_('COM_VIRTUEMART_ERROR_CONFIGS_COULD_NOT_BE_DELETED');
-
-        $this->setRedirect($this->redirectPath, $msg);
+        $message = new FlashMessage(JText::_('COM_VIRTUEMART_ERROR_CONFIGS_COULD_NOT_BE_DELETED'), FlashMessage::TYPE_MESSAGE);
+        $this->setRedirectWithMessage($this->redirectPath, $message);
     }
 
+    /**
+     * @param $redirectPath
+     * @param FlashMessage|null $message
+     * @return JControllerLegacy
+     */
+    public function setRedirectWithMessage($redirectPath, FlashMessage $message = null)
+    {
+        return $this->setRedirect(
+            $redirectPath,
+            $message ? $message->getMessage() : null,
+            $message ? $message->getType() : null);
+    }
 }
