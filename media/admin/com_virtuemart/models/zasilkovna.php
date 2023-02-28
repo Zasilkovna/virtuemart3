@@ -28,6 +28,7 @@ class VirtueMartModelZasilkovna extends VmModel
     protected $config;
 
     public $_zas_url = "http://www.zasilkovna.cz/";
+    public $_zas_api_url = "https://pickup-point.api.packeta.com/";
 
     public $_media_url = "";
     public $_media_path = "";
@@ -334,19 +335,19 @@ class VirtueMartModelZasilkovna extends VmModel
      * @return void
      */
     public function updateCarriers() {
-        $localFilePath = $this->_media_path . 'carriers.xml';
+        $localFilePath = $this->_media_path . 'carriers.json';
         if (!$this->isWritable($localFilePath)) {
-            $this->errors[] = $localFilePath . " " . JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_XML_NOT_WRITABLE');
+            $this->errors[] = $localFilePath . " " . JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_JSON_NOT_WRITABLE');
             return;
         }
 
-        if (!$this->updateFile($localFilePath)) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_XML_ERROR');
+        if (!$this->updateLocalFileWithCarrierFeed($localFilePath)) {
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_JSON_ERROR');
             return;
         }
 
-        if (!$this->saveCarriersXmlToDb($localFilePath)) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_XML_ERROR');
+        if (!$this->saveCarriersJsonToDb($localFilePath)) {
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_JSON_ERROR');
         }
     }
 
@@ -366,27 +367,27 @@ class VirtueMartModelZasilkovna extends VmModel
      * @param string $path
      * @return bool
      */
-    private function saveCarriersXmlToDb($path) {
-        $xml = @simplexml_load_file($path);
-        if ($xml === false) {
+    private function saveCarriersJsonToDb($path)
+    {
+        $carriers = json_decode(file_get_contents($path), false);
+        if ($carriers === false) {
             return false;
         }
-
         $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
-        foreach ($xml->carriers->carrier as $carrier) {
+        foreach ($carriers as $carrier) {
             unset($carrierIdsToDelete[(string)$carrier->id]);
 
             $data = [
                 'id' => $carrier->id,
                 'name' => $carrier->name,
-                'is_pickup_points' => $this->transformStringBool($carrier->pickupPoints),
-                'has_carrier_direct_label' => $this->transformStringBool($carrier->apiAllowed),
-                'separate_house_number' => $this->transformStringBool($carrier->separateHouseNumber),
-                'customs_declarations' => $this->transformStringBool($carrier->customsDeclarations),
-                'requires_email' => $this->transformStringBool($carrier->requiresEmail),
-                'requires_phone' => $this->transformStringBool($carrier->requiresPhone),
-                'requires_size' => $this->transformStringBool($carrier->requiresSize),
-                'disallows_cod' => $this->transformStringBool($carrier->disallowsCod),
+                'is_pickup_points' => $carrier->pickupPoints,
+                'has_carrier_direct_label' => $carrier->apiAllowed,
+                'separate_house_number' => $carrier->separateHouseNumber,
+                'customs_declarations' => $carrier->customsDeclarations,
+                'requires_email' => $carrier->requiresEmail,
+                'requires_phone' => $carrier->requiresPhone,
+                'requires_size' => $carrier->requiresSize,
+                'disallows_cod' => $carrier->disallowsCod,
                 'country' => $carrier->country,
                 'currency' => $carrier->currency,
                 'max_weight' => $carrier->maxWeight,
@@ -430,8 +431,13 @@ class VirtueMartModelZasilkovna extends VmModel
      * @param $path
      * @return bool
      */
-    private function updateFile($path) {
-        $remote = sprintf("%sapi/v4/%s/branch.xml?address-delivery", $this->_zas_url, $this->api_key);
+    private function updateLocalFileWithCarrierFeed($path) {
+        $remote = sprintf(
+            "%sv5/%s/carrier/json?lang=%s",
+            $this->_zas_api_url, 
+            $this->api_key,
+            $this->getLang2Code()
+        );
         $data = $this->fetch($remote);
         if ($data === false) {
             return false;
@@ -509,5 +515,15 @@ class VirtueMartModelZasilkovna extends VmModel
         }
 
         return $hdCarriers;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLang2Code()
+    {
+        $language = JFactory::getLanguage();
+
+        return $language ? substr($language->getTag(), 0, 2) : 'en';
     }
 }
