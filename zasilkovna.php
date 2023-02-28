@@ -897,7 +897,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         JFactory::getLanguage()->load('plg_vmshipment_zasilkovna');
         $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_SHIPPING_NAME', $shipinfo->shipment_name);
-        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_BRANCH', $shipinfo->branch_name_street);
+        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_BRANCH', $shipinfo->branch_id.': '.$shipinfo->branch_name_street);
         $html .= $this->getHtmlRowBE('COM_VIRTUEMART_CURRENCY', $shipinfo->branch_currency);
 
         $html .= '</table>' . "\n";
