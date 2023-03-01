@@ -5,6 +5,8 @@
  * @link http://www.zasilkovna.cz
  */
 
+use VirtueMartModelZasilkovna\Carrier\Downloader;
+
 defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmodel.php');
@@ -21,7 +23,6 @@ class VirtueMartModelZasilkovna extends VmModel
 
     const MAX_WEIGHT_DEFAULT = 5;
     const PRICE_DEFAULT = 100;
-    const API_URL = 'https://pickup-point.api.packeta.com/v5/%s/%s.json?lang=%s';
 
     public $warnings = array();
     public $api_key;
@@ -282,31 +283,6 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param $url
-     * @return false|string
-     */
-    private function fetch($url)
-    {
-        if (ini_get('allow_url_fopen')) {
-            if (function_exists('stream_context_create')) {
-                $ctx = stream_context_create(
-                    array(
-                        'http' => array(
-                            'timeout' => 20
-                        )
-                    )
-                );
-
-                return file_get_contents($url, 0, $ctx);
-            } else {
-                return file_get_contents($url);
-            }
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * @return int
      */
     public function getTotalUsableCarriersCount() {
@@ -334,16 +310,17 @@ class VirtueMartModelZasilkovna extends VmModel
     /**
      * @return void
      */
-    public function updateCarriers() {
-        $remote = sprintf(
-            self::API_URL,
-            $this->api_key,
-            'carrier',
-            $this->getLang2Code()
-        );
-        $json = $this->fetch($remote);
+    public function updateCarriers()
+    {
+        try {
+            $carriers = Downloader::fetchCarriers($this->api_key, $this->getLang2Code());
+        } catch (\Exception $e) {
+            $this->errors[] = $e->getMessage();
 
-        if (($json === false) || !$this->saveCarriersJsonToDb($json)) {
+            return;
+        }
+
+        if (!$this->saveCarriersToDb($carriers)) {
             $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_JSON_ERROR');
             return;
         }
@@ -366,34 +343,31 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param string $json
+     * @param array $carriers
      * @return bool
      */
-    private function saveCarriersJsonToDb($json)
+    private function saveCarriersToDb(array $carriers)
     {
-        $carriers = json_decode($json, false);
-        if ($carriers === false) {
-            return false;
-        }
+
         $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
         foreach ($carriers as $carrier) {
             unset($carrierIdsToDelete[(string)$carrier->id]);
 
             $data = [
-                'id' => $carrier->id,
+                'id' => (int) $carrier->id,
                 'name' => $carrier->name,
-                'is_pickup_points' => $carrier->pickupPoints,
-                'has_carrier_direct_label' => $carrier->apiAllowed,
-                'separate_house_number' => $carrier->separateHouseNumber,
-                'customs_declarations' => $carrier->customsDeclarations,
-                'requires_email' => $carrier->requiresEmail,
-                'requires_phone' => $carrier->requiresPhone,
-                'requires_size' => $carrier->requiresSize,
-                'disallows_cod' => $carrier->disallowsCod,
+                'is_pickup_points' => filter_var($carrier->pickupPoints, FILTER_VALIDATE_BOOLEAN),
+                'has_carrier_direct_label' => filter_var($carrier->apiAllowed, FILTER_VALIDATE_BOOLEAN),
+                'separate_house_number' => filter_var($carrier->separateHouseNumber, FILTER_VALIDATE_BOOLEAN),
+                'customs_declarations' => filter_var($carrier->customsDeclarations, FILTER_VALIDATE_BOOLEAN),
+                'requires_email' => filter_var($carrier->requiresEmail, FILTER_VALIDATE_BOOLEAN),
+                'requires_phone' => filter_var($carrier->requiresPhone, FILTER_VALIDATE_BOOLEAN),
+                'requires_size' => filter_var($carrier->requiresSize, FILTER_VALIDATE_BOOLEAN),
+                'disallows_cod' => filter_var($carrier->disallowsCod, FILTER_VALIDATE_BOOLEAN),
                 'country' => $carrier->country,
                 'currency' => $carrier->currency,
-                'max_weight' => $carrier->maxWeight,
-                'deleted' => 0,
+                'max_weight' => (float) $carrier->maxWeight,
+                'deleted' => false,
             ];
 
             $this->carrierRepository->insertUpdateCarrier($data);
@@ -413,31 +387,6 @@ class VirtueMartModelZasilkovna extends VmModel
         if(filemtime($path) < time() - (60 * 60 * 24 * 5)) return false;
         if(filesize($path) <= 1024) return false;
 
-        return true;
-    }
-
-    /**
-     * @param $path
-     * @return bool
-     */
-    private function updateLocalFileWithCarrierFeed($path) {
-        $remote = sprintf(
-            self::API_URL,
-            $this->api_key,
-            'carrier',
-            $this->getLang2Code()
-        );
-        $data = $this->fetch($remote);
-        if ($data === false) {
-            return false;
-        }
-
-        $result = file_put_contents($path, $data);
-        if ($result === false) {
-            return false;
-        }
-
-        clearstatcache();
         return true;
     }
 
