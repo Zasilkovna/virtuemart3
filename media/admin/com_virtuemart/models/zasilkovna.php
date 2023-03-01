@@ -21,6 +21,7 @@ class VirtueMartModelZasilkovna extends VmModel
 
     const MAX_WEIGHT_DEFAULT = 5;
     const PRICE_DEFAULT = 100;
+    const API_URL = 'https://pickup-point.api.packeta.com/v5/%s/%s.json?lang=%s';
 
     public $warnings = array();
     public $api_key;
@@ -28,7 +29,6 @@ class VirtueMartModelZasilkovna extends VmModel
     protected $config;
 
     public $_zas_url = "http://www.zasilkovna.cz/";
-    public $_zas_api_url = "https://pickup-point.api.packeta.com/";
 
     public $_media_url = "";
     public $_media_path = "";
@@ -335,20 +335,22 @@ class VirtueMartModelZasilkovna extends VmModel
      * @return void
      */
     public function updateCarriers() {
-        $localFilePath = $this->_media_path . 'carriers.json';
-        if (!$this->isWritable($localFilePath)) {
-            $this->errors[] = $localFilePath . " " . JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_JSON_NOT_WRITABLE');
-            return;
-        }
+        $remote = sprintf(
+            self::API_URL,
+            $this->api_key,
+            'carrier',
+            $this->getLang2Code()
+        );
+        $json = $this->fetch($remote);
 
-        if (!$this->updateLocalFileWithCarrierFeed($localFilePath)) {
+        if (($json === false) || !$this->saveCarriersJsonToDb($json)) {
             $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_JSON_ERROR');
             return;
         }
 
-        if (!$this->saveCarriersJsonToDb($localFilePath)) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_JSON_ERROR');
-        }
+        $config = $this->loadConfig();
+        $config['carriers_updated_at'] = (new \DateTime())->format(\DateTime::ATOM);
+        $this->updateConfig($config);
     }
 
     /**
@@ -364,12 +366,12 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param string $path
+     * @param string $json
      * @return bool
      */
-    private function saveCarriersJsonToDb($path)
+    private function saveCarriersJsonToDb($json)
     {
-        $carriers = json_decode(file_get_contents($path), false);
+        $carriers = json_decode($json, false);
         if ($carriers === false) {
             return false;
         }
@@ -396,12 +398,7 @@ class VirtueMartModelZasilkovna extends VmModel
 
             $this->carrierRepository->insertUpdateCarrier($data);
         }
-
         $this->carrierRepository->setCarriersDeleted($carrierIdsToDelete);
-
-        $config = $this->loadConfig();
-        $config['carriers_updated_at'] = (new \DateTime())->format(\DateTime::ATOM);
-        $this->updateConfig($config);
 
         return true;
     }
@@ -420,22 +417,14 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param \SimpleXMLElement $value
-     * @return bool
-     */
-    private function transformStringBool($value) {
-        return ((string)$value === 'false' ? false : true);
-    }
-
-    /**
      * @param $path
      * @return bool
      */
     private function updateLocalFileWithCarrierFeed($path) {
         $remote = sprintf(
-            "%sv5/%s/carrier/json?lang=%s",
-            $this->_zas_api_url, 
+            self::API_URL,
             $this->api_key,
+            'carrier',
             $this->getLang2Code()
         );
         $data = $this->fetch($remote);
