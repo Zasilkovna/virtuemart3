@@ -5,8 +5,6 @@
  * @link http://www.zasilkovna.cz
  */
 
-use VirtueMartModelZasilkovna\Carrier\Downloader;
-
 defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmodel.php');
@@ -43,6 +41,9 @@ class VirtueMartModelZasilkovna extends VmModel
     /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
     private $carrierRepository;
 
+    /** @var \VirtueMartModelZasilkovna\Carrier\Downloader */
+    private $downloader;
+
     /**
      * VirtueMartModelZasilkovna constructor.
      * @throws Exception
@@ -61,6 +62,7 @@ class VirtueMartModelZasilkovna extends VmModel
         $this->_media_path = JPATH_SITE . DS . "media" . DS . "com_zasilkovna" . DS . "media" . DS;
 
         $this->carrierRepository = new \VirtueMartModelZasilkovna\Carrier\Repository();
+        $this->downloader = new \VirtueMartModelZasilkovna\Carrier\Downloader($this->api_key);
 
         parent::__construct();
     }
@@ -313,7 +315,7 @@ class VirtueMartModelZasilkovna extends VmModel
     public function updateCarriers()
     {
         try {
-            $carriers = Downloader::fetchCarriers($this->api_key, $this->getLang2Code());
+            $carriers = $this->downloader->fetchCarriers($this->getLang2Code());
         } catch (\Exception $e) {
             $this->errors[] = $e->getMessage();
 

@@ -7,12 +7,22 @@ use JText;
 class Downloader
 {
     const API_URL = 'https://pickup-point.api.packeta.com/v5/%s/%s/json?lang=%s';
+    private $apiKey;
+
+    /**
+     * Downloader constructor.
+     * @param string $apiKey
+     */
+    public function __construct($apiKey)
+    {
+        $this->apiKey = $apiKey;
+    }
 
     /**
      * @param string $url
      * @return false|string
      */
-    public static function fetch($url)
+    public function fetch($url)
     {
         if (ini_get('allow_url_fopen')) {
             if (function_exists('stream_context_create')) {
@@ -26,24 +36,23 @@ class Downloader
                 );
 
                 return file_get_contents($url, 0, $ctx);
-            } else {
-                return file_get_contents($url);
             }
-        } else {
-            return false;
+
+            return file_get_contents($url);
         }
+
+        return false;
     }
 
     /**
-     * @param string $apiKey
      * @param string $lang
      * @return array
      * @throws \RuntimeException
      */
-    public static function fetchCarriers($apiKey, $lang)
+    public function fetchCarriers($lang)
     {
-        $url = sprintf(self::API_URL, $apiKey, 'carrier', $lang);
-        $response = self::fetch($url);
+        $url = sprintf(self::API_URL, $this->apiKey, 'carrier', $lang);
+        $response = $this->fetch($url);
 
         if ($response === false) {
             throw new \RuntimeException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_JSON_ERROR'));
