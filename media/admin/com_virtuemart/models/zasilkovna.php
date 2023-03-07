@@ -41,8 +41,8 @@ class VirtueMartModelZasilkovna extends VmModel
     /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
     private $carrierRepository;
 
-    /** @var \VirtueMartModelZasilkovna\Carrier\Downloader */
-    private $downloader;
+    /** @var \VirtueMartModelZasilkovna\Carrier\Updater */
+    private $carrierUpdater;
 
     /**
      * VirtueMartModelZasilkovna constructor.
@@ -62,7 +62,7 @@ class VirtueMartModelZasilkovna extends VmModel
         $this->_media_path = JPATH_SITE . DS . "media" . DS . "com_zasilkovna" . DS . "media" . DS;
 
         $this->carrierRepository = new \VirtueMartModelZasilkovna\Carrier\Repository();
-        $this->downloader = new \VirtueMartModelZasilkovna\Carrier\Downloader($this->api_key);
+        $this->carrierUpdater = new \VirtueMartModelZasilkovna\Carrier\Updater($this->api_key, $this->carrierRepository);
 
         parent::__construct();
     }
@@ -315,16 +315,11 @@ class VirtueMartModelZasilkovna extends VmModel
     public function updateCarriers()
     {
         try {
-            $carriers = $this->downloader->fetchCarriers($this->getLang2Code());
+            $this->carrierUpdater->run($this->getLang2Code());
         } catch (\Exception $e) {
             $this->errors[] = $e->getMessage();
 
-            return;
-        }
-
-        if (!$this->saveCarriersToDb($carriers)) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_JSON_ERROR');
-            return;
+            return; // do not update config
         }
 
         $config = $this->loadConfig();
@@ -342,41 +337,6 @@ class VirtueMartModelZasilkovna extends VmModel
                 JError::raiseWarning(600, $error);
             }
         }
-    }
-
-    /**
-     * @param array $carriers
-     * @return bool
-     */
-    private function saveCarriersToDb(array $carriers)
-    {
-
-        $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
-        foreach ($carriers as $carrier) {
-            unset($carrierIdsToDelete[(string)$carrier->id]);
-
-            $data = [
-                'id' => (int) $carrier->id,
-                'name' => $carrier->name,
-                'is_pickup_points' => filter_var($carrier->pickupPoints, FILTER_VALIDATE_BOOLEAN),
-                'has_carrier_direct_label' => filter_var($carrier->apiAllowed, FILTER_VALIDATE_BOOLEAN),
-                'separate_house_number' => filter_var($carrier->separateHouseNumber, FILTER_VALIDATE_BOOLEAN),
-                'customs_declarations' => filter_var($carrier->customsDeclarations, FILTER_VALIDATE_BOOLEAN),
-                'requires_email' => filter_var($carrier->requiresEmail, FILTER_VALIDATE_BOOLEAN),
-                'requires_phone' => filter_var($carrier->requiresPhone, FILTER_VALIDATE_BOOLEAN),
-                'requires_size' => filter_var($carrier->requiresSize, FILTER_VALIDATE_BOOLEAN),
-                'disallows_cod' => filter_var($carrier->disallowsCod, FILTER_VALIDATE_BOOLEAN),
-                'country' => $carrier->country,
-                'currency' => $carrier->currency,
-                'max_weight' => (float) $carrier->maxWeight,
-                'deleted' => false,
-            ];
-
-            $this->carrierRepository->insertUpdateCarrier($data);
-        }
-        $this->carrierRepository->setCarriersDeleted($carrierIdsToDelete);
-
-        return true;
     }
 
     /**

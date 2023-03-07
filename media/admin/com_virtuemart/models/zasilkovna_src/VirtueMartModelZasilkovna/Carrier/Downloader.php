@@ -4,9 +4,13 @@ namespace VirtueMartModelZasilkovna\Carrier;
 
 use JText;
 
+/**
+ *
+ */
 class Downloader
 {
     const API_URL = 'https://pickup-point.api.packeta.com/v5/%s/%s/json?lang=%s';
+
     private $apiKey;
 
     /**
@@ -21,6 +25,7 @@ class Downloader
     /**
      * @param string $url
      * @return false|string
+     * @throws DownloadException
      */
     public function fetch($url)
     {
@@ -41,28 +46,65 @@ class Downloader
             return file_get_contents($url);
         }
 
-        return false;
+        throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_URLFOPEN_ERROR'));
     }
 
     /**
+     * Downloads carriers and returns in array.
      * @param string $lang
-     * @return array
-     * @throws \RuntimeException
+     * @return ApiCarrier[]
+     * @throws DownloadException
      */
-    public function fetchCarriers($lang)
+    public function fetchAsArray($lang)
     {
-        $url = sprintf(self::API_URL, $this->apiKey, 'carrier', $lang);
+        $json = $this->downloadJson($lang);
+
+        $carriersData = $this->getFromJson($json);
+        $apiCarriers = [];
+
+        foreach ($carriersData as $carrier) {
+            $apiCarrier = ApiCarrier::fromJsonObject($carrier);
+            if ($apiCarrier !== null) {
+                $apiCarriers[] = $apiCarrier;
+            }
+        }
+
+        return $apiCarriers;
+    }
+
+    /**
+     * @param string $language
+     * @throws DownloadException
+     */
+    private function downloadJson($language)
+    {
+        $url = sprintf(self::API_URL, $this->apiKey, 'carrier', $language);
         $response = $this->fetch($url);
 
         if ($response === false) {
-            throw new \RuntimeException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_JSON_ERROR'));
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
         }
 
-        $carriers = json_decode($response, false);
-        if (!is_array($carriers) && $carriers->error) {
-            throw new \RuntimeException($carriers->error);
+        return $response;
+    }
+
+    /**
+     * @param string $json
+     * @return array
+     * @throws DownloadException
+     */
+    private function getFromJson($json)
+    {
+        $carriersData = json_decode($json, false);
+
+        if ($carriersData === null) {
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
         }
 
-        return $carriers;
+        if (!is_array($carriersData) && $carriersData->error) {
+            throw new DownloadException($carriersData->error);
+        }
+
+        return $carriersData;
     }
 }
