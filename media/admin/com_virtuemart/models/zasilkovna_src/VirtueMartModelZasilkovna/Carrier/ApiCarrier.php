@@ -307,25 +307,6 @@ class ApiCarrier
         return $carrier;
     }
 
-    public static function fromArray($array)
-    {
-        $carrier = new self();
-        $carrier->setId((int)$array['id']);
-        $carrier->setName($array['name']);
-        $carrier->setPickupPoints(filter_var($array['pickupPoints'], FILTER_VALIDATE_BOOLEAN));
-        $carrier->setApiAllowed(filter_var($array['apiAllowed'], FILTER_VALIDATE_BOOLEAN));
-        $carrier->setSeparateHouseNumber(filter_var($array['separateHouseNumber'], FILTER_VALIDATE_BOOLEAN));
-        $carrier->setCustomsDeclarations(filter_var($array['customsDeclarations'], FILTER_VALIDATE_BOOLEAN));
-        $carrier->setRequiresEmail(filter_var($array['requiresEmail'], FILTER_VALIDATE_BOOLEAN));
-        $carrier->setRequiresPhone(filter_var($array['requiresPhone'], FILTER_VALIDATE_BOOLEAN));
-        $carrier->setRequiresSize(filter_var($array['requiresSize'], FILTER_VALIDATE_BOOLEAN));
-        $carrier->setDisallowsCod(filter_var($array['disallowsCod'], FILTER_VALIDATE_BOOLEAN));
-        $carrier->setCountry($array['country']);
-        $carrier->setCurrency($array['currency']);
-        $carrier->setMaxWeight((float)$array['maxWeight']);
-
-        return $carrier;
-    }
     /**
      * @param /stdClass $object
      * @return bool

@@ -22,20 +22,22 @@ class Updater
      * @param string $apiKey
      * @param Repository $carrierRepository
      */
-    public function __construct($apiKey , Repository $carrierRepository)
+    public function __construct($apiKey, Repository $carrierRepository)
     {
         $this->carrierRepository = $carrierRepository;
         $this->downloader = new Downloader($apiKey);
     }
 
     /**
+     * @param string $language
      * @return bool
      * @throws DownloadException
      */
-    public function run($language) {
-    $carriers = $this->downloader->fetchAsArray($language);
+    public function run($language)
+    {
+        $carriers = $this->downloader->fetchAsArray($language);
 
-    return $this->saveCarriersToDb($carriers);
+        return $this->saveCarriersToDb($carriers);
     }
 
     /**
@@ -58,13 +60,5 @@ class Updater
         $this->carrierRepository->setCarriersDeleted($carrierIdsToDelete);
 
         return true;
-    }
-
-    /**
-     * @return Downloader
-     */
-    public function getDownloader()
-    {
-        return $this->downloader;
     }
 }
