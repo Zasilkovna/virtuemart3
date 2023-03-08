@@ -241,23 +241,6 @@ class VirtueMartModelZasilkovna extends VmModel
         }
     }
 
-    /**
-     * @return string
-     */
-    public function checkModuleVersion()
-    {
-        $checkUrl = $this->_zas_url . "api/" . $this->api_key . "/version-check-virtuemart2?my=" . self::VERSION;
-        $data = json_decode($this->fetch($checkUrl));
-        if($data && $data->version > self::VERSION) {
-            $lg =& JFactory::getLanguage();
-            $lang = substr($lg->getTag(), 0, 2);
-
-            return JText::_('PLG_VMSHIPMENT_PACKETERY_NEW_VERSION') . ": " . $data->message->$lang;
-        }
-        else {
-            return JText::_('PLG_VMSHIPMENT_PACKETERY_VERSION_IS_NEWEST') . " - " . self::VERSION;
-        }
-    }
 
     /**
      * @return bool
