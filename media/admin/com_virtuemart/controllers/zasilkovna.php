@@ -191,6 +191,9 @@ class VirtuemartControllerZasilkovna extends VmController
             $message ? $message->getType() : null);
     }
 
+    /**
+     * @return void
+     */
     public function updatePacketeryOrderDetail()
     {
         vRequest::vmCheckToken();

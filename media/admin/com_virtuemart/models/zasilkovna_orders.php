@@ -28,6 +28,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     /** @var VirtueMartModelZasilkovna */
     private $zas_model;
 
+    /** @var array */
     public $errors;
 
     /**
@@ -753,7 +754,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     }
 
     /**
-     * @param $formData
+     * @param array $formData
      * @return void
      */
     public function updateOrderDetail($formData)
@@ -770,7 +771,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     }
 
     /**
-     * @param $formData
+     * @param array $formData
      * @return bool
      */
     protected function validateOrderDetailFormData($formData)
@@ -782,8 +783,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         ];
         $errors = [];
 
-        foreach ($requiredNumericFields as $field => $translationKey
-        ) {
+        foreach ($requiredNumericFields as $field => $translationKey) {
             if (!isset($formData[$field]) || !is_numeric($formData[$field])) {
                 $errors[] = JText::sprintf(
                     'PLG_VMSHIPMENT_PACKETERY_ORDER_DETAIL_FORM_ERROR_FIELD_REQUIRED',

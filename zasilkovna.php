@@ -34,6 +34,7 @@ require_once VMPATH_ADMIN . '/fields/vmzasilkovnahdcarriers.php';
 class plgVmShipmentZasilkovna extends vmPSPlugin
 {
     const DEFAULT_WEIGHT_UNIT = 'KG';
+    const TEMPLATES_DIR = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart' . DS . 'views' . DS . 'zasilkovna' . DS . 'tmpl';
 
     public static $_this = false;
 
@@ -867,6 +868,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         $shipment = $this->getShipmentByOrderId($virtuemart_order_id);
         $html = $this->getOrderShipmentHtml($shipment);
+
         $trackingHtml = $this->getOrderTrackingHtml($shipment);
         $orderDetailHtml = $this->getOrderDetailHtml($shipment);
         $formHtml = $this->getOrderDetailFormHtml($shipment);
@@ -1061,82 +1063,29 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return 1 === (int) $cart->STsameAsBT ? $cart->BT : $cart->getST();
     }
 
+    /**
+     * @param \stdClass $shipment
+     * @return string
+     */
     public function getOrderDetailFormHtml($shipment)
     {
-        $html = "";
         if (!$shipment || $shipment->zasilkovna_packet_id !== "0") {
-            return $html;
+            return '';
         }
         $document = JFactory::getDocument();
-        $document->addScript(JUri::root()."media/com_zasilkovna/media/js/order-detail.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/admin.js'));
+        $document->addScript(JUri::root()."media/com_zasilkovna/media/js/order-detail.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/order-detail.js'));
 
-        $token = JHtml::_('form.token');
-        $adultContentChecked = $shipment->adult_content ? 'checked' : '';
+        $renderer = new VirtueMartModelZasilkovna\Box\Renderer();
+        $renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_detail_form.php');
+        $renderer->setVariables(['shipment' => $shipment]);
 
-        $_ = static function ($text) { // include translations as anonymous function
-            return JText::_($text);
-        };
-
-        $form = <<<EOT
-<a id="showPacketeryUpdateOrderDetail" class="btn btn-small" href="#">{$_('PLG_VMSHIPMENT_PACKETERY_EDIT_PACKET_DETAIL')}
-    <span class="vmicon vmicon-16-editadd"></span>
-</a>
-<div id="packeteryUpdateOrderDetail" class="vm-absolute">
-        <form action="/administrator/index.php?option=com_virtuemart&view=zasilkovna&task=updatePacketeryOrderDetail" method="post" id="packeteryUpdateOrderDetailForm">
-            <div>
-                <input type="hidden" name="virtuemart_order_id" value="$shipment->virtuemart_order_id">
-                <input type="hidden" name="order_number" value="$shipment->order_number">
-                $token
-                <fieldset>
-                    <table class="admintable table">
-                        <thead>
-                            <tr>
-                                <td colspan="2">
-                                    <h1>{$_('PLG_VMSHIPMENT_PACKETERY_EDIT_DETAIL')}</h1>
-                                </td>
-                            </tr>
-                        </thead>
-                        <tr>
-                            <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_WEIGHT')}</td>
-                            <td ><input type="number" step="0.1" name="weight" value="$shipment->weight"> kg</td>
-                        </tr>
-                        <tr>
-                            <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_COD')}</td>
-                            <td><input type="number" step="0.01" name="packet_cod" value="$shipment->packet_cod"></td>
-                        </tr>
-                        <tr>
-                            <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE')}</td>
-                            <td>
-                                <input type="number" step="0.01" name="zasilkovna_packet_price" value="$shipment->zasilkovna_packet_price">
-                                $shipment->branch_currency
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT')}</td>
-                            <td><input type="checkbox" name="adult_content" $adultContentChecked></td>
-                        </tr>
-                        <tr>
-                        <td colspan="2">
-                            <a href="#" title="{$_('PLG_VMSHIPMENT_PACKETERY_SAVE')}" onclick="javascript:savePacketeryUpdateOrderDetail(event)">
-                                <span class="icon-nofloat vmicon vmicon-16-save"></span>
-                                &nbsp;{$_('PLG_VMSHIPMENT_PACKETERY_SAVE')}
-                            </a>
-                            <a href="#" title="{$_('PLG_VMSHIPMENT_PACKETERY_CANCEL')}" onclick="javascript:cancelPacketeryUpdateOrderDetail(event);">
-                                <span class="icon-nofloat vmicon vmicon-16-remove"></span>
-                                &nbsp;{$_('PLG_VMSHIPMENT_PACKETERY_CANCEL')}
-                            </a>
-                            </td>
-                        <tr>
-                    </table>
-                </fieldset>
-            </div>
-        </form>
-</div>
-EOT;
-
-        return $html . $form;
-        
+        return $renderer->renderToString();
     }
+
+    /**
+     * @param array $data
+     * @return void
+     */
     public function plgVmOnUpdateOrderLineBEPacketery($data)
     {
         $db = JFactory::getDbo();
@@ -1151,6 +1100,10 @@ EOT;
         $db->execute();
     }
 
+    /**
+     * @param int $virtuemart_order_id
+     * @return \stdClass
+     */
     public function getShipmentByOrderId($virtuemart_order_id)
     {
         $db = JFactory::getDbo();
@@ -1167,67 +1120,38 @@ EOT;
         return $shipment;
     }
 
-/**
- * @param $shipment
- * @return string
- */
-public function getOrderTrackingHtml($shipment)
-{
-    if (!$shipment || $shipment->zasilkovna_packet_id === "0") {
-        return '';
-    }
-    $lang = JFactory::getLanguage();
-    $langLocale = $lang ? str_replace( '-', '_', $lang->getTag()) .'/' : '';
+    /**
+     * @param \stdClass $shipment
+     * @return string
+     */
+    public function getOrderTrackingHtml($shipment)
+    {
+        if (!$shipment || $shipment->zasilkovna_packet_id === "0") {
+            return '';
+        }
 
-    $trackingUrl = sprintf('https://tracking.packeta.com/%s?id=%s', $langLocale, $shipment->zasilkovna_packet_id);
+        $renderer = new VirtueMartModelZasilkovna\Box\Renderer();
+        $renderer->setTemplate(self::TEMPLATES_DIR . DS . 'tracking_number_link.php');
+        $renderer->setVariables(['shipment' => $shipment]);
 
-    return sprintf(
-        '<table><tr><td class="key">%s</td><td><a href="%s" target="_blank">%s</a></td></tr></table>',
-        JText::_('PLG_VMSHIPMENT_PACKETERY_TRACKING_NUMBER'),
-        $trackingUrl,
-        $shipment->zasilkovna_packet_id);
-}
-
-/**
- * @param $shipment
- * @return string
- */
-public function getOrderDetailHtml($shipment)
-{
-    if (!$shipment) {
-        return '';
+        return $renderer->renderToString();
     }
 
-    $adultContentChecked = $shipment->adult_content ? 'checked' : '';
+    /**
+     * @param \stdClass $shipment
+     * @return string
+     */
+    public function getOrderDetailHtml($shipment)
+    {
+        if (!$shipment) {
+            return '';
+        }
 
-    $_ = static function ($text) { // include translations as anonymous function
-        return JText::_($text);
-    };
+        $renderer = new VirtueMartModelZasilkovna\Box\Renderer();
+        $renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_extended_detail.php');
+        $renderer->setVariables(['shipment' => $shipment]);
 
-    $html = <<< EOT
-<table>
-<tr>
-    <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_WEIGHT')}</td>
-    <td >$shipment->weight kg</td>
-</tr>
-<tr>
-    <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_COD')}</td>
-    <td>$shipment->packet_cod</td>
-</tr>
-<tr>
-    <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE')}</td>
-    <td>
-        $shipment->zasilkovna_packet_price
-        $shipment->branch_currency
-    </td>
-</tr>
-<tr>
-    <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT')}</td>
-    <td><input type="checkbox" name="adult_content" $adultContentChecked readonly></td>
-</tr>
-</table><br>
-EOT;
+        return $renderer->renderToString();
+    }
 
-    return $html;
-}
 }
