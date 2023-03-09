@@ -5,11 +5,11 @@ namespace VirtueMartModelZasilkovna\Carrier;
 use JText;
 
 /**
- *
+ * Class Downloader downloads carriers' settings from API.
  */
 class Downloader
 {
-    const API_URL = 'https://pickup-point.api.packeta.com/v5/%s/%s/json?lang=%s';
+    const API_URL = 'https://pickup-point.api.packeta.com/v5/%s/carrier.json?lang=%s';
 
     private $apiKey;
 
@@ -52,7 +52,7 @@ class Downloader
     /**
      * Downloads carriers and returns in array.
      * @param string $lang
-     * @return ApiCarrier[]
+     * @return CarrierSetting[]
      * @throws DownloadException
      */
     public function fetchAsArray($lang)
@@ -60,16 +60,16 @@ class Downloader
         $json = $this->downloadJson($lang);
 
         $carriersData = $this->getFromJson($json);
-        $apiCarriers = [];
+        $carrierSettings = [];
 
         foreach ($carriersData as $carrier) {
-            $apiCarrier = ApiCarrier::fromJsonObject($carrier);
-            if ($apiCarrier !== null) {
-                $apiCarriers[] = $apiCarrier;
+            $carrierSetting = CarrierSetting::fromJsonObject($carrier);
+            if ($carrierSetting !== null) {
+                $carrierSettings[] = $carrierSetting;
             }
         }
 
-        return $apiCarriers;
+        return $carrierSettings;
     }
 
     /**
@@ -78,7 +78,7 @@ class Downloader
      */
     private function downloadJson($language)
     {
-        $url = sprintf(self::API_URL, $this->apiKey, 'carrier', $language);
+        $url = sprintf(self::API_URL, $this->apiKey, $language);
         $response = $this->fetch($url);
 
         if ($response === false) {

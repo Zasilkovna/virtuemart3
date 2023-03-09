@@ -35,24 +35,24 @@ class Updater
      */
     public function run($language)
     {
-        $carriers = $this->downloader->fetchAsArray($language);
+        $carrierSettings = $this->downloader->fetchAsArray($language);
 
-        return $this->saveCarriersToDb($carriers);
+        return $this->saveCarrierSettingsToDb($carrierSettings);
     }
 
     /**
-     * @param ApiCarrier[] $carriers
+     * @param CarrierSetting[] $carrierSettings
      * @return bool
      */
-    private function saveCarriersToDb(array $carriers)
+    private function saveCarrierSettingsToDb(array $carrierSettings)
     {
 
         $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
 
-        foreach ($carriers as $carrier) {
-            unset($carrierIdsToDelete[(string)$carrier->getId()]);
+        foreach ($carrierSettings as $carrierSetting) {
+            unset($carrierIdsToDelete[(string)$carrierSetting->getId()]);
 
-            $data = $carrier->mapToDbArray() + ['deleted' => false];
+            $data = $carrierSetting->mapToDbArray() + ['deleted' => false];
 
             $this->carrierRepository->insertUpdateCarrier($data);
         }

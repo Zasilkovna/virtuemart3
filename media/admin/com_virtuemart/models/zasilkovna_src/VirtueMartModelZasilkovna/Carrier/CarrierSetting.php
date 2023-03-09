@@ -3,9 +3,9 @@
 namespace VirtueMartModelZasilkovna\Carrier;
 
 /**
- * Class ApiCarrier is value object class representing carrier settings from API.
+ * Class CarrierSetting is value object class representing carrier settings from API.
  */
-class ApiCarrier
+class CarrierSetting
 {
     /**
      * @var int
@@ -282,29 +282,29 @@ class ApiCarrier
 
     /**
      * @param /stdClass $object
-     * @return ApiCarrier
+     * @return CarrierSetting
      */
     public static function fromJsonObject($object)
     {
         if (self::isJsonObjectValidCarrier($object) === false) {
             return null;
         }
-        $carrier = new self();
-        $carrier->setId((int)$object->id);
-        $carrier->setName($object->name);
-        $carrier->setPickupPoints(filter_var($object->pickupPoints, FILTER_VALIDATE_BOOLEAN));
-        $carrier->setApiAllowed(filter_var($object->apiAllowed, FILTER_VALIDATE_BOOLEAN));
-        $carrier->setSeparateHouseNumber(filter_var($object->separateHouseNumber, FILTER_VALIDATE_BOOLEAN));
-        $carrier->setCustomsDeclarations(filter_var($object->customsDeclarations, FILTER_VALIDATE_BOOLEAN));
-        $carrier->setRequiresEmail(filter_var($object->requiresEmail, FILTER_VALIDATE_BOOLEAN));
-        $carrier->setRequiresPhone(filter_var($object->requiresPhone, FILTER_VALIDATE_BOOLEAN));
-        $carrier->setRequiresSize(filter_var($object->requiresSize, FILTER_VALIDATE_BOOLEAN));
-        $carrier->setDisallowsCod(filter_var($object->disallowsCod, FILTER_VALIDATE_BOOLEAN));
-        $carrier->setCountry($object->country);
-        $carrier->setCurrency($object->currency);
-        $carrier->setMaxWeight((float)$object->maxWeight);
+        $carrierSetting = new self();
+        $carrierSetting->setId((int)$object->id);
+        $carrierSetting->setName($object->name);
+        $carrierSetting->setPickupPoints(filter_var($object->pickupPoints, FILTER_VALIDATE_BOOLEAN));
+        $carrierSetting->setApiAllowed(filter_var($object->apiAllowed, FILTER_VALIDATE_BOOLEAN));
+        $carrierSetting->setSeparateHouseNumber(filter_var($object->separateHouseNumber, FILTER_VALIDATE_BOOLEAN));
+        $carrierSetting->setCustomsDeclarations(filter_var($object->customsDeclarations, FILTER_VALIDATE_BOOLEAN));
+        $carrierSetting->setRequiresEmail(filter_var($object->requiresEmail, FILTER_VALIDATE_BOOLEAN));
+        $carrierSetting->setRequiresPhone(filter_var($object->requiresPhone, FILTER_VALIDATE_BOOLEAN));
+        $carrierSetting->setRequiresSize(filter_var($object->requiresSize, FILTER_VALIDATE_BOOLEAN));
+        $carrierSetting->setDisallowsCod(filter_var($object->disallowsCod, FILTER_VALIDATE_BOOLEAN));
+        $carrierSetting->setCountry($object->country);
+        $carrierSetting->setCurrency($object->currency);
+        $carrierSetting->setMaxWeight((float)$object->maxWeight);
 
-        return $carrier;
+        return $carrierSetting;
     }
 
     /**
