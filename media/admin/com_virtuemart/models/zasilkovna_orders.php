@@ -28,6 +28,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     /** @var VirtueMartModelZasilkovna */
     private $zas_model;
 
+    public $errors;
 
     /**
      * VirtueMartModelZasilkovna_orders constructor.
@@ -36,6 +37,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     function __construct() {
         parent::__construct();
         $this->zas_model = VmModel::getModel('zasilkovna');
+        $this->errors = [];
         $this->setMainTable('orders');
         $this->addvalidOrderingFieldName(array('order_name', 'payment_method', 'virtuemart_order_id'));
     }
@@ -738,4 +740,77 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
     }
 
+    /**
+     * Shows errors in module administration
+     */
+    public function raiseErrors()
+    {
+        if (is_array($this->errors)) {
+            foreach ($this->errors as $error) {
+                JError::raiseWarning(600, $error);
+            }
+        }
+    }
+
+    /**
+     * @param $formData
+     * @return void
+     */
+    public function updateOrderDetail($formData)
+    {
+
+        if ($this->validateOrderDetailFormData($formData)) {
+            if ($this->isOrderSubmitted((int)$formData['virtuemart_order_id'])) {
+                $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_ALREADY_SUBMITTED');
+
+                return;
+            }
+            $this->updateOrders([$formData['virtuemart_order_id'] => $formData]);
+        }
+    }
+
+    /**
+     * @param $formData
+     * @return bool
+     */
+    protected function validateOrderDetailFormData($formData)
+    {
+        $requiredNumericFields = [
+            'weight' => 'PLG_VMSHIPMENT_PACKETERY_WEIGHT',
+            'zasilkovna_packet_price' => 'PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE',
+            'packet_cod' => 'PLG_VMSHIPMENT_PACKETERY_COD',
+        ];
+        $errors = [];
+
+        foreach ($requiredNumericFields as $field => $translationKey
+        ) {
+            if (!isset($formData[$field]) || !is_numeric($formData[$field])) {
+                $errors[] = JText::sprintf(
+                    'PLG_VMSHIPMENT_PACKETERY_ORDER_DETAIL_FORM_ERROR_FIELD_REQUIRED',
+                    JText::_($translationKey)
+                );
+            }
+        }
+        $this->errors = $errors;
+
+        return empty($errors);
+    }
+
+    /**
+     * @param int $vmOrderId
+     * @return bool
+     */
+    public function isOrderSubmitted($vmOrderId)
+    {
+        $db = JFactory::getDBO();
+        $query = $db->getQuery(true);
+        $query->select('zasilkovna_packet_id');
+        $query->from($this->zas_model->getDbTableName());
+        $query->where('virtuemart_order_id = ' . $db->quote($vmOrderId));
+        $db->setQuery($query);
+
+        $result = $db->loadAssoc();
+
+        return $result && $result['zasilkovna_packet_id'] !== "0";
+    }
 }

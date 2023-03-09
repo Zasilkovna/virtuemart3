@@ -190,4 +190,27 @@ class VirtuemartControllerZasilkovna extends VmController
             $message ? $message->getMessage() : null,
             $message ? $message->getType() : null);
     }
+
+    public function updatePacketeryOrderDetail()
+    {
+        vRequest::vmCheckToken();
+        $formData = vRequest::getPost();
+        $message = null;
+
+        /** @var VirtueMartModelZasilkovna_orders $zasOrdersModel */
+        $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
+        $zasOrdersModel->updateOrderDetail($formData);
+        $zasOrdersModel->raiseErrors();
+
+        if (empty($zasOrdersModel->errors)) {
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_DETAILS_UPDATED'),
+                FlashMessage::TYPE_MESSAGE);
+        }
+
+        $redirectPath = JRoute::_('index.php?option=com_virtuemart&task=edit&view=orders&virtuemart_order_id=' . $formData['virtuemart_order_id'],
+            false);
+
+        $this->setRedirectWithMessage($redirectPath, $message);
+    }
+
 }
