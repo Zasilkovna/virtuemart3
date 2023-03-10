@@ -21,10 +21,7 @@ $html = <<< HTML
 </tr>
 <tr>
     <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE')}</td>
-    <td>
-        $shipment->zasilkovna_packet_price
-        $shipment->branch_currency
-    </td>
+    <td>$shipment->zasilkovna_packet_price</td>
 </tr>
 <tr>
     <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT')}</td>

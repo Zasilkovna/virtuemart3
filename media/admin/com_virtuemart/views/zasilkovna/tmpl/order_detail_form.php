@@ -37,7 +37,10 @@ $html = <<< HTML
                         </tr>
                         <tr>
                             <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_COD')}</td>
-                            <td><input type="number" step="0.01" name="packet_cod" value="$shipment->packet_cod"></td>
+                            <td>
+                                <input type="number" step="0.01" name="packet_cod" value="$shipment->packet_cod">
+                                $shipment->branch_currency
+                            </td>
                         </tr>
                         <tr>
                             <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE')}</td>
