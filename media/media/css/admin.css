@@ -45,4 +45,5 @@ legend {
     display:none;
     z-index: 1000;
     background-color: #ffffff;
+    bottom: 55px;
 }

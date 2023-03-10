@@ -7,7 +7,7 @@
 defined('_JEXEC') or die;
 
 $_= static function($key) { return \JText::_($key); };
-$adultContentChecked = $shipment->adult_content ? 'checked' : '';
+$yesNo = $shipment->adult_content ? 'PLG_VMSHIPMENT_PACKETERY_YES' : 'PLG_VMSHIPMENT_PACKETERY_NO';
 
 $html = <<< HTML
 <table>
@@ -28,7 +28,7 @@ $html = <<< HTML
 </tr>
 <tr>
     <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT')}</td>
-    <td><input type="checkbox" name="adult_content" $adultContentChecked readonly></td>
+    <td>{$_($yesNo)}</td>
 </tr>
 </table><br>
 HTML;

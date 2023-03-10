@@ -209,9 +209,7 @@ class VirtuemartControllerZasilkovna extends VmController
             $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_DETAILS_UPDATED'),
                 FlashMessage::TYPE_MESSAGE);
         }
-
-        $redirectPath = JRoute::_('index.php?option=com_virtuemart&task=edit&view=orders&virtuemart_order_id=' . $formData['virtuemart_order_id'],
-            false);
+        $redirectPath = JUri::base(false) . 'index.php?option=com_virtuemart&view=orders&task=edit&virtuemart_order_id=' . $formData['virtuemart_order_id'];
 
         $this->setRedirectWithMessage($redirectPath, $message);
     }

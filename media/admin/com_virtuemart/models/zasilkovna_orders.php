@@ -759,11 +759,13 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     {
 
         if ($this->validateOrderDetailFormData($formData)) {
-            if ($this->isOrderSubmitted((int)$formData['virtuemart_order_id'])) {
+            if ($this->hasOrderPacketId((int)$formData['virtuemart_order_id'])) {
                 $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_ALREADY_SUBMITTED');
 
                 return;
             }
+            $formData['submitted'] = 0;
+
             $this->updateOrders([$formData['virtuemart_order_id'] => $formData]);
         }
     }
@@ -798,7 +800,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
      * @param int $vmOrderId
      * @return bool
      */
-    public function isOrderSubmitted($vmOrderId)
+    public function hasOrderPacketId($vmOrderId)
     {
         $db = JFactory::getDBO();
         $query = $db->getQuery(true);

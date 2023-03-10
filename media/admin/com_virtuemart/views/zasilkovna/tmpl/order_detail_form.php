@@ -17,7 +17,7 @@ $html = <<< HTML
     <span class="vmicon vmicon-16-editadd"></span>
 </a>
 <div id="packeteryUpdateOrderDetail" class="vm-absolute">
-        <form action="/administrator/index.php?option=com_virtuemart&view=zasilkovna&task=updatePacketeryOrderDetail" method="post" id="packeteryUpdateOrderDetailForm">
+        <form action="index.php?option=com_virtuemart&view=zasilkovna&task=updatePacketeryOrderDetail" method="post" id="packeteryUpdateOrderDetailForm">
             <div>
                 <input type="hidden" name="virtuemart_order_id" value="$shipment->virtuemart_order_id">
                 <input type="hidden" name="order_number" value="$shipment->order_number">
