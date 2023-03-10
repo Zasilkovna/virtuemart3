@@ -869,11 +869,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $shipment = $this->getShipmentByOrderId($virtuemart_order_id);
         $html = $this->getOrderShipmentHtml($shipment);
 
-        $trackingHtml = $this->getOrderTrackingHtml($shipment);
-        $orderDetailHtml = $this->getOrderDetailHtml($shipment);
-        $formHtml = $this->getOrderDetailFormHtml($shipment);
+        $orderDetailHtml = $this->getOrderDetailsHtml($shipment);
         
-        return $html . $trackingHtml .  $orderDetailHtml . $formHtml;
+        return $html .  $orderDetailHtml;
     }
 
     /**
@@ -1051,7 +1049,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return $this->declarePluginParams('shipment', $data);
     }
 
-
     /**
      * If user set Shipping address same as Billing we take the billing address
      * (shipping address may contain other data but that is discarded)
@@ -1061,25 +1058,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     private function getAddressFromCart(VirtueMartCart $cart)
     {
         return 1 === (int) $cart->STsameAsBT ? $cart->BT : $cart->getST();
-    }
-
-    /**
-     * @param \stdClass $shipment
-     * @return string
-     */
-    public function getOrderDetailFormHtml($shipment)
-    {
-        if (!$shipment || $shipment->zasilkovna_packet_id !== "0") {
-            return '';
-        }
-        $document = JFactory::getDocument();
-        $document->addScript(JUri::root()."media/com_zasilkovna/media/js/order-detail.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/order-detail.js'));
-
-        $renderer = new VirtueMartModelZasilkovna\Box\Renderer();
-        $renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_detail_form.php');
-        $renderer->setVariables(['shipment' => $shipment]);
-
-        return $renderer->renderToString();
     }
 
     /**
@@ -1124,34 +1102,32 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @param \stdClass $shipment
      * @return string
      */
-    public function getOrderTrackingHtml($shipment)
-    {
-        if (!$shipment || $shipment->zasilkovna_packet_id === "0") {
-            return '';
-        }
-
-        $renderer = new VirtueMartModelZasilkovna\Box\Renderer();
-        $renderer->setTemplate(self::TEMPLATES_DIR . DS . 'tracking_number_link.php');
-        $renderer->setVariables(['shipment' => $shipment]);
-
-        return $renderer->renderToString();
-    }
-
-    /**
-     * @param \stdClass $shipment
-     * @return string
-     */
-    public function getOrderDetailHtml($shipment)
+    public function getOrderDetailsHtml($shipment)
     {
         if (!$shipment) {
             return '';
         }
 
         $renderer = new VirtueMartModelZasilkovna\Box\Renderer();
-        $renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_extended_detail.php');
         $renderer->setVariables(['shipment' => $shipment]);
 
-        return $renderer->renderToString();
+        $renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_extended_detail.php');
+        $detailsHtml = $renderer->renderToString();
+
+        $trackingHtml = '';
+        $formHtml = '';
+
+        if ($shipment->zasilkovna_packet_id !== "0") {
+            $renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_tracking_link.php');
+            $trackingHtml = $renderer->renderToString();
+        } else {
+            $document = JFactory::getDocument();
+            $document->addScript(JUri::root()."media/com_zasilkovna/media/js/order-detail.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/order-detail.js'));
+            $renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_detail_form.php');
+            $formHtml = $renderer->renderToString();
+        }
+
+        return $detailsHtml . $trackingHtml . $formHtml;
     }
 
 }

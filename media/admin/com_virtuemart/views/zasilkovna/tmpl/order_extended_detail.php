@@ -13,7 +13,7 @@ $html = <<< HTML
 <table>
 <tr>
     <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_WEIGHT')}</td>
-    <td >$shipment->weight kg</td>
+    <td>$shipment->weight kg</td>
 </tr>
 <tr>
     <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_COD')}</td>

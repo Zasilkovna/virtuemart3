@@ -18,7 +18,7 @@ $trackingUrl = sprintf('https://tracking.packeta.com/%s?id=%s',
 $html = <<< HTML
 <table>
     <tr>
-        <td class="key">{$_('PLG_VMSHIPMENT_PACKETERY_TRACKING_NUMBER')}</td>
+        <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_TRACKING_NUMBER')}</td>
         <td>
             <a href="$trackingUrl" target="_blank">$shipment->zasilkovna_packet_id</a>
         </td>

@@ -28,7 +28,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     /** @var VirtueMartModelZasilkovna */
     private $zas_model;
 
-    /** @var array */
+    /** @var string[] */
     public $errors;
 
     /**
@@ -746,10 +746,8 @@ class VirtueMartModelZasilkovna_orders extends VmModel
      */
     public function raiseErrors()
     {
-        if (is_array($this->errors)) {
-            foreach ($this->errors as $error) {
-                JError::raiseWarning(600, $error);
-            }
+        foreach ($this->errors as $error) {
+            JError::raiseWarning(600, $error);
         }
     }
 
