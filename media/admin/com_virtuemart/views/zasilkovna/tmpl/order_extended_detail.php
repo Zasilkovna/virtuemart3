@@ -1,33 +1,29 @@
 <?php
 /**
  * Template variables
- * @var \stdClass $shipment
+ * @var \VirtueMartModelZasilkovna\Order\ShipmentInfo $shipment
  */
 
 defined('_JEXEC') or die;
+$yesNo = $shipment->getAdultContent() ? 'PLG_VMSHIPMENT_PACKETERY_YES' : 'PLG_VMSHIPMENT_PACKETERY_NO';
 
-$_= static function($key) { return \JText::_($key); };
-$yesNo = $shipment->adult_content ? 'PLG_VMSHIPMENT_PACKETERY_YES' : 'PLG_VMSHIPMENT_PACKETERY_NO';
-
-$html = <<< HTML
+?>
 <table>
 <tr>
-    <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_WEIGHT')}</td>
-    <td>$shipment->weight kg</td>
+    <td class="key va-middle"><?php echo(JText::_('PLG_VMSHIPMENT_PACKETERY_WEIGHT')); ?></td>
+    <td><?php echo($shipment->getWeight()); ?> kg</td>
 </tr>
 <tr>
-    <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_COD')}</td>
-    <td>$shipment->packet_cod</td>
+    <td class="key va-middle"><?php echo(JText::_('PLG_VMSHIPMENT_PACKETERY_COD')); ?></td>
+    <td><?php echo($shipment->getPacketCod()); ?></td>
 </tr>
 <tr>
-    <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE')}</td>
-    <td>$shipment->zasilkovna_packet_price</td>
+    <td class="key va-middle"><?php echo(JText::_('PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE')); ?></td>
+    <td><?php echo($shipment->getZasilkovnaPacketPrice()); ?></td>
 </tr>
 <tr>
-    <td class="key va-middle">{$_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT')}</td>
-    <td>{$_($yesNo)}</td>
+    <td class="key va-middle"><?php echo(JText::_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT')); ?></td>
+    <td><?php echo(JText::_($yesNo)); ?></td>
 </tr>
 </table><br>
-HTML;
 
-echo $html;

@@ -755,9 +755,8 @@ class VirtueMartModelZasilkovna_orders extends VmModel
      * @param array $formData
      * @return void
      */
-    public function updateOrderDetail($formData)
+    public function updateOrderDetail(array $formData)
     {
-
         if ($this->validateOrderDetailFormData($formData)) {
             if ($this->hasOrderPacketId((int)$formData['virtuemart_order_id'])) {
                 $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_ALREADY_SUBMITTED');
@@ -774,7 +773,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
      * @param array $formData
      * @return bool
      */
-    protected function validateOrderDetailFormData($formData)
+    protected function validateOrderDetailFormData(array $formData)
     {
         $requiredNumericFields = [
             'weight' => 'PLG_VMSHIPMENT_PACKETERY_WEIGHT',
