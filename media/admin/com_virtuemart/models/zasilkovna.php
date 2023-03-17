@@ -41,8 +41,8 @@ class VirtueMartModelZasilkovna extends VmModel
     /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
     private $carrierRepository;
 
-    /** @var \VirtueMartModelZasilkovna\Carrier\Updater */
-    private $carrierUpdater;
+    /** @var \VirtueMartModelZasilkovna\Carrier\Downloader */
+    private $carrierDownloader;
 
     /**
      * VirtueMartModelZasilkovna constructor.
@@ -62,7 +62,7 @@ class VirtueMartModelZasilkovna extends VmModel
         $this->_media_path = JPATH_SITE . DS . "media" . DS . "com_zasilkovna" . DS . "media" . DS;
 
         $this->carrierRepository = new \VirtueMartModelZasilkovna\Carrier\Repository();
-        $this->carrierUpdater = new \VirtueMartModelZasilkovna\Carrier\Updater($this->api_key, $this->carrierRepository);
+        $this->carrierDownloader = new \VirtueMartModelZasilkovna\Carrier\Downloader($this->api_key);
 
         parent::__construct();
     }
@@ -315,12 +315,23 @@ class VirtueMartModelZasilkovna extends VmModel
     public function updateCarriers()
     {
         try {
-            $this->carrierUpdater->run($this->getLang2Code());
+            $mappedCarriers = $this->carrierDownloader->run($this->getLang2Code());
+
         } catch (\Exception $e) {
             $this->errors[] = $e->getMessage();
 
-            return; // do not update config
+            return;
         }
+
+        $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
+
+        foreach ($mappedCarriers as $carrier) {
+            unset($carrierIdsToDelete[(string)$carrier['id']]);
+            $carrier += ['deleted' => false];
+            $this->carrierRepository->insertUpdateCarrier($carrier);
+        }
+
+        $this->carrierRepository->setCarriersDeleted($carrierIdsToDelete);
 
         $config = $this->loadConfig();
         $config['carriers_updated_at'] = (new \DateTime())->format(\DateTime::ATOM);

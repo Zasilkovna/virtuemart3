@@ -52,24 +52,14 @@ class Downloader
     /**
      * Downloads carriers and returns in array.
      * @param string $lang
-     * @return CarrierSetting[]
+     * @return array
      * @throws DownloadException
      */
     public function fetchAsArray($lang)
     {
         $json = $this->downloadJson($lang);
 
-        $carriersData = $this->getFromJson($json);
-        $carrierSettings = [];
-
-        foreach ($carriersData as $carrier) {
-            $carrierSetting = CarrierSetting::fromJsonObject($carrier);
-            if ($carrierSetting !== null) {
-                $carrierSettings[] = $carrierSetting;
-            }
-        }
-
-        return $carrierSettings;
+        return $this->getFromJson($json);
     }
 
     /**
@@ -95,16 +85,87 @@ class Downloader
      */
     private function getFromJson($json)
     {
-        $carriersData = json_decode($json, false);
+        $carriersData = json_decode($json, true);
 
-        if ($carriersData === null) {
+        if (!is_array($carriersData)) {
             throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
         }
 
-        if (!is_array($carriersData) && $carriersData->error) {
+        if (isset($carriersData['error'])) {
             throw new DownloadException($carriersData->error);
         }
 
         return $carriersData;
+    }
+
+
+    /**
+     * Validates data from API.
+     *
+     * @param array $carriers Data retrieved from API.
+     *
+     * @return bool
+     */
+    public function validateCarrierData(array $carriers)
+    {
+        foreach ($carriers as $carrier) {
+            if (!isset(
+                $carrier['id'],
+                $carrier['name'],
+                $carrier['country'],
+                $carrier['currency'],
+                $carrier['pickupPoints'],
+                $carrier['apiAllowed'],
+                $carrier['separateHouseNumber'],
+                $carrier['customsDeclarations'],
+                $carrier['requiresEmail'],
+                $carrier['requiresPhone'],
+                $carrier['requiresSize'],
+                $carrier['disallowsCod'],
+                $carrier['maxWeight']
+            )) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array $carrier
+     * @return array
+     */
+    public function mapToDb(array $carrier)
+    {
+        return [
+            'id' => (int)$carrier['id'],
+            'name' => $carrier['name'],
+            'country' => $carrier['country'],
+            'currency' => $carrier['currency'],
+            'pickup_points' => filter_var($carrier['pickupPoints'], FILTER_VALIDATE_BOOLEAN),
+            'api_allowed' => filter_var($carrier['apiAllowed'], FILTER_VALIDATE_BOOLEAN),
+            'separate_house_number' => filter_var($carrier['separateHouseNumber'], FILTER_VALIDATE_BOOLEAN),
+            'customs_declarations' => filter_var($carrier['customsDeclarations'], FILTER_VALIDATE_BOOLEAN),
+            'requires_email' => filter_var($carrier['requiresEmail'], FILTER_VALIDATE_BOOLEAN),
+            'requires_phone' => filter_var($carrier['requiresPhone'], FILTER_VALIDATE_BOOLEAN),
+            'requires_size' => filter_var($carrier['requiresSize'], FILTER_VALIDATE_BOOLEAN),
+            'disallows_cod' => filter_var($carrier['disallowsCod'], FILTER_VALIDATE_BOOLEAN),
+            'max_weight' => (float)$carrier['maxWeight'],
+        ];
+    }
+
+    /**
+     * @param string $lang
+     * @throws DownloadException
+     */
+    public function run($lang)
+    {
+        $carriers = $this->fetchAsArray($lang);
+
+        if (!$this->validateCarrierData($carriers)) {
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
+        }
+
+        return array_map([$this, 'mapToDb'], $carriers);
     }
 }
