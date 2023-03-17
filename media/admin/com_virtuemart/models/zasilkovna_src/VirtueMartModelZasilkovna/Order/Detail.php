@@ -6,9 +6,9 @@ use JFactory;
 use JUri;
 
 /**
- * Class HtmlRenderer
+ * Class Detail
  */
-class HtmlRenderer
+class Detail
 {
     const TEMPLATES_DIR = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart' . DS . 'views' . DS . 'zasilkovna' . DS . 'tmpl';
 
@@ -25,16 +25,16 @@ class HtmlRenderer
     }
 
     /**
-     * @param ShipmentInfo $shipment
+     * @param Order $order
      * @return string
      */
-    public function getOrderDetailsHtml(ShipmentInfo $shipment = null)
+    public function renderToString(Order $order = null)
     {
-        if (!$shipment) {
+        if (!$order) {
             return '';
         }
 
-        $this->renderer->setVariables(['shipment' => $shipment]);
+        $this->renderer->setVariables(['order' => $order]);
 
         $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_extended_detail.php');
         $detailsHtml = $this->renderer->renderToString();
@@ -42,11 +42,11 @@ class HtmlRenderer
         $trackingHtml = '';
         $formHtml = '';
 
-        if ($shipment->hasPacketId()) {
+        if ($order->hasPacketId()) {
             $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_tracking_link.php');
             $this->renderer->setVariables([
-                'shipment' => $shipment,
-                'trackingUrl' => \plgVmShipmentZasilkovna::TRACKING_URL . $shipment->getZasilkovnaPacketId(),
+                'order' => $order,
+                'trackingUrl' => sprintf(\plgVmShipmentZasilkovna::TRACKING_URL, $order->getZasilkovnaPacketId()),
             ]);
             $trackingHtml = $this->renderer->renderToString();
         } else {

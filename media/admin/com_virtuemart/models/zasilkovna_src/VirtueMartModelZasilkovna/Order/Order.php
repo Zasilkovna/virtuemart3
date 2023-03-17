@@ -2,7 +2,7 @@
 
 namespace VirtueMartModelZasilkovna\Order;
 
-class ShipmentInfo
+class Order
 {
     /* @var int $id */
     private $id;

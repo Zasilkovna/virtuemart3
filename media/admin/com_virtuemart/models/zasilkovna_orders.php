@@ -757,21 +757,27 @@ class VirtueMartModelZasilkovna_orders extends VmModel
      */
     public function updateOrderDetail(array $formData)
     {
-        if ($this->validateOrderDetailFormData($formData)) {
-            if ($this->hasOrderPacketId((int)$formData['virtuemart_order_id'])) {
-                $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_ALREADY_SUBMITTED');
+        $validationReport = $this->validateOrderDetailFormData($formData);
 
-                return;
-            }
-            $formData['submitted'] = 0;
+        if (!$validationReport->isValid()) {
+            $this->errors = array_merge($this->errors, $validationReport->getErrors());
 
-            $this->updateOrders([$formData['virtuemart_order_id'] => $formData]);
+            return;
         }
+
+        if ($this->hasOrderPacketId((int)$formData['virtuemart_order_id'])) {
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_ALREADY_SUBMITTED');
+
+            return;
+        }
+        $formData['submitted'] = 0;
+
+        $this->updateOrders([$formData['virtuemart_order_id'] => $formData]);
     }
 
     /**
      * @param array $formData
-     * @return bool
+     * @return \VirtueMartModelZasilkovna\Order\DetailFormValidationReport
      */
     protected function validateOrderDetailFormData(array $formData)
     {
@@ -780,19 +786,20 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             'zasilkovna_packet_price' => 'PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE',
             'packet_cod' => 'PLG_VMSHIPMENT_PACKETERY_COD',
         ];
-        $errors = [];
+        $validationReport = new \VirtueMartModelZasilkovna\Order\DetailFormValidationReport();
 
         foreach ($requiredNumericFields as $field => $translationKey) {
             if (!isset($formData[$field]) || !is_numeric($formData[$field])) {
-                $errors[] = JText::sprintf(
-                    'PLG_VMSHIPMENT_PACKETERY_ORDER_DETAIL_FORM_ERROR_FIELD_REQUIRED',
-                    JText::_($translationKey)
+                $validationReport->addError(
+                    JText::sprintf(
+                        'PLG_VMSHIPMENT_PACKETERY_ORDER_DETAIL_FORM_ERROR_FIELD_REQUIRED',
+                        JText::_($translationKey)
+                    )
                 );
             }
         }
-        $this->errors = $errors;
 
-        return empty($errors);
+        return $validationReport;
     }
 
     /**

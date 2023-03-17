@@ -140,7 +140,7 @@
 					$packetId = "";
 					if($order->zasilkovna_packet_id !== "0") {
 					?>
-						<a href="<?php echo(plgVmShipmentZasilkovna::TRACKING_URL . htmlentities($order->zasilkovna_packet_id)); ?>" target="_blank"><?php echo htmlentities($order->zasilkovna_packet_id); ?></a>
+						<a href="<?php echo sprintf(plgVmShipmentZasilkovna::TRACKING_URL, urlencode($order->zasilkovna_packet_id)); ?>" target="_blank"><?php echo htmlentities($order->zasilkovna_packet_id); ?></a>
 					<?php } ?>
 					</td>
                     <!--  cancel packet id button -->
