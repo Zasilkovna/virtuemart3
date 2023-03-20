@@ -156,6 +156,7 @@ class Downloader
 
     /**
      * @param string $lang
+     * @return array
      * @throws DownloadException
      */
     public function run($lang)
