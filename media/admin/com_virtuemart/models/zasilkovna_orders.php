@@ -743,6 +743,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 
     /**
      * Shows errors in module administration
+     * @return void
      */
     public function raiseErrors()
     {

@@ -17,7 +17,6 @@ class Detail
      */
     private $renderer;
 
-
     public function __construct()
     {
         $this->renderer = new \VirtueMartModelZasilkovna\Box\Renderer();
