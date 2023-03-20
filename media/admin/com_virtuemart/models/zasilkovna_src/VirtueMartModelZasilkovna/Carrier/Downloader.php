@@ -109,7 +109,7 @@ class Downloader
         }
 
         if (isset($carriersData['error'])) {
-            throw new DownloadException($carriersData->error);
+            throw new DownloadException($carriersData['error']);
         }
 
         return $carriersData;
@@ -124,6 +124,11 @@ class Downloader
      */
     private function validateCarrierData(array $carriers)
     {
+        if (empty($carriers)) {
+
+            return false;
+        }
+
         foreach ($carriers as $carrier) {
             if (!isset(
                 $carrier['id'],
