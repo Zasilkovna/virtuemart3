@@ -41,6 +41,9 @@ class VirtueMartModelZasilkovna extends VmModel
     /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
     private $carrierRepository;
 
+    /** @var \VirtueMartModelZasilkovna\Carrier\Downloader */
+    private $carrierDownloader;
+
     /**
      * VirtueMartModelZasilkovna constructor.
      * @throws Exception
@@ -59,6 +62,7 @@ class VirtueMartModelZasilkovna extends VmModel
         $this->_media_path = JPATH_SITE . DS . "media" . DS . "com_zasilkovna" . DS . "media" . DS;
 
         $this->carrierRepository = new \VirtueMartModelZasilkovna\Carrier\Repository();
+        $this->carrierDownloader = new \VirtueMartModelZasilkovna\Carrier\Downloader($this->api_key);
 
         parent::__construct();
     }
@@ -281,31 +285,6 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param $url
-     * @return false|string
-     */
-    private function fetch($url)
-    {
-        if (ini_get('allow_url_fopen')) {
-            if (function_exists('stream_context_create')) {
-                $ctx = stream_context_create(
-                    array(
-                        'http' => array(
-                            'timeout' => 20
-                        )
-                    )
-                );
-
-                return file_get_contents($url, 0, $ctx);
-            } else {
-                return file_get_contents($url);
-            }
-        } else {
-            return false;
-        }
-    }
-
-    /**
      * @return int
      */
     public function getTotalUsableCarriersCount() {
@@ -333,21 +312,63 @@ class VirtueMartModelZasilkovna extends VmModel
     /**
      * @return void
      */
-    public function updateCarriers() {
-        $localFilePath = $this->_media_path . 'carriers.xml';
-        if (!$this->isWritable($localFilePath)) {
-            $this->errors[] = $localFilePath . " " . JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_XML_NOT_WRITABLE');
+    public function updateCarriers()
+    {
+        try {
+            $carriers = $this->carrierDownloader->run($this->getLang2Code());
+
+        } catch (\VirtueMartModelZasilkovna\Carrier\DownloadException $e) {
+            $this->errors[] = $e->getMessage();
+
             return;
         }
 
-        if (!$this->updateFile($localFilePath)) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_XML_ERROR');
-            return;
+        $this->saveCarriers($carriers);
+    }
+
+    /**
+     * @param array $carriers
+     * @return void
+     */
+    private function saveCarriers(array $carriers) {
+
+        $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
+        foreach ($carriers as $carrier) {
+            unset($carrierIdsToDelete[$carrier['id']]);
+
+            $data = [
+                'id' => $carrier['id'],
+                'name' => $carrier['name'],
+                'is_pickup_points' => $this->transformStringBool($carrier['pickupPoints']),
+                'has_carrier_direct_label' => $this->transformStringBool($carrier['apiAllowed']),
+                'separate_house_number' => $this->transformStringBool($carrier['separateHouseNumber']),
+                'customs_declarations' => $this->transformStringBool($carrier['customsDeclarations']),
+                'requires_email' => $this->transformStringBool($carrier['requiresEmail']),
+                'requires_phone' => $this->transformStringBool($carrier['requiresPhone']),
+                'requires_size' => $this->transformStringBool($carrier['requiresSize']),
+                'disallows_cod' => $this->transformStringBool($carrier['disallowsCod']),
+                'country' => $carrier['country'],
+                'currency' => $carrier['currency'],
+                'max_weight' => $carrier['maxWeight'],
+                'deleted' => 0,
+            ];
+
+            $this->carrierRepository->insertUpdateCarrier($data);
         }
 
-        if (!$this->saveCarriersXmlToDb($localFilePath)) {
-            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_XML_ERROR');
-        }
+        $this->carrierRepository->setCarriersDeleted($carrierIdsToDelete);
+
+        $config = $this->loadConfig();
+        $config['carriers_updated_at'] = (new \DateTime())->format(\DateTime::ATOM);
+        $this->updateConfig($config);
+    }
+
+    /**
+     * @param string $value
+     * @return bool
+     */
+    private function transformStringBool($value) {
+        return !((string)$value === 'false');
     }
 
     /**
@@ -360,102 +381,6 @@ class VirtueMartModelZasilkovna extends VmModel
                 JError::raiseWarning(600, $error);
             }
         }
-    }
-
-    /**
-     * @param string $path
-     * @return bool
-     */
-    private function saveCarriersXmlToDb($path) {
-        $xml = @simplexml_load_file($path);
-        if ($xml === false) {
-            return false;
-        }
-
-        $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
-        foreach ($xml->carriers->carrier as $carrier) {
-            unset($carrierIdsToDelete[(string)$carrier->id]);
-
-            $data = [
-                'id' => $carrier->id,
-                'name' => $carrier->name,
-                'is_pickup_points' => $this->transformStringBool($carrier->pickupPoints),
-                'has_carrier_direct_label' => $this->transformStringBool($carrier->apiAllowed),
-                'separate_house_number' => $this->transformStringBool($carrier->separateHouseNumber),
-                'customs_declarations' => $this->transformStringBool($carrier->customsDeclarations),
-                'requires_email' => $this->transformStringBool($carrier->requiresEmail),
-                'requires_phone' => $this->transformStringBool($carrier->requiresPhone),
-                'requires_size' => $this->transformStringBool($carrier->requiresSize),
-                'disallows_cod' => $this->transformStringBool($carrier->disallowsCod),
-                'country' => $carrier->country,
-                'currency' => $carrier->currency,
-                'max_weight' => $carrier->maxWeight,
-                'deleted' => 0,
-            ];
-
-            $this->carrierRepository->insertUpdateCarrier($data);
-        }
-
-        $this->carrierRepository->setCarriersDeleted($carrierIdsToDelete);
-
-        $config = $this->loadConfig();
-        $config['carriers_updated_at'] = (new \DateTime())->format(\DateTime::ATOM);
-        $this->updateConfig($config);
-
-        return true;
-    }
-
-    /**
-     * @param $path
-     * @return bool
-     */
-    private function isFileUsable($path)//true if not older than 5 days
-    {
-        if(!file_exists($path)) return false;
-        if(filemtime($path) < time() - (60 * 60 * 24 * 5)) return false;
-        if(filesize($path) <= 1024) return false;
-
-        return true;
-    }
-
-    /**
-     * @param \SimpleXMLElement $value
-     * @return bool
-     */
-    private function transformStringBool($value) {
-        return ((string)$value === 'false' ? false : true);
-    }
-
-    /**
-     * @param $path
-     * @return bool
-     */
-    private function updateFile($path) {
-        $remote = sprintf("%sapi/v4/%s/branch.xml?address-delivery", $this->_zas_url, $this->api_key);
-        $data = $this->fetch($remote);
-        if ($data === false) {
-            return false;
-        }
-
-        $result = file_put_contents($path, $data);
-        if ($result === false) {
-            return false;
-        }
-
-        clearstatcache();
-        return true;
-    }
-
-    /**
-     * @param string $filepath
-     * @return bool
-     */
-    private function isWritable($filepath) {
-        if (!is_writable(dirname($filepath))) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -509,5 +434,15 @@ class VirtueMartModelZasilkovna extends VmModel
         }
 
         return $hdCarriers;
+    }
+
+    /**
+     * @return string
+     */
+    public function getLang2Code()
+    {
+        $language = JFactory::getLanguage();
+
+        return $language ? substr($language->getTag(), 0, 2) : 'en';
     }
 }
