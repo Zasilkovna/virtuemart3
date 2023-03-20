@@ -315,20 +315,45 @@ class VirtueMartModelZasilkovna extends VmModel
     public function updateCarriers()
     {
         try {
-            $mappedCarriers = $this->carrierDownloader->run($this->getLang2Code());
+            $carriers = $this->carrierDownloader->run($this->getLang2Code());
 
-        } catch (\Exception $e) {
+        } catch (\VirtueMartModelZasilkovna\Carrier\DownloadException $e) {
             $this->errors[] = $e->getMessage();
 
             return;
         }
 
-        $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
+        $this->saveCarriers($carriers);
+    }
 
-        foreach ($mappedCarriers as $carrier) {
+    /**
+     * @param $carriers
+     * @return void
+     */
+    private function saveCarriers($carriers) {
+
+        $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
+        foreach ($carriers as $carrier) {
             unset($carrierIdsToDelete[(string)$carrier['id']]);
-            $carrier += ['deleted' => false];
-            $this->carrierRepository->insertUpdateCarrier($carrier);
+
+            $data = [
+                'id' => $carrier->id,
+                'name' => $carrier->name,
+                'is_pickup_points' => $this->transformStringBool($carrier['pickupPoints']),
+                'has_carrier_direct_label' => $this->transformStringBool($carrier['apiAllowed']),
+                'separate_house_number' => $this->transformStringBool($carrier['separateHouseNumber']),
+                'customs_declarations' => $this->transformStringBool($carrier['customsDeclarations']),
+                'requires_email' => $this->transformStringBool($carrier['requiresEmail']),
+                'requires_phone' => $this->transformStringBool($carrier['requiresPhone']),
+                'requires_size' => $this->transformStringBool($carrier['requiresSize']),
+                'disallows_cod' => $this->transformStringBool($carrier['disallowsCod']),
+                'country' => $carrier['country'],
+                'currency' => $carrier['currency'],
+                'max_weight' => $carrier['maxWeight'],
+                'deleted' => 0,
+            ];
+
+            $this->carrierRepository->insertUpdateCarrier($data);
         }
 
         $this->carrierRepository->setCarriersDeleted($carrierIdsToDelete);
@@ -336,6 +361,14 @@ class VirtueMartModelZasilkovna extends VmModel
         $config = $this->loadConfig();
         $config['carriers_updated_at'] = (new \DateTime())->format(\DateTime::ATOM);
         $this->updateConfig($config);
+    }
+
+    /**
+     * @param string $value
+     * @return bool
+     */
+    private function transformStringBool($value) {
+        return !((string)$value === 'false');
     }
 
     /**

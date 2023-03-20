@@ -11,6 +11,7 @@ class Downloader
 {
     const API_URL = 'https://pickup-point.api.packeta.com/v5/%s/carrier.json?lang=%s';
 
+    /** @var string */
     private $apiKey;
 
     /**
@@ -23,11 +24,27 @@ class Downloader
     }
 
     /**
+     * @param string $lang
+     * @return array
+     * @throws DownloadException
+     */
+    public function run($lang)
+    {
+        $carriers = $this->fetchAsArray($lang);
+
+        if (!$this->validateCarrierData($carriers)) {
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
+        }
+
+        return $carriers;
+    }
+
+    /**
      * @param string $url
      * @return false|string
      * @throws DownloadException
      */
-    public function fetch($url)
+    private function fetch($url)
     {
         if (ini_get('allow_url_fopen')) {
             if (function_exists('stream_context_create')) {
@@ -55,7 +72,7 @@ class Downloader
      * @return array
      * @throws DownloadException
      */
-    public function fetchAsArray($lang)
+    private function fetchAsArray($lang)
     {
         $json = $this->downloadJson($lang);
 
@@ -103,10 +120,9 @@ class Downloader
      * Validates data from API.
      *
      * @param array $carriers Data retrieved from API.
-     *
      * @return bool
      */
-    public function validateCarrierData(array $carriers)
+    private function validateCarrierData(array $carriers)
     {
         foreach ($carriers as $carrier) {
             if (!isset(
@@ -131,42 +147,4 @@ class Downloader
         return true;
     }
 
-    /**
-     * @param array $carrier
-     * @return array
-     */
-    public function mapToDb(array $carrier)
-    {
-        return [
-            'id' => (int)$carrier['id'],
-            'name' => $carrier['name'],
-            'country' => $carrier['country'],
-            'currency' => $carrier['currency'],
-            'pickup_points' => filter_var($carrier['pickupPoints'], FILTER_VALIDATE_BOOLEAN),
-            'api_allowed' => filter_var($carrier['apiAllowed'], FILTER_VALIDATE_BOOLEAN),
-            'separate_house_number' => filter_var($carrier['separateHouseNumber'], FILTER_VALIDATE_BOOLEAN),
-            'customs_declarations' => filter_var($carrier['customsDeclarations'], FILTER_VALIDATE_BOOLEAN),
-            'requires_email' => filter_var($carrier['requiresEmail'], FILTER_VALIDATE_BOOLEAN),
-            'requires_phone' => filter_var($carrier['requiresPhone'], FILTER_VALIDATE_BOOLEAN),
-            'requires_size' => filter_var($carrier['requiresSize'], FILTER_VALIDATE_BOOLEAN),
-            'disallows_cod' => filter_var($carrier['disallowsCod'], FILTER_VALIDATE_BOOLEAN),
-            'max_weight' => (float)$carrier['maxWeight'],
-        ];
-    }
-
-    /**
-     * @param string $lang
-     * @return array
-     * @throws DownloadException
-     */
-    public function run($lang)
-    {
-        $carriers = $this->fetchAsArray($lang);
-
-        if (!$this->validateCarrierData($carriers)) {
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
-        }
-
-        return array_map([$this, 'mapToDb'], $carriers);
-    }
 }
