@@ -49,7 +49,7 @@ $token = \JHtml::_('form.token');
                         </tr>
                         <tr>
                             <td class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT'); ?></td>
-                            <td><input type="checkbox" name="adult_content" <?php echo $adultContentChecked; ?></td>
+                            <td><input type="checkbox" name="adult_content" <?php echo $adultContentChecked; ?>></td>
                         </tr>
                         <tr>
                         <td colspan="2">
