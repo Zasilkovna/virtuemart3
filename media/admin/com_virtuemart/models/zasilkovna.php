@@ -327,18 +327,18 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param $carriers
+     * @param array $carriers
      * @return void
      */
-    private function saveCarriers($carriers) {
+    private function saveCarriers(array $carriers) {
 
         $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
         foreach ($carriers as $carrier) {
-            unset($carrierIdsToDelete[(string)$carrier['id']]);
+            unset($carrierIdsToDelete[$carrier['id']]);
 
             $data = [
-                'id' => $carrier->id,
-                'name' => $carrier->name,
+                'id' => $carrier['id'],
+                'name' => $carrier['name'],
                 'is_pickup_points' => $this->transformStringBool($carrier['pickupPoints']),
                 'has_carrier_direct_label' => $this->transformStringBool($carrier['apiAllowed']),
                 'separate_house_number' => $this->transformStringBool($carrier['separateHouseNumber']),
@@ -381,31 +381,6 @@ class VirtueMartModelZasilkovna extends VmModel
                 JError::raiseWarning(600, $error);
             }
         }
-    }
-
-    /**
-     * @param $path
-     * @return bool
-     */
-    private function isFileUsable($path)//true if not older than 5 days
-    {
-        if(!file_exists($path)) return false;
-        if(filemtime($path) < time() - (60 * 60 * 24 * 5)) return false;
-        if(filesize($path) <= 1024) return false;
-
-        return true;
-    }
-
-    /**
-     * @param string $filepath
-     * @return bool
-     */
-    private function isWritable($filepath) {
-        if (!is_writable(dirname($filepath))) {
-            return false;
-        }
-
-        return true;
     }
 
     /**
