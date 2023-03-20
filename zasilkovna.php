@@ -869,7 +869,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return NULL;
         }
         $document = JFactory::getDocument();
-        $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/admin.css?v=' . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css'));
+        $document->addStyleSheet(
+            sprintf('%smedia/com_zasilkovna/media/css/admin.css?v=%s',
+                JUri::root(),
+                filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css')
+            ));
 
         $order = $this->getOrderByVmOrderId($virtuemart_order_id);
         $html = $this->getOrderShipmentHtml($order);

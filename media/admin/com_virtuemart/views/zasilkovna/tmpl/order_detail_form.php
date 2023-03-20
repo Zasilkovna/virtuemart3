@@ -2,7 +2,6 @@
 /**
  * Template variables
  *
- * @return mixed
  * @var \VirtueMartModelZasilkovna\Order\Order $order
  */
 

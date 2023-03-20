@@ -12,7 +12,6 @@ class Detail
 {
     const TEMPLATES_DIR = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart' . DS . 'views' . DS . 'zasilkovna' . DS . 'tmpl';
 
-
     /**
      * @var \VirtueMartModelZasilkovna\Box\Renderer $renderer
      */
