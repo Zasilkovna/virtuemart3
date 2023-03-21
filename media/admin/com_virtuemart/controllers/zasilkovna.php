@@ -33,6 +33,16 @@ VmModel::getModel('zasilkovna')->loadLanguage();
  */
 class VirtuemartControllerZasilkovna extends VmController
 {
+    /** @var \VirtueMartModelZasilkovna\Order\Detail */
+    private $orderDetail;
+
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->orderDetail = new \VirtueMartModelZasilkovna\Order\Detail();
+    }
+
     /**
      * Updates carriers.
      */
@@ -199,21 +209,33 @@ class VirtuemartControllerZasilkovna extends VmController
         vRequest::vmCheckToken();
         $formData = vRequest::getPost();
         $message = null;
-
-        /** @var VirtueMartModelZasilkovna_orders $zasOrdersModel */
-        $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
-        $zasOrdersModel->updateOrderDetail($formData);
-        $zasOrdersModel->raiseErrors();
-
-        if (empty($zasOrdersModel->errors)) {
-            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_DETAILS_UPDATED'),
-                FlashMessage::TYPE_MESSAGE);
-        }
         $redirectPath = sprintf(
             '%sindex.php?option=com_virtuemart&view=orders&task=edit&virtuemart_order_id=%s',
             JUri::base(false),
             $formData['virtuemart_order_id']
         );
+
+        $validationReport = $this->orderDetail->validateFormData($formData);
+        if (!$validationReport->isValid()) {
+            foreach ($validationReport->getErrors() as $error) {
+                JError::raiseWarning(600, $error);
+            }
+            $this->setRedirectWithMessage($redirectPath);
+            return;
+        }
+
+        /** @var VirtueMartModelZasilkovna_orders $zasOrdersModel */
+        $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
+        $zasOrdersModel->updateOrderDetail($formData);
+        
+        if (empty($zasOrdersModel->errors)) {
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_DETAILS_UPDATED'), FlashMessage::TYPE_MESSAGE);
+        } else {
+            foreach ($zasOrdersModel->errors as $error) {
+                JError::raiseWarning(600, $error);
+            }
+        }
+
         $this->setRedirectWithMessage($redirectPath, $message);
     }
 

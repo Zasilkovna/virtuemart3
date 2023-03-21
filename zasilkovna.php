@@ -57,6 +57,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /** @var \VirtueMartModelZasilkovna\Order\Detail */
     protected $orderDetail;
 
+    /** @var \VirtueMartModelZasilkovna\Order\Repository */
+    protected $orderRepository;
+
     /**
      * plgVmShipmentZasilkovna constructor.
      *
@@ -84,6 +87,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $this->shipmentMethodStorage = new \VirtueMartModelZasilkovna\ShipmentMethodStorage($this->session);
         $this->shipmentMethodValidator = new \VirtueMartModelZasilkovna\ShipmentMethodValidator();
         $this->orderDetail = new \VirtueMartModelZasilkovna\Order\Detail();
+        $this->orderRepository = new \VirtueMartModelZasilkovna\Order\Repository();
     }
 
     /**
@@ -205,7 +209,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if(!($this->selectedThisByMethodId($virtuemart_shipmentmethod_id))) {
             return NULL;
         }
-        $order = $this->getOrderByVmOrderId($virtuemart_order_id);
+        $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
         $shipment_name .= $this->getOrderShipmentHtml($order);
     }
 
@@ -875,7 +879,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css')
             ));
 
-        $order = $this->getOrderByVmOrderId($virtuemart_order_id);
+        $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
         $html = $this->getOrderShipmentHtml($order);
 
         $orderDetailHtml = $this->orderDetail->renderToString($order);
@@ -1068,27 +1072,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     private function getAddressFromCart(VirtueMartCart $cart)
     {
         return 1 === (int) $cart->STsameAsBT ? $cart->BT : $cart->getST();
-    }
-
-    /**
-     * @param int $virtuemart_order_id
-     * @return \VirtueMartModelZasilkovna\Order\Order
-     */
-    public function getOrderByVmOrderId($virtuemart_order_id)
-    {
-        $db = JFactory::getDbo();
-        $query = $db->getQuery(true);
-        $query->select('*')
-            ->from($db->escape($this->_tablename))
-            ->where('virtuemart_order_id = ' . $db->quote($virtuemart_order_id));
-        $db->setQuery($query);
-        $order = $db->loadObject(\VirtueMartModelZasilkovna\Order\Order::class);
-
-        if(!$order) {
-            vmWarn(500, $query . " " . $db->getErrorMsg());
-        }
-
-        return $order;
     }
 
 }

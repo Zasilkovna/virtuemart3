@@ -31,16 +31,20 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     /** @var string[] */
     public $errors;
 
+    /**  @var VirtueMartModelZasilkovna\Order\Repository */
+    private  $repository;
+
     /**
      * VirtueMartModelZasilkovna_orders constructor.
      * @throws Exception
      */
-    function __construct() {
+    public function __construct() {
         parent::__construct();
         $this->zas_model = VmModel::getModel('zasilkovna');
         $this->errors = [];
         $this->setMainTable('orders');
         $this->addvalidOrderingFieldName(array('order_name', 'payment_method', 'virtuemart_order_id'));
+        $this->repository = new \VirtueMartModelZasilkovna\Order\Repository();
     }
 
     public function printLabels($orders_id_arr, $format = 'A7 on A4', $offset = '0') {
@@ -742,82 +746,19 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     }
 
     /**
-     * Shows errors in module administration
-     * @return void
-     */
-    public function raiseErrors()
-    {
-        foreach ($this->errors as $error) {
-            JError::raiseWarning(600, $error);
-        }
-    }
-
-    /**
      * @param array $formData
      * @return void
      */
     public function updateOrderDetail(array $formData)
     {
-        $validationReport = $this->validateOrderDetailFormData($formData);
-
-        if (!$validationReport->isValid()) {
-            $this->errors = array_merge($this->errors, $validationReport->getErrors());
-
-            return;
-        }
-
-        if ($this->hasOrderPacketId((int)$formData['virtuemart_order_id'])) {
+        if ($this->repository->hasOrderPacketId((int)$formData['virtuemart_order_id'])) {
             $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_ALREADY_SUBMITTED');
 
             return;
         }
+
         $formData['submitted'] = 0;
 
         $this->updateOrders([$formData['virtuemart_order_id'] => $formData]);
-    }
-
-    /**
-     * @param array $formData
-     * @return \VirtueMartModelZasilkovna\Order\DetailFormValidationReport
-     */
-    protected function validateOrderDetailFormData(array $formData)
-    {
-        $requiredNumericFields = [
-            'weight' => 'PLG_VMSHIPMENT_PACKETERY_WEIGHT',
-            'zasilkovna_packet_price' => 'PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE',
-            'packet_cod' => 'PLG_VMSHIPMENT_PACKETERY_COD',
-        ];
-        $validationReport = new \VirtueMartModelZasilkovna\Order\DetailFormValidationReport();
-
-        foreach ($requiredNumericFields as $field => $translationKey) {
-            if (!isset($formData[$field]) || !is_numeric($formData[$field])) {
-                $validationReport->addError(
-                    JText::sprintf(
-                        'PLG_VMSHIPMENT_PACKETERY_ORDER_DETAIL_FORM_ERROR_FIELD_REQUIRED',
-                        JText::_($translationKey)
-                    )
-                );
-            }
-        }
-
-        return $validationReport;
-    }
-
-    /**
-     * @param int $vmOrderId
-     * @return bool
-     */
-    public function hasOrderPacketId($vmOrderId)
-    {
-        $db = JFactory::getDBO();
-        $query = $db->getQuery(true);
-        $query->select('zasilkovna_packet_id');
-        $query->from($this->zas_model->getDbTableName());
-        $query->where('virtuemart_order_id = ' . $db->quote($vmOrderId));
-        $db->setQuery($query);
-
-        $result = $db->loadAssoc();
-
-        return $result && $result['zasilkovna_packet_id'] !== "0";
     }
 }

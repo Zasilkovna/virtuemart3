@@ -62,4 +62,31 @@ class Detail
         return $detailsHtml . $trackingHtml . $formHtml;
     }
 
+    /**
+     * @param array $formData
+     * @return \VirtueMartModelZasilkovna\Order\DetailFormValidationReport
+     */
+    public function validateFormData(array $formData)
+    {
+        $requiredNumericFields = [
+            'weight' => 'PLG_VMSHIPMENT_PACKETERY_WEIGHT',
+            'zasilkovna_packet_price' => 'PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE',
+            'packet_cod' => 'PLG_VMSHIPMENT_PACKETERY_COD',
+        ];
+        $validationReport = new \VirtueMartModelZasilkovna\Order\DetailFormValidationReport();
+
+        foreach ($requiredNumericFields as $field => $translationKey) {
+            if (!isset($formData[$field]) || !is_numeric($formData[$field])) {
+                $validationReport->addError(
+                    \JText::sprintf(
+                        'PLG_VMSHIPMENT_PACKETERY_ORDER_DETAIL_FORM_ERROR_FIELD_REQUIRED',
+                        \JText::_($translationKey)
+                    )
+                );
+            }
+        }
+
+        return $validationReport;
+    }
+
 }
