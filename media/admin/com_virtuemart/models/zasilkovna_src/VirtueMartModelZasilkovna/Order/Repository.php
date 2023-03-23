@@ -4,7 +4,7 @@ namespace VirtueMartModelZasilkovna\Order;
 
 class Repository
 {
-    const PACKETERY_ORDER_TBL = "#__virtuemart_shipment_plg_zasilkovna";
+    const PACKETERY_ORDER_TABLE_NAME = "#__virtuemart_shipment_plg_zasilkovna";
 
     /**
      * @var \JDatabaseDriver
@@ -25,7 +25,7 @@ class Repository
 
         $query = $this->db->getQuery(true);
         $query->select('zasilkovna_packet_id');
-        $query->from(self::PACKETERY_ORDER_TBL);
+        $query->from(self::PACKETERY_ORDER_TABLE_NAME);
         $query->where('virtuemart_order_id = ' . $this->db->quote($vmOrderId));
         $this->db->setQuery($query);
 
@@ -42,7 +42,7 @@ class Repository
     {
         $query = $this->db->getQuery(true);
         $query->select('*')
-            ->from(self::PACKETERY_ORDER_TBL)
+            ->from(self::PACKETERY_ORDER_TABLE_NAME)
             ->where('virtuemart_order_id = ' . $this->db->quote($virtuemart_order_id));
         $this->db->setQuery($query);
         $order = $this->db->loadObject(\VirtueMartModelZasilkovna\Order\Order::class);
