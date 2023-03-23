@@ -50,10 +50,10 @@ class Detail
         } else {
             $document = JFactory::getDocument();
             $document->addScript(
-                    sprintf('%smedia/com_zasilkovna/media/js/order-detail.js?v=%s',
-                        JUri::root(),
-                        filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/order-detail.js')
-                    )
+                sprintf('%smedia/com_zasilkovna/media/js/order-detail.js?v=%s',
+                    JUri::root(),
+                    filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/order-detail.js')
+                )
             );
             $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_detail_form.php');
             $formHtml = $this->renderer->renderToString();

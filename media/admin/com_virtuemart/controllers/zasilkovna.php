@@ -214,13 +214,15 @@ class VirtuemartControllerZasilkovna extends VmController
                 JError::raiseWarning(600, $error);
             }
             $this->setRedirectWithMessage($redirectPath);
+
             return;
         }
 
         $this->zasOrdersModel->updateOrderDetail($formData);
-        
+
         if (empty($zasOrdersModel->errors)) {
-            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_DETAILS_UPDATED'), FlashMessage::TYPE_MESSAGE);
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_DETAILS_UPDATED'),
+                FlashMessage::TYPE_MESSAGE);
         } else {
             foreach ($zasOrdersModel->errors as $error) {
                 JError::raiseWarning(600, $error);

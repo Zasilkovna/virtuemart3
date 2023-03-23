@@ -47,7 +47,7 @@ class Repository
         $this->db->setQuery($query);
         $order = $this->db->loadObject(\VirtueMartModelZasilkovna\Order\Order::class);
 
-        if(!$order) {
+        if (!$order) {
             vmWarn(500, $query . " " . $this->db->getErrorMsg());
         }
 
