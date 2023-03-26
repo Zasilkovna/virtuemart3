@@ -28,16 +28,23 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     /** @var VirtueMartModelZasilkovna */
     private $zas_model;
 
+    /** @var string[] */
+    public $errors;
+
+    /**  @var VirtueMartModelZasilkovna\Order\Repository */
+    private  $repository;
 
     /**
      * VirtueMartModelZasilkovna_orders constructor.
      * @throws Exception
      */
-    function __construct() {
+    public function __construct() {
         parent::__construct();
         $this->zas_model = VmModel::getModel('zasilkovna');
+        $this->errors = [];
         $this->setMainTable('orders');
         $this->addvalidOrderingFieldName(array('order_name', 'payment_method', 'virtuemart_order_id'));
+        $this->repository = new \VirtueMartModelZasilkovna\Order\Repository();
     }
 
     public function printLabels($orders_id_arr, $format = 'A7 on A4', $offset = '0') {
@@ -738,4 +745,20 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
     }
 
+    /**
+     * @param array $formData
+     * @return void
+     */
+    public function updateOrderDetail(array $formData)
+    {
+        if ($this->repository->hasOrderPacketId((int)$formData['virtuemart_order_id'])) {
+            $this->errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_ALREADY_SUBMITTED');
+
+            return;
+        }
+
+        $formData['submitted'] = 0;
+
+        $this->updateOrders([$formData['virtuemart_order_id'] => $formData]);
+    }
 }

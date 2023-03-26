@@ -34,6 +34,8 @@ require_once VMPATH_ADMIN . '/fields/vmzasilkovnahdcarriers.php';
 class plgVmShipmentZasilkovna extends vmPSPlugin
 {
     const DEFAULT_WEIGHT_UNIT = 'KG';
+    const TEMPLATES_DIR = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart' . DS . 'views' . DS . 'zasilkovna' . DS . 'tmpl';
+    const TRACKING_URL = 'https://tracking.packeta.com/?id=%s';
 
     public static $_this = false;
 
@@ -51,6 +53,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
     /** @var \VirtueMartModelZasilkovna\ShipmentMethodValidator */
     protected $shipmentMethodValidator;
+
+    /** @var \VirtueMartModelZasilkovna\Order\Detail */
+    protected $orderDetail;
+
+    /** @var \VirtueMartModelZasilkovna\Order\Repository */
+    protected $orderRepository;
 
     /**
      * plgVmShipmentZasilkovna constructor.
@@ -78,6 +86,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $this->checkoutModuleDetector = new \VirtueMartModelZasilkovna\CheckoutModuleDetector();
         $this->shipmentMethodStorage = new \VirtueMartModelZasilkovna\ShipmentMethodStorage($this->session);
         $this->shipmentMethodValidator = new \VirtueMartModelZasilkovna\ShipmentMethodValidator();
+        $this->orderDetail = new \VirtueMartModelZasilkovna\Order\Detail();
+        $this->orderRepository = new \VirtueMartModelZasilkovna\Order\Repository();
     }
 
     /**
@@ -199,8 +209,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if(!($this->selectedThisByMethodId($virtuemart_shipmentmethod_id))) {
             return NULL;
         }
-
-        $shipment_name .= $this->getOrderShipmentHtml($virtuemart_order_id);
+        $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
+        $shipment_name .= $this->getOrderShipmentHtml($order);
     }
 
     /**
@@ -862,25 +872,29 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if(!($this->selectedThisByMethodId($virtuemart_shipmentmethod_id))) {
             return NULL;
         }
-        $html = $this->getOrderShipmentHtml($virtuemart_order_id);
+        $document = JFactory::getDocument();
+        $document->addStyleSheet(
+            sprintf('%smedia/com_zasilkovna/media/css/admin.css?v=%s',
+                JUri::root(),
+                filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css')
+            ));
 
-        return $html;
+        $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
+        $html = $this->getOrderShipmentHtml($order);
+
+        $orderDetailHtml = $this->orderDetail->renderToString($order);
+        
+        return $html .  $orderDetailHtml;
     }
 
     /**
-     * @param $virtuemart_order_id
+     * @param \VirtueMartModelZasilkovna\Order\Order $order
      * @return string
      * @author zasilkovna
      */
-    function getOrderShipmentHtml($virtuemart_order_id) {
-
-        $db = JFactory::getDBO();
-        $q = 'SELECT * FROM `' . $db->escape($this->_tablename) . '` '
-            . 'WHERE `virtuemart_order_id` = ' . (int)$virtuemart_order_id;
-        $db->setQuery($q);
-        if(!($shipinfo = $db->loadObject())) {
-            vmWarn(500, $q . " " . $db->getErrorMsg());
-
+    function getOrderShipmentHtml(\VirtueMartModelZasilkovna\Order\Order $order)
+    {
+        if(!$order) {
             return '';
         }
 
@@ -889,16 +903,17 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $currency = CurrencyDisplay::getInstance();
-        $tax = ShopFunctions::getTaxByID($shipinfo->tax_id);
-        $taxDisplay = is_array($tax) ? $tax['calc_value'] . ' ' . $tax['calc_value_mathop'] : $shipinfo->tax_id;
+        $taxId = $order->getTaxId();
+        $tax = ShopFunctions::getTaxByID($taxId);
+        $taxDisplay = is_array($tax) ? $tax['calc_value'] . ' ' . $tax['calc_value_mathop'] : $taxId;
         $taxDisplay = ($taxDisplay == -1) ? JText::_('COM_VIRTUEMART_PRODUCT_TAX_NONE') : $taxDisplay;
 
         $html = '<table class="adminlist">' . "\n";
 
         JFactory::getLanguage()->load('plg_vmshipment_zasilkovna');
-        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_SHIPPING_NAME', $shipinfo->shipment_name);
-        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_BRANCH', $shipinfo->branch_name_street);
-        $html .= $this->getHtmlRowBE('COM_VIRTUEMART_CURRENCY', $shipinfo->branch_currency);
+        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_SHIPPING_NAME', $order->getShipmentName());
+        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_BRANCH', $order->getBranchNameStreet());
+        $html .= $this->getHtmlRowBE('COM_VIRTUEMART_CURRENCY', $order->getBranchCurrency());
 
         $html .= '</table>' . "\n";
 
@@ -1047,7 +1062,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         return $this->declarePluginParams('shipment', $data);
     }
-
 
     /**
      * If user set Shipping address same as Billing we take the billing address

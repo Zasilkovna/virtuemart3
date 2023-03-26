@@ -33,6 +33,19 @@ VmModel::getModel('zasilkovna')->loadLanguage();
  */
 class VirtuemartControllerZasilkovna extends VmController
 {
+    /** @var \VirtueMartModelZasilkovna\Order\Detail */
+    private $orderDetail;
+
+    /** @var VirtueMartModelZasilkovna_orders $zasOrdersModel */
+    private $zasOrdersModel;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->orderDetail = new \VirtueMartModelZasilkovna\Order\Detail();
+        $this->zasOrdersModel = VmModel::getModel('zasilkovna_orders');
+    }
+
     /**
      * Updates carriers.
      */
@@ -86,22 +99,16 @@ class VirtuemartControllerZasilkovna extends VmController
      */
     public function updateZasilkovnaOrders()
     {
-        /** @var VirtueMartModelZasilkovna_orders $zasOrdersModel */
-        $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
-        $zasOrdersModel->updateOrders($_POST['orders']);
+        $this->zasOrdersModel->updateOrders($_POST['orders']);
     }
-
 
     /**
      * Export orders to csv.
      */
     public function exportZasilkovnaOrders()
     {
-        /** @var VirtueMartModelZasilkovna_orders $zasOrdersModel */
-        $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
-        $zasOrdersModel->exportToCSV($_POST['exportOrders']);
+        $this->zasOrdersModel->exportToCSV($_POST['exportOrders']);
     }
-
 
     /**
      * Update and export orders to csv.
@@ -115,8 +122,7 @@ class VirtuemartControllerZasilkovna extends VmController
 
     public function printLabels()
     {
-        $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
-        $result = $zasOrdersModel->printLabels($_POST['printLabels'], $_POST['print_type'], $_POST['label_first_page_skip']);
+        $result = $this->zasOrdersModel->printLabels($_POST['printLabels'], $_POST['print_type'], $_POST['label_first_page_skip']);
         foreach($result as $error) {
             JError::raiseWarning(100, $error);
         }
@@ -128,9 +134,7 @@ class VirtuemartControllerZasilkovna extends VmController
      */
     public function cancelOrderSubmitToZasilkovna()
     {
-        /** @var VirtueMartModelZasilkovna_orders $zasOrdersModel */
-        $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
-        $zasOrdersModel->cancelOrderSubmitToZasilkovna($_GET['cancel_order_id']);
+        $this->zasOrdersModel->cancelOrderSubmitToZasilkovna($_GET['cancel_order_id']);
 
         // Create message content.
         $message = null;
@@ -145,8 +149,7 @@ class VirtuemartControllerZasilkovna extends VmController
     public function submitToZasilkovna()
     {
         $this->updateZasilkovnaOrders();
-        $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
-        $result = $zasOrdersModel->submitToZasilkovna($_POST['exportOrders']);
+        $result = $this->zasOrdersModel->submitToZasilkovna($_POST['exportOrders']);
         $exportedOrders = $result['exported'];
         $failedOrders = $result['failed'];
         $message = null;
@@ -190,4 +193,43 @@ class VirtuemartControllerZasilkovna extends VmController
             $message ? $message->getMessage() : null,
             $message ? $message->getType() : null);
     }
+
+    /**
+     * @return void
+     */
+    public function updatePacketeryOrderDetail()
+    {
+        vRequest::vmCheckToken();
+        $formData = vRequest::getPost();
+        $message = null;
+        $redirectPath = sprintf(
+            '%sindex.php?option=com_virtuemart&view=orders&task=edit&virtuemart_order_id=%s',
+            JUri::base(false),
+            $formData['virtuemart_order_id']
+        );
+
+        $validationReport = $this->orderDetail->validateFormData($formData);
+        if (!$validationReport->isValid()) {
+            foreach ($validationReport->getErrors() as $error) {
+                JError::raiseWarning(600, $error);
+            }
+            $this->setRedirectWithMessage($redirectPath);
+
+            return;
+        }
+
+        $this->zasOrdersModel->updateOrderDetail($formData);
+
+        if (empty($zasOrdersModel->errors)) {
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_DETAILS_UPDATED'),
+                FlashMessage::TYPE_MESSAGE);
+        } else {
+            foreach ($zasOrdersModel->errors as $error) {
+                JError::raiseWarning(600, $error);
+            }
+        }
+
+        $this->setRedirectWithMessage($redirectPath, $message);
+    }
+
 }

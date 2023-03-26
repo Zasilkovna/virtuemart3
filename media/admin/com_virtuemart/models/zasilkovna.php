@@ -32,7 +32,7 @@ class VirtueMartModelZasilkovna extends VmModel
     public $_media_url = "";
     public $_media_path = "";
 
-    private $_db_table_name = "#__virtuemart_shipment_plg_zasilkovna";
+    private $_db_table_name = VirtueMartModelZasilkovna\Order\Repository::PACKETERY_ORDER_TABLE_NAME;
     public $checked_configuration = false;
     public $config_ok = false;
 
