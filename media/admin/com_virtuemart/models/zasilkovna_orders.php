@@ -14,6 +14,7 @@ defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmModel')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmmodel.php');
 
+use VirtueMartModelZasilkovna\Label;
 
 /**
  * Class VirtueMartModelZasilkovna_orders
@@ -88,11 +89,10 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         exit();
     }
 
-    public function printCarrierLabels($packetIds, $format = 'A6 on A4', $offset = '0')
+    public function printCarrierLabels($packetIds, Label\Format $format, $offset = '0')
     {
         $gw = new SoapClient("http://www.zasilkovna.cz/api/soap-php-bugfix.wsdl");
         $apiPassword = $this->zas_model->api_pass;
-        $format = str_replace(['carriers_', '_'], ['', ' '], $format);
 
         $errors = [];
         if (empty($packetIds)) {
@@ -121,7 +121,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 ];
             }
 
-            $pdfContent = $gw->packetsCourierLabelsPdf($apiPassword, $packetsWithCarrierNumbers, $offset, $format);
+            $pdfContent = $gw->packetsCourierLabelsPdf($apiPassword, $packetsWithCarrierNumbers, $offset, $format->getValue());
 
             header('Content-type: application/pdf');
             header('Content-Disposition: attachment; filename="carrier-labels-' . date("Ymd-His") . '.pdf"');

@@ -26,6 +26,7 @@ if(!class_exists('VmController')) require(VMPATH_ADMIN . DS . 'helpers' . DS . '
 /** @var VirtueMartModelZasilkovna */
 VmModel::getModel('zasilkovna')->loadLanguage();
 
+use VirtueMartModelZasilkovna\Label;
 
 /**
  * Class VirtuemartControllerZasilkovna
@@ -123,7 +124,8 @@ class VirtuemartControllerZasilkovna extends VmController
     public function printLabels()
     {
         if (strpos($_POST['print_type'], 'carriers_') === 0) {
-            $result = $this->zasOrdersModel->printCarrierLabels($_POST['printLabels'], $_POST['print_type'], $_POST['label_first_page_skip']);
+            $format = str_replace(['carriers_', '_'], ['', ' '], $_POST['print_type']);
+            $result = $this->zasOrdersModel->printCarrierLabels($_POST['printLabels'], new Label\Format($format), $_POST['label_first_page_skip']);
         } else {
             $result = $this->zasOrdersModel->printPacketaLabels($_POST['printLabels'], $_POST['print_type'], $_POST['label_first_page_skip']);
         }
