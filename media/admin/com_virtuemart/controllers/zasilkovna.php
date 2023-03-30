@@ -123,14 +123,23 @@ class VirtuemartControllerZasilkovna extends VmController
 
     public function printLabels()
     {
-        if (strpos($_POST['print_type'], 'carriers_') === 0) {
-            $format = str_replace(['carriers_', '_'], ['', ' '], $_POST['print_type']);
-            $result = $this->zasOrdersModel->printCarrierLabels($_POST['printLabels'], new Label\Format($format), $_POST['label_first_page_skip']);
+        $postData = vRequest::getPost();
+        if (strpos($postData['print_type'], 'carriers_') === 0) {
+            $format = str_replace(['carriers_', '_'], ['', ' '], $postData['print_type']);
+            $result = $this->zasOrdersModel->printCarrierLabels(
+                $postData['printLabels'],
+                new Label\Format($format),
+                $postData['label_first_page_skip']
+            );
         } else {
-            $result = $this->zasOrdersModel->printPacketaLabels($_POST['printLabels'], $_POST['print_type'], $_POST['label_first_page_skip']);
+            $result = $this->zasOrdersModel->printPacketaLabels(
+                $postData['printLabels'],
+                $postData['print_type'],
+                $postData['label_first_page_skip']
+            );
         }
 
-        foreach($result as $error) {
+        foreach ($result as $error) {
             JError::raiseWarning(100, $error);
         }
         $this->setRedirect($this->redirectPath);

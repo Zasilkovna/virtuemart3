@@ -56,7 +56,7 @@ class Repository
 
     /**
      * @param int[]|string[] $packetIds
-     * @return array
+     * @return string[]
      */
     public function getExternalCarrierPacketIdsByPacketIds(array $packetIds)
     {
@@ -88,6 +88,7 @@ class Repository
             );
 
         $this->db->setQuery($query);
+
         return $this->db->loadColumn() ?: [];
     }
 }

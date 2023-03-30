@@ -89,11 +89,14 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         exit();
     }
 
-    public function printCarrierLabels($packetIds, Label\Format $format, $offset = '0')
+    /**
+     * @param int[]|string[] $packetIds
+     * @param Label\Format $format
+     * @param int $offset
+     * @return array
+     */
+    public function printCarrierLabels(array $packetIds, Label\Format $format, $offset = 0)
     {
-        $gw = new SoapClient("http://www.zasilkovna.cz/api/soap-php-bugfix.wsdl");
-        $apiPassword = $this->zas_model->api_pass;
-
         $errors = [];
         if (empty($packetIds)) {
             $errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_PRINT');
@@ -102,18 +105,20 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
 
         $validPacketIds = $this->repository->getExternalCarrierPacketIdsByPacketIds($packetIds);
-
         if (empty($validPacketIds)) {
             $errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_PRINT');
 
             return $errors;
         }
 
+        $soapClient = new SoapClient('http://www.zasilkovna.cz/api/soap-php-bugfix.wsdl');
+        $apiPassword = $this->zas_model->api_pass;
+
         try {
             $packetsWithCarrierNumbers = [];
 
             foreach ($validPacketIds as $packetId) {
-                $courierNumber = $gw->packetCourierNumberV2($apiPassword, $packetId)->courierNumber;
+                $courierNumber = $soapClient->packetCourierNumberV2($apiPassword, $packetId)->courierNumber;
 
                 $packetsWithCarrierNumbers[] = [
                     'packetId' => $packetId,
@@ -121,14 +126,19 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 ];
             }
 
-            $pdfContent = $gw->packetsCourierLabelsPdf($apiPassword, $packetsWithCarrierNumbers, $offset, $format->getValue());
+            $pdfContent = $soapClient->packetsCourierLabelsPdf(
+                $apiPassword,
+                $packetsWithCarrierNumbers,
+                $offset,
+                $format->getValue()
+            );
 
             header('Content-type: application/pdf');
-            header('Content-Disposition: attachment; filename="carrier-labels-' . date("Ymd-His") . '.pdf"');
+            header(sprintf('Content-Disposition: attachment; filename="carrier-labels-%s.pdf"', date("Ymd-His")));
             echo $pdfContent;
-            $this->setPrintLabelFlag($packetIds);
-        } catch (SoapFault $e) {
-            $errors[] = $e->faultstring;
+            $this->setPrintLabelFlag($validPacketIds);
+        } catch (SoapFault $soapFault) {
+            $errors[] = $soapFault->faultstring;
 
             return $errors;
         }

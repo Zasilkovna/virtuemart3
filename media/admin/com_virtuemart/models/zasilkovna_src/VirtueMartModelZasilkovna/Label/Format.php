@@ -33,7 +33,7 @@ class Format
                 $value,
                 [
                     self::A6_ON_A4,
-                    self::A6_ON_A6
+                    self::A6_ON_A6,
                 ],
                 true
             )
