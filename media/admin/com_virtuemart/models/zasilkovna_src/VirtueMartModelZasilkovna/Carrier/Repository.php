@@ -92,8 +92,17 @@ class Repository
     {
         $db = \JFactory::getDBO();
         $db->setQuery(
-            sprintf(
-                "SELECT id, name, country, deleted FROM #__virtuemart_zasilkovna_carriers WHERE id = %d",
+            sprintf("
+                SELECT vzc.id, 
+                   vzc.name, 
+                   vzc.country, 
+                   vzc.deleted,
+                   vc.virtuemart_country_id AS vm_country
+                FROM #__virtuemart_zasilkovna_carriers vzc
+                LEFT JOIN #__virtuemart_countries vc 
+                    ON UCASE(vzc.country) = vc.country_2_code
+                WHERE id = %d
+                ",
                 $carrierId
             )
         );
