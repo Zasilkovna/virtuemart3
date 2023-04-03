@@ -123,6 +123,15 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     $attributes['carrierPickupPoint'] = $order['carrier_point'];
                 }
 
+                if ($order['is_carrier'] === '1' && $order['carrier_point'] === '') {
+                    $attributes['street'] = $order['recipient_street'];
+                    $attributes['city'] = $order['recipient_city'];
+                    $attributes['zip'] = $order['recipient_zip'];
+                    if ($order['recipient_house_number']) {
+                        $attributes['houseNumber'] = $order['recipient_house_number'];
+                    }
+                }
+
                 $packet = $gw->createPacket($apiPassword, $attributes);
                 $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET zasilkovna_packet_id=" . (int)$packet->id . " WHERE order_number = '" . $db->escape($order['order_number']) . "'; ";
                 $db->setQuery($q);
@@ -353,7 +362,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $q = "SELECT o.order_number,curr.currency_code_3 order_currency_name,
         plg.zasilkovna_packet_price order_total,oi.first_name,oi.last_name,
         oi_bt.email,IFNULL(oi.phone_1, oi_bt.phone_1) as phone_1,IFNULL(oi.phone_2, oi_bt.phone_2) as phone_2,plg.packet_cod,
-       	plg.branch_id,plg.zasilkovna_packet_id, plg.carrier_pickup_point,
+       	plg.branch_id,plg.zasilkovna_packet_id, plg.carrier_pickup_point, plg.is_carrier, 
         plg.address as address, plg.adult_content AS adult_content, plg.city, plg.zip_code, plg.branch_currency, plg.weight FROM #__virtuemart_orders o ";
         $q .= "INNER JOIN #__virtuemart_order_userinfos oi ON o.virtuemart_order_id=oi.virtuemart_order_id AND oi.address_type = IF(o.STsameAsBT = 1, 'BT', 'ST') ";
         $q .= "INNER JOIN #__virtuemart_order_userinfos oi_bt ON o.virtuemart_order_id=oi_bt.virtuemart_order_id AND oi_bt.address_type = 'BT' ";
@@ -421,6 +430,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $orderForExport['recipient_city'] = $row["city"];
             $orderForExport['recipient_zip'] = $row['zip_code'];
             $orderForExport['carrier_point'] = $row['carrier_pickup_point'];
+            $orderForExport['is_carrier'] = $row['is_carrier'];
             $orderForExport['width'] = "";
             $orderForExport['height'] = "";
             $orderForExport['depth'] = "";
