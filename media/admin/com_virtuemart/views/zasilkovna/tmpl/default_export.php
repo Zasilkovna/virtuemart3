@@ -51,7 +51,7 @@
             <th></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_RECEIVER_NAME'); ?></th>
-            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_BRANCH'); ?></th>
+            <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PICKUP_POINT_OR_CARRIER'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ADDRESS'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_METHOD'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CREATED_ON'); ?></th>
