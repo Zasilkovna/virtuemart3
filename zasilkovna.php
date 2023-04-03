@@ -63,6 +63,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /** @var \VirtueMartModelZasilkovna\Box\Renderer */
     protected $renderer;
 
+    /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
+    protected $carrierRepository;
+
     /**
      * plgVmShipmentZasilkovna constructor.
      *
@@ -92,6 +95,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $this->orderDetail = new \VirtueMartModelZasilkovna\Order\Detail();
         $this->orderRepository = new \VirtueMartModelZasilkovna\Order\Repository();
         $this->renderer = new \VirtueMartModelZasilkovna\Box\Renderer();
+        $this->carrierRepository = new \VirtueMartModelZasilkovna\Carrier\Repository();
     }
 
     /**
@@ -305,10 +309,14 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         if ($zasMethod->isHdCarrier()) {
             $carrierId = $zasMethod->getHdCarrierId();
-            $carrier = $this->model->carrierRepository->getCarrierById($carrierId);
+            $carrier = $carrierId ? $this->carrierRepository->getCarrierById($carrierId) : null;
+            if (!$carrier) {
+                return false;
+            }
+
             $is_carrier = 1;
             $branch_id = $carrierId;
-            $branch_name_street =  $carrier->name;
+            $branch_name_street =  $carrier->name ?: $carrier->id;
         }
 
         $values['virtuemart_order_id'] = $details->virtuemart_order_id;
@@ -749,6 +757,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $activeCheckout = $this->checkoutModuleDetector->getActiveCheckout();
+        $shouldIncludeTailBlock = false;
+
         foreach($this->methods as $key => $method) {
 
             $zasMethod = ShipmentMethod::fromRandom($method);
@@ -774,7 +784,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             }
 
             if ($isHdCarrier) {
-                $hdCarrier = $this->model->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
+                $hdCarrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
                 if (!$hdCarrier || $hdCarrier->deleted === '1' || ( $countryCode !== '' && $hdCarrier->country !== $countryCode)) {
                     continue;
                 }
@@ -802,6 +812,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 );
 
                 $html[$key] = $isHdCarrier ? $baseHtml : $this->renderer->renderToString();
+
+                if (!$isHdCarrier) {
+                    $shouldIncludeTailBlock = true;
+                }
             }
         }
 
@@ -809,9 +823,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return FALSE;
         }
 
-        $widgetHtml = $this->getWidgetHtml($activeCheckout, $countryCode, $langCode);
+        if ($shouldIncludeTailBlock) {
+            $tailBlockHtml = $this->getTailBlockHtml($activeCheckout, $countryCode, $langCode);
+            $html[] = $tailBlockHtml;
+        }
 
-        $html[] = $widgetHtml;
         $htmlIn[] = $html;
 
         return TRUE;
@@ -862,7 +878,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $zasMethod = ShipmentMethod::fromRandom($method);
         if ($zasMethod->isHdCarrier()) {
             $this->clearPickedDeliveryPoint($virtuemartShipmentMethodId);
-            $hdCarrier = $this->model->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
+            $hdCarrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
             if (!$hdCarrier || $hdCarrier->deleted === '1' || $hdCarrier->country !== $countryCode) {
                 $cart->virtuemart_shipmentmethod_id = null; // makes selected shipping method disappear
             }
@@ -1087,7 +1103,13 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return 1 === (int) $cart->STsameAsBT ? $cart->BT : $cart->getST();
     }
 
-    public function getWidgetHtml(\VirtueMartModelZasilkovna\CheckoutModules\AbstractResolver $activeCheckout, $country2code, $langCode)
+    /**
+     * @param \VirtueMartModelZasilkovna\CheckoutModules\AbstractResolver $activeCheckout
+     * @param string $country2code
+     * @param string $langCode
+     * @return string
+     */
+    public function getTailBlockHtml(\VirtueMartModelZasilkovna\CheckoutModules\AbstractResolver $activeCheckout, $country2code, $langCode)
     {
         $this->renderer->setTemplate($activeCheckout->getTailBlock());
 

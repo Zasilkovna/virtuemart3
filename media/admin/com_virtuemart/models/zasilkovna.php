@@ -39,7 +39,7 @@ class VirtueMartModelZasilkovna extends VmModel
     public $errors = array();
 
     /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
-    public $carrierRepository;
+    private $carrierRepository;
 
     /** @var \VirtueMartModelZasilkovna\Carrier\Downloader */
     private $carrierDownloader;
