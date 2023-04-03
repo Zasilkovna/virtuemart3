@@ -1,4 +1,5 @@
 1.4.0 - Added: manual trigger for carrier list update via Packeta API
+      - Added: pickup point split
       - Added: carrier v4 import
       - Added: customer address to API export
       - Updated: carrier table migration

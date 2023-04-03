@@ -38,6 +38,11 @@ jQuery(function() {
 			language: packetery.language
 		};
 
+		var widgetVendors = getSelectedPacketeryBox().data('packetery-widget-vendors');
+		if (widgetVendors.length > 0) {
+			opts.vendors = widgetVendors;
+		}
+
 		Packeta.Widget.pick(packetery.apiKey, function(pickupPoint){
 			if (pickupPoint === null)
 				return;

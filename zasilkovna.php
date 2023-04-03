@@ -1,6 +1,7 @@
 <?php
 
 use VirtueMartModelZasilkovna\ShipmentMethod;
+use VirtueMartModelZasilkovna\Carrier\VendorGroups;
 
 defined('_JEXEC') or die('Restricted access');
 defined('PACKETERY_MEDIA_DIR') || define('PACKETERY_MEDIA_DIR', __DIR__ . '/../../../media/com_zasilkovna/media');
@@ -803,6 +804,13 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                         'selectPoint' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_SELECT_POINT'),
                         'selectedPoint' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_SELECTED_POINT'),
                         'enterAddress' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_ENTER_ADDRESS'),
+                        'widgetVendors' => json_encode(
+                            self::createWidgetVendorsParam(
+                                $zasMethod,
+                                $countryCode,
+                                $this->carrierRepository->getAllActiveCarrierIds(true, $countryCode)
+                            )
+                        ),
                         'baseHtml' => $baseHtml,
                         'isCountrySelected' => !empty($address['virtuemart_country_id']),
                         'savedBranchNameStreet' =>
@@ -830,6 +838,63 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $htmlIn[] = $html;
 
         return TRUE;
+    }
+
+    /**
+     * @param ShipmentMethod $shipmentMethod
+     * @param string $countryCode
+     * @param array<int, int|string> $carrierIds
+     * @return array
+     */
+    private static function createWidgetVendorsParam(
+        ShipmentMethod $shipmentMethod,
+        $countryCode,
+        array $carrierIds = []
+    ) {
+        $widgetVendors = [];
+        $vendorGroups = $shipmentMethod->getVendorGroups();
+
+        foreach ($vendorGroups as $vendorGroup) {
+            if (!VendorGroups::isGroupPresentInCountry($vendorGroup, $countryCode)) {
+                continue;
+            }
+
+            $widgetVendors[] = self::createWidgetVendor($countryCode, $vendorGroup, null);
+        }
+
+        if (empty($widgetVendors)) {
+            return $widgetVendors;
+        }
+
+        foreach ($carrierIds as $carrierId) {
+            $widgetVendors[] = self::createWidgetVendor($countryCode, null, $carrierId);
+        }
+
+        return $widgetVendors;
+    }
+
+    /**
+     * @param string $countryCode
+     * @param string|null $group
+     * @param string|null $carrierId
+     * @return array<string, bool|string>
+     */
+    private static function createWidgetVendor($countryCode, $group, $carrierId)
+    {
+        $widgetVendor = [
+            'country' => $countryCode,
+            'selected' => true,
+        ];
+
+        if ($group !== null && $group !== VendorGroups::ZPOINT) {
+            $widgetVendor['group'] = $group;
+        }
+
+        if ($carrierId !== null) {
+            $widgetVendor['carrierId'] = $carrierId;
+        }
+
+        return $widgetVendor;
     }
 
     /**
