@@ -53,4 +53,42 @@ class Repository
 
         return $order;
     }
+
+    /**
+     * @param int[]|string[] $packetIds
+     * @return string[]
+     */
+    public function getExternalCarrierPacketIdsByPacketIds(array $packetIds)
+    {
+        $escapedPacketIds = [];
+        foreach ($packetIds as $packetId) {
+            if (!is_numeric($packetId)) {
+                throw new \InvalidArgumentException('Numeric packet ID is expected');
+            }
+
+            $escapedPacketIds[] = (int)$packetId;
+        }
+
+        if (empty($escapedPacketIds)) {
+            return [];
+        }
+
+        $query = $this->db->getQuery(true);
+        $query->select('DISTINCT `zasilkovna_packet_id`')
+            ->from(self::PACKETERY_ORDER_TABLE_NAME)
+            ->where('`is_carrier`=1')
+            ->andWhere(
+                sprintf(
+                    '`zasilkovna_packet_id` IN (%s)',
+                    implode(
+                        ',',
+                        $escapedPacketIds
+                    )
+                )
+            );
+
+        $this->db->setQuery($query);
+
+        return $this->db->loadColumn() ?: [];
+    }
 }

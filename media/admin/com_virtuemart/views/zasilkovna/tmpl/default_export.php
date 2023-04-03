@@ -203,6 +203,8 @@
             <option value="A7_on_A7"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A7_ON_A7'); ?></option>
             <option value="A8_on_A8"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A8_ON_A8'); ?></option>
             <option value="105x35mm_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_105X35MM_ON_A4'); ?></option>
+            <option value="carriers_A6_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_LABELS_PRINT_A6_ON_A4'); ?></option>
+            <option value="carriers_A6_on_A6"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_LABELS_PRINT_A6_ON_A6'); ?></option>
         </select>
         <br>
         <label for="label_first_page_skip"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_OFFSET') ?>: </label>

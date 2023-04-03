@@ -14,6 +14,7 @@ defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmModel')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmmodel.php');
 
+use VirtueMartModelZasilkovna\Label;
 
 /**
  * Class VirtueMartModelZasilkovna_orders
@@ -47,51 +48,120 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $this->repository = new \VirtueMartModelZasilkovna\Order\Repository();
     }
 
-    public function printLabels($orders_id_arr, $format = 'A7 on A4', $offset = '0') {
+    /**
+     * @param string $content
+     * @return void
+     */
+    private function echoLabelContent($content)
+    {
+        header('Content-type: application/pdf');
+        header('Content-Disposition: attachment; filename="labels-' . date("Ymd-His") . '.pdf"');
+        echo $content;
+    }
 
-        $db = JFactory::getDBO();
-        $gw = new SoapClient("http://www.zasilkovna.cz/api/soap-php-bugfix.wsdl");
-        $zas_model = VmModel::getModel('zasilkovna');
-        $apiPassword = $zas_model->api_pass;
-
-        $format = str_replace('_', ' ', $format);
-
-        $errors = array();
-        if(sizeof($orders_id_arr) == 0) {
+    /**
+     * @param int[]|string[] $packetIds
+     * @param Label\Format $format
+     * @param int $offset
+     * @return array
+     */
+    public function printPacketaLabels(array $packetIds, Label\Format $format, $offset = 0)
+    {
+        $errors = [];
+        if (empty($packetIds)) {
             $errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_PRINT');
 
             return $errors;
         }
-        try {
-            $packet = $gw->packetsLabelsPdf($apiPassword, $orders_id_arr, $format, $offset);
-            header('Content-type: application/pdf');
-            header('Content-Disposition: attachment; filename="labels-' . date("Ymd-His") . '.pdf"');
-            echo $packet;
-            $this->setPrintLabelFlag($orders_id_arr);
 
-        }
-        catch(SoapFault $e) {
+        $soapClient = new SoapClient(VirtueMartModelZasilkovna::PACKETA_WSDL);
+        $apiPassword = $this->zas_model->api_pass;
+
+        try {
+            $pdfContent = $soapClient->packetsLabelsPdf($apiPassword, $packetIds, $format->getValue(), $offset);
+        } catch (SoapFault $e) {
             $errors[] = $e->faultstring . " ";
-            if(is_array($e->detail->PacketIdsFault->ids->packetId)) {
+            if (is_array($e->detail->PacketIdsFault->ids->packetId)) {
                 $wrongPacketIds = "";
-                foreach($e->detail->PacketIdsFault->ids->packetId as $wrongPacketId) {
+                foreach ($e->detail->PacketIdsFault->ids->packetId as $wrongPacketId) {
                     $wrongPacketIds .= $wrongPacketId . " ";
                 }
                 $errors[] = $wrongPacketIds;
-            }
-            else if(is_object($e->detail->PacketIdsFault)) { //only one error
-                $errors[] = $e->detail->PacketIdsFault->ids->packetId;
+            } else {
+                if (is_object($e->detail->PacketIdsFault)) { //only one error
+                    $errors[] = $e->detail->PacketIdsFault->ids->packetId;
+                }
             }
 
             return $errors;
         }
-        exit();
+
+        $this->setPrintLabelFlag($packetIds);
+        $this->echoLabelContent($pdfContent);
+
+        exit;
+    }
+
+    /**
+     * @param int[]|string[] $packetIds
+     * @param Label\Format $format
+     * @param int $offset
+     * @return array
+     */
+    public function printCarrierLabels(array $packetIds, Label\Format $format, $offset = 0)
+    {
+        $errors = [];
+        if (empty($packetIds)) {
+            $errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_PRINT');
+
+            return $errors;
+        }
+
+        $validPacketIds = $this->repository->getExternalCarrierPacketIdsByPacketIds($packetIds);
+        if (empty($validPacketIds)) {
+            $errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_PRINT');
+
+            return $errors;
+        }
+
+        $soapClient = new SoapClient(VirtueMartModelZasilkovna::PACKETA_WSDL);
+        $apiPassword = $this->zas_model->api_pass;
+
+        try {
+            $packetsWithCarrierNumbers = [];
+
+            foreach ($validPacketIds as $packetId) {
+                $courierNumber = $soapClient->packetCourierNumberV2($apiPassword, $packetId)->courierNumber;
+
+                $packetsWithCarrierNumbers[] = [
+                    'packetId' => $packetId,
+                    'courierNumber' => $courierNumber,
+                ];
+            }
+
+            $pdfContent = $soapClient->packetsCourierLabelsPdf(
+                $apiPassword,
+                $packetsWithCarrierNumbers,
+                $offset,
+                $format->getValue()
+            );
+
+        } catch (SoapFault $soapFault) {
+            $errors[] = $soapFault->faultstring;
+
+            return $errors;
+        }
+
+        $this->setPrintLabelFlag($validPacketIds);
+        $this->echoLabelContent($pdfContent);
+
+        exit;
     }
 
     public function submitToZasilkovna($orders_id_arr) {
 
         $db = JFactory::getDBO();
-        $gw = new SoapClient("http://www.zasilkovna.cz/api/soap-php-bugfix.wsdl");
+        $gw = new SoapClient(VirtueMartModelZasilkovna::PACKETA_WSDL);
         $zas_model = VmModel::getModel('zasilkovna');
 
         $apiPassword = $zas_model->api_pass;
