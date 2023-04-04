@@ -297,4 +297,11 @@ class ShipmentMethod
         $this->method->delivery_settings->hd_carrier = null;
     }
 
+    /**
+     * @return bool
+     */
+    public function isHdCarrier()
+    {
+        return $this->getShippingType() === self::SHIPPING_TYPE_HDCARRIERS;
+    }
 }

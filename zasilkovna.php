@@ -60,19 +60,25 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /** @var \VirtueMartModelZasilkovna\Order\Repository */
     protected $orderRepository;
 
+    /** @var \VirtueMartModelZasilkovna\Box\Renderer */
+    protected $renderer;
+
+    /** @var \VirtueMartModelZasilkovna\Carrier\Repository */
+    protected $carrierRepository;
+
     /**
      * plgVmShipmentZasilkovna constructor.
      *
      * @param $subject
      * @param $config
      */
-    function __construct(&$subject, $config) {
+    public function __construct(&$subject, $config) {
         parent::__construct($subject, $config);
 
         $this->_loggable = true;
         $this->tableFields = array_keys($this->getTableSQLFields());
         $varsToPush = $this->getVarsToPush();
-        $this->addVarsToPushCore($varsToPush,0);
+        self::addVarsToPushCore($varsToPush,0);
         $this->setConfigParameterable($this->_configTableFieldName, $varsToPush);
         $this->setConvertable(
             [
@@ -88,6 +94,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $this->shipmentMethodValidator = new \VirtueMartModelZasilkovna\ShipmentMethodValidator();
         $this->orderDetail = new \VirtueMartModelZasilkovna\Order\Detail();
         $this->orderRepository = new \VirtueMartModelZasilkovna\Order\Repository();
+        $this->renderer = new \VirtueMartModelZasilkovna\Box\Renderer();
+        $this->carrierRepository = new \VirtueMartModelZasilkovna\Carrier\Repository();
     }
 
     /**
@@ -233,13 +241,19 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @author Valerie Isaksen
      */
     function plgVmConfirmedOrder(VirtueMartCart $cart, $order) {
-        if(!($method = $this->getVmPluginMethod($order['details']['BT']->virtuemart_shipmentmethod_id)))
-            return NULL; // Another method was selected, do nothing
-        if(!$this->selectedThisElement($method->shipment_element))
-            return false;
-        if(!$this->OnSelectCheck($cart))
-            return false;
+        if (!($method = $this->getVmPluginMethod($order['details']['BT']->virtuemart_shipmentmethod_id))) {
+            return null; // Another method was selected, do nothing
+        }
 
+        if (!$this->selectedThisElement($method->shipment_element)) {
+            return false;
+        }
+
+        if (!$this->OnSelectCheck($cart)) {
+            return false;
+        }
+
+        $zasMethod = ShipmentMethod::fromRandom($method);
         $currency = $this->model->getCurrencyCode($order['details']['BT']->order_currency);
 
         // GET PARAMETERS FROM SESSION AND CLEAR
@@ -291,6 +305,17 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         } else {
             $branch_id = $branch_carrier_id;
             $is_carrier = 1;
+        }
+
+        if ($zasMethod->isHdCarrier()) {
+            $carrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId()) ;
+            if (!$carrier) {
+                return false;
+            }
+
+            $is_carrier = 1;
+            $branch_id = $carrier->id;
+            $branch_name_street = $carrier->name ?: $carrier->id;
         }
 
         $values['virtuemart_order_id'] = $details->virtuemart_order_id;
@@ -649,7 +674,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         if ($method->shipment_element === VirtueMartModelZasilkovna::PLG_NAME) {
-            return $this->hasPointSelected($cart->virtuemart_shipmentmethod_id);
+            $zasMethod = ShipmentMethod::fromRandom($method);
+            return $zasMethod->isHdCarrier() || $this->hasPointSelected($cart->virtuemart_shipmentmethod_id);
         }
 
         return null;
@@ -679,7 +705,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     public function plgVmDisplayListFEShipment(VirtueMartCart $cart, $selected = 0, &$htmlIn) {
         $js_html = '';
-        if($this->getPluginMethods($cart->vendorId) === 0)return FALSE;
+        if ($this->getPluginMethods($cart->vendorId) === 0) {
+            return FALSE;
+        }
 
         // DO NOT DISPLAY OPTION IF CART WEIGHT OVER GLOBAL LIMIT
         $weight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
@@ -693,10 +721,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $address = $this->getAddressFromCart($cart);
 
         // GET CODE OF SELECTED COUNTRY
-        $code = '';
+        $countryCode = '';
         if( isset( $address['virtuemart_country_id'] ) )
         {
-            $code = strtolower(ShopFunctions::getCountryByID($address['virtuemart_country_id'], 'country_2_code'));
+            $countryCode = strtolower(ShopFunctions::getCountryByID($address['virtuemart_country_id'], 'country_2_code'));
         }
 
         // If the country stored in session is different from the one in the address
@@ -705,7 +733,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if ($shipmentIds) {
             foreach ($shipmentIds as $shipmentId) {
                 $countrySession = $this->shipmentMethodStorage->get($shipmentId, 'branch_country', '');
-                if ($countrySession !== '' && $countrySession !== $code) {
+                if ($countrySession !== '' && $countrySession !== $countryCode) {
                     $this->clearPickedDeliveryPoint($shipmentId);
                 }
             }
@@ -728,10 +756,13 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $activeCheckout = $this->checkoutModuleDetector->getActiveCheckout();
+        $shouldIncludeTailBlock = false;
+
         foreach($this->methods as $key => $method) {
 
             $zasMethod = ShipmentMethod::fromRandom($method);
             $maxWeight = ($zasMethod->getGlobalMaxWeight() ?: VirtueMartModelZasilkovna::MAX_WEIGHT_DEFAULT);
+            $isHdCarrier = $zasMethod->isHdCarrier();
 
             if($weight > $maxWeight)
             {
@@ -751,6 +782,13 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 continue;
             }
 
+            if ($isHdCarrier) {
+                $hdCarrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
+                if (!$hdCarrier || $hdCarrier->deleted === '1' || ( $countryCode !== '' && $hdCarrier->country !== $countryCode)) {
+                    continue;
+                }
+            }
+
             $html[$key] = '';
 
             if($this->checkConditions($cart, $method, $cart->pricesUnformatted)) {
@@ -758,10 +796,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 $method->$method_name = $this->renderPluginName($method);
                 $baseHtml = $this->getPluginHtml($method, $selected, $methodSalesPrice);
 
-                $renderer = new \VirtueMartModelZasilkovna\Box\Renderer();
-                $renderer->setTemplate($activeCheckout->getTemplate());
+                $this->renderer->setTemplate($activeCheckout->getTemplate());
 
-                $renderer->setVariables(
+                $this->renderer->setVariables(
                     [
                         'selectPoint' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_SELECT_POINT'),
                         'selectedPoint' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_SELECTED_POINT'),
@@ -773,7 +810,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                     ]
                 );
 
-                $html[$key] = $renderer->renderToString();
+                $html[$key] = $isHdCarrier ? $baseHtml : $this->renderer->renderToString();
+
+                if (!$isHdCarrier) {
+                    $shouldIncludeTailBlock = true;
+                }
             }
         }
 
@@ -781,33 +822,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return FALSE;
         }
 
-        $renderer = new \VirtueMartModelZasilkovna\Box\Renderer();
-        $renderer->setTemplate($activeCheckout->getTailBlock());
-
-        $tailBlockJsPath = null;
-        if (is_file($activeCheckout->getTailBlockJs())) {
-            $tailBlockJsPath = $this->createSignalUrl(
-                'provideCheckoutTailBlockJsFile',
-                [
-                    'v' => filemtime($activeCheckout->getTailBlockJs())
-                ]
-            );
+        if ($shouldIncludeTailBlock) {
+            $tailBlockHtml = $this->getTailBlockHtml($activeCheckout, $countryCode, $langCode);
+            $html[] = $tailBlockHtml;
         }
 
-        $renderer->setVariables(
-            [
-                'savePickupPointUrl' => $this->createSignalUrl('saveSelectedPoint'),
-                'apiKey' => $this->model->api_key,
-                'country' => $code,
-                'language' => $langCode,
-                'version' => $this->getVersionString(),
-                'widgetJsUrl' => $this->model->_media_url . 'js/widget.js?v=' . filemtime($this->model->_media_path . 'js/widget.js'),
-                'errorPickupPointNotSelected' => \JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPMENT_NOT_SELECTED'),
-                'tailBlockJsPath' => $tailBlockJsPath,
-            ]
-        );
-
-        $html[$key] .= $renderer->renderToString();
         $htmlIn[] = $html;
 
         return TRUE;
@@ -848,11 +867,20 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return null; // destination country not specified yet
         }
 
-        $code = strtolower(ShopFunctions::getCountryByID($address['virtuemart_country_id'], 'country_2_code'));
+        $countryCode = strtolower(ShopFunctions::getCountryByID($address['virtuemart_country_id'], 'country_2_code'));
         $sessionCountry = $this->shipmentMethodStorage->get($virtuemartShipmentMethodId, 'branch_country');
-        if ($sessionCountry && $code !== $sessionCountry) {
+        if ($sessionCountry && $countryCode !== $sessionCountry) {
             $this->clearPickedDeliveryPoint($virtuemartShipmentMethodId);
             $cart->virtuemart_shipmentmethod_id = null; // makes selected shipping method disappear
+        }
+
+        $zasMethod = ShipmentMethod::fromRandom($method);
+        if ($zasMethod->isHdCarrier()) {
+            $this->clearPickedDeliveryPoint($virtuemartShipmentMethodId);
+            $hdCarrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
+            if (!$hdCarrier || $hdCarrier->deleted === '1' || $hdCarrier->country !== $countryCode) {
+                $cart->virtuemart_shipmentmethod_id = null; // makes selected shipping method disappear
+            }
         }
     }
 
@@ -1072,6 +1100,42 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     private function getAddressFromCart(VirtueMartCart $cart)
     {
         return 1 === (int) $cart->STsameAsBT ? $cart->BT : $cart->getST();
+    }
+
+    /**
+     * @param \VirtueMartModelZasilkovna\CheckoutModules\AbstractResolver $activeCheckout
+     * @param string $country2code
+     * @param string $langCode
+     * @return string
+     */
+    public function getTailBlockHtml(\VirtueMartModelZasilkovna\CheckoutModules\AbstractResolver $activeCheckout, $country2code, $langCode)
+    {
+        $this->renderer->setTemplate($activeCheckout->getTailBlock());
+
+        $tailBlockJsPath = null;
+        if (is_file($activeCheckout->getTailBlockJs())) {
+            $tailBlockJsPath = $this->createSignalUrl(
+                'provideCheckoutTailBlockJsFile',
+                [
+                    'v' => filemtime($activeCheckout->getTailBlockJs())
+                ]
+            );
+        }
+
+        $this->renderer->setVariables(
+            [
+                'savePickupPointUrl' => $this->createSignalUrl('saveSelectedPoint'),
+                'apiKey' => $this->model->api_key,
+                'country' => $country2code,
+                'language' => $langCode,
+                'version' => $this->getVersionString(),
+                'widgetJsUrl' => $this->model->_media_url . 'js/widget.js?v=' . filemtime($this->model->_media_path . 'js/widget.js'),
+                'errorPickupPointNotSelected' => \JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPMENT_NOT_SELECTED'),
+                'tailBlockJsPath' => $tailBlockJsPath,
+            ]
+        );
+
+        return $this->renderer->renderToString();
     }
 
 }
