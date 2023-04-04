@@ -308,15 +308,14 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         if ($zasMethod->isHdCarrier()) {
-            $carrierId = $zasMethod->getHdCarrierId();
-            $carrier = $carrierId ? $this->carrierRepository->getCarrierById($carrierId) : null;
+            $carrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId()) ;
             if (!$carrier) {
                 return false;
             }
 
             $is_carrier = 1;
-            $branch_id = $carrierId;
-            $branch_name_street =  $carrier->name ?: $carrier->id;
+            $branch_id = $carrier->id;
+            $branch_name_street = $carrier->name ?: $carrier->id;
         }
 
         $values['virtuemart_order_id'] = $details->virtuemart_order_id;
