@@ -330,4 +330,20 @@ class Order
     {
         return $this->getZasilkovnaPacketId() !== 0;
     }
+
+    /**
+     * @return bool
+     */
+    public function getIsCarrier()
+    {
+        return $this->is_carrier;
+    }
+
+    /**
+     * @return bool
+     */
+    public function isHd()
+    {
+        return ($this->getIsCarrier() && $this->getCarrierPickupPoint() === '');
+    }
 }
