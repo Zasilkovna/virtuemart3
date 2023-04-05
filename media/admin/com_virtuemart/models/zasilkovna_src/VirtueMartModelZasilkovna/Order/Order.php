@@ -342,7 +342,7 @@ class Order
     /**
      * @return bool
      */
-    public function isHd()
+    public function isHomeDelivery()
     {
         return ($this->getIsCarrier() && $this->getCarrierPickupPoint() === '');
     }

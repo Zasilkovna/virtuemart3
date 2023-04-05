@@ -220,7 +220,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
-        if ($order->isHd()) {
+        if ($order->isHomeDelivery()) {
             $this->onShowOrderFE($virtuemart_order_id, $virtuemart_shipmentmethod_id, $shipment_name);
         } else {
             $shipment_name .= $this->getOrderShipmentHtml($order);
@@ -947,7 +947,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         JFactory::getLanguage()->load('plg_vmshipment_zasilkovna');
         $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_SHIPPING_NAME', $order->getShipmentName());
 
-        if (!$order->isHd()) {
+        if (!$order->isHomeDelivery()) {
             $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_BRANCH', $order->getBranchNameStreet());
         }
 
