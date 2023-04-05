@@ -149,7 +149,7 @@
                     ?>
                     <td><?php if($disabled) { ?><a href="<?php echo JRoute::_($link); ?>" title="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CANCEL_ORDER_SUBMIT_BUTTON'); ?>" ><img width="16" height="16" src="<?php echo htmlentities($this->media_url); ?>/img/cancel-icon.png"></a><?php } ?></td>
                     <!-- 18+ -->
-                    <td><input type="checkbox" name="orders[<?php echo $key; ?>][adult_content]" <?php echo ($order->adult_content == 1) ? 'checked' : ''; ?> <?php echo $disabled; ?> ></td>
+                    <td><input type="checkbox" name="orders[<?php echo $key; ?>][adult_content]" <?php echo ($order->adult_content == 1) ? 'checked' : ''; echo $disabled; ?> ></td>
                     <!-- order name -->
                     <td><?php echo htmlentities($order->order_name); ?></td>
                     <!-- branch id -->
