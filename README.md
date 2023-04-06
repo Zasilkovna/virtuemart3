@@ -91,6 +91,30 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 In case you are using another third-party cart module, please write to [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
 Packeta module may not work with another OPC module.
 
+### Warning - Feature drop plan: Delivery and payment limitations settings
+
+In the version **1.5.0** we are going to discontinue settings for Delivery and payment limitations from Packeta module configuration. 
+We recommend to use native VirtueMart settings for this purpose.
+
+To restrict some Payment methods for some Shipping methods, please use VirtueMart settings:
+
+VirtueMart Control panel -> left panel menu Shop -> Payment Methods -> Edit Payment Method -> tab Payment Method Information -> Shipments
+
+In this field add Shipping methods that are allowed for this Payment method or leave it blank for all Shipping methods.
+
+Users, who modified the file `components/com_virtuemart/views/cart/tmpl/select_payment.php`  should also revert the changes to the original state:
+```php
+
+	foreach ($this->paymentplugins_payments as $paymentplugin_payments) {
+		if (is_array($paymentplugin_payments)) {
+			foreach ($paymentplugin_payments as $paymentplugin_payment) {
+				echo '<div class="vm-payment-plugin-single">'.$paymentplugin_payment.'</div>';
+			}
+		}
+	}
+
+```
+
 # Modul pro VirtueMart 3 + Joomla 3
 
 ### Stažení modulu
@@ -181,3 +205,28 @@ Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Met
 
 Pokud používáte nějaký jiný modul košíku třetí strany, napište nám [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
 Modul Zásilkovny nemusí být s jiným OPC modulem funkční.
+
+### Upozornění - Plán odstranění funkce: Omezení dopravy a platby
+
+Ve verzi **1.5.0** odstraníme v konfiguraci modulu Zásilkovna nastavení pro omezení doprava-platba.
+Doporučujeme pro tento účel používat nativní nastavení VirtueMartu.
+
+Chcete-li omezit některé způsoby platby pro některé způsoby dopravy, použijte, prosím, nastavení VirtueMart:
+
+VirtueMart Control panel -> levý panel menu Shop -> Payment methods -> Upravit platební metodu -> záložka Payment Method Information -> Shipments
+
+Do tohoto pole přidejte Přepravní metody, které jsou pro tuto Platební metodu povoleny, nebo jej nechte prázdné pro všechny Přepravní metody.
+
+Uživatelé, kteří upravili soubor `components/com_virtuemart/views/cart/tmpl/select_payment.php`, by měli také vrátit změny do původního stavu:
+
+```php
+
+	foreach ($this->paymentplugins_payments as $paymentplugin_payments) {
+		if (is_array($paymentplugin_payments)) {
+			foreach ($paymentplugin_payments as $paymentplugin_payment) {
+				echo '<div class="vm-payment-plugin-single">'.$paymentplugin_payment.'</div>';
+			}
+		}
+	}
+
+```
