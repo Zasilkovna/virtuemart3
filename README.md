@@ -93,7 +93,7 @@ Packeta module may not work with another OPC module.
 
 ### Warning - Feature drop plan: Delivery and payment limitations settings
 
-In the version **1.5.0** we are going to discontinue settings for Delivery and payment limitations from Packeta module configuration. 
+**In July 2023** we are going to discontinue settings for Delivery and payment limitations from Packeta module configuration. 
 We recommend to use native VirtueMart settings for this purpose.
 
 To restrict some Payment methods for some Shipping methods, please use VirtueMart settings:
@@ -102,7 +102,7 @@ VirtueMart Control panel -> left panel menu Shop -> Payment Methods -> Edit Paym
 
 In this field add Shipping methods that are allowed for this Payment method or leave it blank for all Shipping methods.
 
-Users, who modified the file `components/com_virtuemart/views/cart/tmpl/select_payment.php`  should also revert the changes to the original state for better performance:
+Users, who modified the file `components/com_virtuemart/views/cart/tmpl/select_payment.php`,  are advised to revert the changes to the original state for better performance:
 ```php
 
 	foreach ($this->paymentplugins_payments as $paymentplugin_payments) {
@@ -208,7 +208,7 @@ Modul Zásilkovny nemusí být s jiným OPC modulem funkční.
 
 ### Upozornění - Plán odstranění funkce: Omezení dopravy a platby
 
-Ve verzi **1.5.0** odstraníme v konfiguraci modulu Zásilkovna nastavení pro omezení doprava-platba.
+**V červenci 2023** odstraníme v konfiguraci modulu Zásilkovna nastavení pro omezení doprava-platba.
 Doporučujeme pro tento účel používat nativní nastavení VirtueMartu.
 
 Chcete-li omezit některé způsoby platby pro některé způsoby dopravy, použijte, prosím, nastavení VirtueMart:
@@ -217,7 +217,7 @@ VirtueMart Control panel -> levý panel menu Shop -> Payment methods -> Upravit 
 
 Do tohoto pole přidejte Přepravní metody, které jsou pro tuto Platební metodu povoleny, nebo jej nechte prázdné pro všechny Přepravní metody.
 
-Uživatelé, kteří upravili soubor `components/com_virtuemart/views/cart/tmpl/select_payment.php`, by měli také vrátit změny kvůli výkonu do původního stavu:
+Uživatelům, kteří upravili soubor `components/com_virtuemart/views/cart/tmpl/select_payment.php`, doporučujeme vrátit změny kvůli výkonu do původního stavu:
 
 ```php
 
