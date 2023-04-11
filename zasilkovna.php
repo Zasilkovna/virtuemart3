@@ -213,12 +213,18 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @author Valérie Isaksen
      * @author Max Milbers
      */
-    public function plgVmOnShowOrderFEShipment($virtuemart_order_id, $virtuemart_shipmentmethod_id, &$shipment_name) {
-        if(!($this->selectedThisByMethodId($virtuemart_shipmentmethod_id))) {
-            return NULL;
+    public function plgVmOnShowOrderFEShipment($virtuemart_order_id, $virtuemart_shipmentmethod_id, &$shipment_name)
+    {
+        if (!($this->selectedThisByMethodId($virtuemart_shipmentmethod_id))) {
+            return null;
         }
+
         $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
-        $shipment_name .= $this->getOrderShipmentHtml($order);
+        if ($order->isHomeDelivery()) {
+            $this->onShowOrderFE($virtuemart_order_id, $virtuemart_shipmentmethod_id, $shipment_name);
+        } else {
+            $shipment_name .= $this->getOrderShipmentHtml($order);
+        }
     }
 
     /**
@@ -940,9 +946,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         JFactory::getLanguage()->load('plg_vmshipment_zasilkovna');
         $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_SHIPPING_NAME', $order->getShipmentName());
-        $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_BRANCH', $order->getBranchNameStreet());
-        $html .= $this->getHtmlRowBE('COM_VIRTUEMART_CURRENCY', $order->getBranchCurrency());
 
+        if (!$order->isHomeDelivery()) {
+            $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_BRANCH', $order->getBranchNameStreet());
+        }
+
+        $html .= $this->getHtmlRowBE('COM_VIRTUEMART_CURRENCY', $order->getBranchCurrency());
         $html .= '</table>' . "\n";
 
         return $html;
