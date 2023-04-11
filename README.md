@@ -102,7 +102,7 @@ VirtueMart Control panel -> left panel menu Shop -> Payment Methods -> Edit Paym
 
 In this field add Shipping methods that are allowed for this Payment method or leave it blank for all Shipping methods.
 
-Users, who modified the file `components/com_virtuemart/views/cart/tmpl/select_payment.php`  should also revert the changes to the original state:
+Users, who modified the file `components/com_virtuemart/views/cart/tmpl/select_payment.php`  should also revert the changes to the original state for better performance:
 ```php
 
 	foreach ($this->paymentplugins_payments as $paymentplugin_payments) {
@@ -217,7 +217,7 @@ VirtueMart Control panel -> levý panel menu Shop -> Payment methods -> Upravit 
 
 Do tohoto pole přidejte Přepravní metody, které jsou pro tuto Platební metodu povoleny, nebo jej nechte prázdné pro všechny Přepravní metody.
 
-Uživatelé, kteří upravili soubor `components/com_virtuemart/views/cart/tmpl/select_payment.php`, by měli také vrátit změny do původního stavu:
+Uživatelé, kteří upravili soubor `components/com_virtuemart/views/cart/tmpl/select_payment.php`, by měli také vrátit změny kvůli výkonu do původního stavu:
 
 ```php
 
