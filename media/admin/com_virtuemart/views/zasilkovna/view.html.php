@@ -257,23 +257,26 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
      */
     private function showDeprecationWarning()
     {
-        $app = JFactory::getApplication();
         $readmeDeprecationLink['en'] = 'https://github.com/Zasilkovna/virtuemart3/blob/master/README.md#warning---feature-drop-plan-delivery-and-payment-limitations-settings';
         $readmeDeprecationLink['cz'] = 'https://github.com/Zasilkovna/virtuemart3/blob/master/README.md#upozorn%C4%9Bn%C3%AD---pl%C3%A1n-odstran%C4%9Bn%C3%AD-funkce-omezen%C3%AD-dopravy-a-platby';
 
-        $langTag = JFactory::getLanguage()->getTag();
+        /** @var JLanguage $language */
+        $language = JFactory::getLanguage();
+
+        $langTag = $language->getTag();
         if ($langTag === 'cs-CZ' || $langTag === 'sk-SK') {
             $langTag = 'cz';
         } else {
             $langTag = 'en';
         }
 
-        $app = JFactory::getApplication();
         $deprecationMessage = JText::sprintf(
             'PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRACATION',
             '<a href="' . $readmeDeprecationLink[$langTag] . '" target="_blank">README.md</a>'
         );
 
+        /** @var JApplicationCms $app */
+        $app = JFactory::getApplication();
         $app->enqueueMessage($deprecationMessage, 'warning');
     }
 }
