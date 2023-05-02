@@ -52,7 +52,10 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel();
 
-        $this->showDeprecationWarning();
+        if(!$model->getConfig(VirtuemartControllerZasilkovna::ZASILKOVNA_DEPRECATION_WARNING_DISMISSED, false))
+        {
+            $this->showDeprecationWarning();
+        }
 
         $shipModel = VmModel::getModel('shipmentmethod');
         $shipments = $shipModel->getShipments();
@@ -270,13 +273,22 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
             $langTag = 'en';
         }
 
-        $deprecationMessage = JText::sprintf(
-            'PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRACATION',
+        $dismissUrl = Juri::base(true) . '/index.php?option=com_virtuemart&view=zasilkovna&task=dismissDeprecationWarning';
+        $dismissButtonHtml = sprintf(
+            '<a class="btn btn-warning" href="%s">%s</a>',
+            $dismissUrl,
+            JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION_DISMISS')
+        );
+
+        $deprecationMessageHtml = JText::sprintf(
+            'PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION',
             '<a href="' . $readmeDeprecationLink[$langTag] . '" target="_blank">README.md</a>'
         );
 
+        $fullFlashMessage = sprintf('%s<br>%s', $deprecationMessageHtml, $dismissButtonHtml);
+
         /** @var JApplicationCms $app */
         $app = JFactory::getApplication();
-        $app->enqueueMessage($deprecationMessage, 'warning');
+        $app->enqueueMessage($fullFlashMessage, 'warning');
     }
 }

@@ -34,6 +34,8 @@ use VirtueMartModelZasilkovna\Label;
  */
 class VirtuemartControllerZasilkovna extends VmController
 {
+    const ZASILKOVNA_DEPRECATION_WARNING_DISMISSED = 'zasilkovna_deprecation_warning_dismissed';
+
     /** @var \VirtueMartModelZasilkovna\Order\Detail */
     private $orderDetail;
 
@@ -256,4 +258,20 @@ class VirtuemartControllerZasilkovna extends VmController
         $this->setRedirectWithMessage($redirectPath, $message);
     }
 
+    /**
+     * @return void
+     */
+    public function dismissDeprecationWarning()
+    {
+        /** @var VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $config = $model->loadConfig();
+
+        if (!isset($config[self::ZASILKOVNA_DEPRECATION_WARNING_DISMISSED]) || $config[self::ZASILKOVNA_DEPRECATION_WARNING_DISMISSED] === false) {
+            $config[self::ZASILKOVNA_DEPRECATION_WARNING_DISMISSED] = true;
+            $model->updateConfig($config);
+        }
+
+        $this->setRedirect($this->redirectPath);
+    }
 }
