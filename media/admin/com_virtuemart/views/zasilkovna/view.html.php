@@ -52,8 +52,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel();
 
-        if(!$model->getConfig(VirtuemartControllerZasilkovna::ZASILKOVNA_DEPRECATION_WARNING_DISMISSED, false))
-        {
+        if(!$model->getConfig(VirtuemartControllerZasilkovna::ZASILKOVNA_DEPRECATION_WARNING_DISMISSED, false)) {
             $this->showDeprecationWarning();
         }
 
@@ -260,18 +259,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
      */
     private function showDeprecationWarning()
     {
-        $readmeDeprecationLink['en'] = 'https://github.com/Zasilkovna/virtuemart3/blob/master/README.md#warning---feature-drop-plan-delivery-and-payment-limitations-settings';
-        $readmeDeprecationLink['cz'] = 'https://github.com/Zasilkovna/virtuemart3/blob/master/README.md#upozorn%C4%9Bn%C3%AD---pl%C3%A1n-odstran%C4%9Bn%C3%AD-funkce-omezen%C3%AD-dopravy-a-platby';
-
-        /** @var JLanguage $language */
-        $language = JFactory::getLanguage();
-
-        $langTag = $language->getTag();
-        if ($langTag === 'cs-CZ' || $langTag === 'sk-SK') {
-            $langTag = 'cz';
-        } else {
-            $langTag = 'en';
-        }
+        $readmeDeprecationUrl = JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION_README_URL');
 
         $dismissUrl = Juri::base(true) . '/index.php?option=com_virtuemart&view=zasilkovna&task=dismissDeprecationWarning';
         $dismissButtonHtml = sprintf(
@@ -280,15 +268,16 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
             JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION_DISMISS')
         );
 
-        $deprecationMessageHtml = JText::sprintf(
-            'PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION',
-            '<a href="' . $readmeDeprecationLink[$langTag] . '" target="_blank">README.md</a>'
+        $depracationMessageHtml = sprintf(
+            JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION'),
+            sprintf('<a href="%s" target="_blank">', $readmeDeprecationUrl),
+            '</a>'
         );
 
-        $fullFlashMessage = sprintf('%s<br>%s', $deprecationMessageHtml, $dismissButtonHtml);
+        $fullFlashMessage = sprintf('%s<br>%s', $depracationMessageHtml, $dismissButtonHtml);
 
         /** @var JApplicationCms $app */
         $app = JFactory::getApplication();
-        $app->enqueueMessage($fullFlashMessage, 'warning');
+        $app->enqueueMessage($fullFlashMessage, \VirtueMartModelZasilkovna\FlashMessage::TYPE_WARNING);
     }
 }
