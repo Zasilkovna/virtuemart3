@@ -282,6 +282,14 @@ class ShipmentMethod
     }
 
     /**
+     * @return string[]
+     */
+    public function getVendorGroups()
+    {
+        return $this->getParams()->delivery_settings->vendor_groups ?: [];
+    }
+
+    /**
      * @return int|null
      */
     public function getHdCarrierId()

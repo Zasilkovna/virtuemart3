@@ -51,11 +51,28 @@ class Repository
     /**
      * Gets all active carriers.
      *
+     * @param bool|null $isPickupPoints
+     * @param string|null $countryCode
      * @return array
      */
-    public function getAllActiveCarrierIds() {
+    public function getAllActiveCarrierIds($isPickupPoints = null, $countryCode = null)
+    {
         $db = \JFactory::getDBO();
-        $db->setQuery("SELECT id FROM #__virtuemart_zasilkovna_carriers WHERE deleted = 0");
+        $query = $db->getQuery(true);
+        $query->select('id')
+            ->from('#__virtuemart_zasilkovna_carriers')
+            ->where('`deleted` = 0');
+
+        if ($isPickupPoints !== null) {
+            $query->andWhere(sprintf('`is_pickup_points` = %d', $isPickupPoints));
+        }
+
+        if ($countryCode !== null) {
+            $query->andWhere(sprintf('`country` = %s', $db->quote($countryCode)));
+        }
+
+        $db->setQuery($query);
+
         return $db->loadAssocList('id', 'id');
     }
 

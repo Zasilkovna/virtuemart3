@@ -32,11 +32,16 @@ jQuery(function() {
 	jQuery('body').off('click.packeteryOpenWidget').on('click.packeteryOpenWidget', '.zasilkovna_box .open-packeta-widget', function () {
 		var packetery = window.packetery;
 
-		var opts = {
+		var widgetOptions = {
 			appIdentity: packetery.version,
 			country: packetery.country,
 			language: packetery.language
 		};
+
+		var widgetVendors = getSelectedPacketeryBox().data('packetery-widget-vendors');
+		if (widgetVendors.length > 0) {
+			widgetOptions.vendors = widgetVendors;
+		}
 
 		Packeta.Widget.pick(packetery.apiKey, function(pickupPoint){
 			if (pickupPoint === null)
@@ -65,7 +70,7 @@ jQuery(function() {
 				},
 			});
 
-		}, opts);
+		}, widgetOptions);
 	}).on('change', 'input[name=virtuemart_shipmentmethod_id]', function(e) {
 		toggleZasilkovnaBox();
 	});
