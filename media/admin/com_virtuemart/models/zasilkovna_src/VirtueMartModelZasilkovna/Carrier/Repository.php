@@ -34,7 +34,7 @@ class Repository
 
         $db = \JFactory::getDBO();
         $db->setQuery( "INSERT INTO #__virtuemart_zasilkovna_carriers ($columnsImploded) VALUES ($valuesImploded) ON DUPLICATE KEY UPDATE $onDuplicatesImploded;");
-        $db->query();
+        $db->execute();
     }
 
     /**
@@ -144,6 +144,6 @@ class Repository
 
         $db = \JFactory::getDBO();
         $db->setQuery("UPDATE #__virtuemart_zasilkovna_carriers SET deleted = 1 WHERE id IN ($carrierIdsImploded)");
-        $db->query();
+        $db->execute();
     }
 }

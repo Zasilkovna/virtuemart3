@@ -81,14 +81,6 @@ class plgVmShipmentZasilkovnaInstallerScript {
     }
 
 	/**
-	 * Constructor
-	 *
-	 * @param   JAdapterInstance $adapter The object responsible for running this script
-	 */
-	public function __constructor(JAdapterInstance $adapter) {
-	}
-
-	/**
 	 * Called before any type of action
 	 *
 	 * @param   string $route Which action is happening (install|uninstall|discover_install)
