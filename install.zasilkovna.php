@@ -1,5 +1,7 @@
 <?php
 
+use Joomla\CMS\Installer\Adapter\PluginAdapter;
+
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
 defined('DS') or define('DS', DIRECTORY_SEPARATOR);
@@ -84,11 +86,11 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	 * Called before any type of action
 	 *
 	 * @param   string $route Which action is happening (install|uninstall|discover_install)
-	 * @param   JAdapterInstance $adapter The object responsible for running this script
+	 * @param   JAdapterInstance|PluginAdapter $adapter The object responsible for running this script
 	 *
 	 * @return  boolean  True on success
 	 */
-	public function preflight($route, JAdapterInstance $adapter) {
+	public function preflight($route, $adapter) {
 	    $this->fromVersion = $this->getExtensionVersion();
 
         if (in_array($route, ['install', 'update'])) {
@@ -148,11 +150,11 @@ class plgVmShipmentZasilkovnaInstallerScript {
 	 * Called after any type of action
 	 *
 	 * @param   string $route Which action is happening (install|uninstall|discover_install)
-	 * @param   JAdapterInstance $adapter The object responsible for running this script
+	 * @param   JAdapterInstance|PluginAdapter $adapter The object responsible for running this script
 	 *
 	 * @return  boolean  True on success
 	 */
-	public function postflight($route, JAdapterInstance $adapter) {
+	public function postflight($route, $adapter) {
 		$vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
         $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna' . DS;
 		if($route == "install") {
@@ -230,21 +232,21 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 	/**
 	 * Called on installation
 	 *
-	 * @param   JAdapterInstance $adapter The object responsible for running this script
+	 * @param   JAdapterInstance|PluginAdapter $adapter The object responsible for running this script
 	 *
 	 * @return  boolean  True on success
 	 */
-	public function install(JAdapterInstance $adapter) {
+	public function install($adapter) {
 	}
 
 	/**
 	 * Called on update
 	 *
-	 * @param   JAdapterInstance $adapter The object responsible for running this script
+	 * @param   JAdapterInstance|PluginAdapter $adapter The object responsible for running this script
 	 *
 	 * @return  boolean  True on success
 	 */
-	public function update(JAdapterInstance $adapter) {
+	public function update($adapter) {
         // update of admin part of module
         $vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
         $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna' . DS;
@@ -439,9 +441,9 @@ INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `l
 	/**
 	 * Called on uninstallation
 	 *
-	 * @param   JAdapterInstance $adapter The object responsible for running this script
+	 * @param   JAdapterInstance|PluginAdapter $adapter The object responsible for running this script
 	 */
-	public function uninstall(JAdapterInstance $adapter) {
+	public function uninstall($adapter) {
 		$db = JFactory::getDBO();
 		$q = "DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = 'zasilkovna';";
 		$db->setQuery($q);
