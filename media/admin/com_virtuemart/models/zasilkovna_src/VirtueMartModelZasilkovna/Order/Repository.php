@@ -47,7 +47,7 @@ class Repository
             ->where('virtuemart_order_id = ' . $this->db->quote($virtuemart_order_id));
         $this->db->setQuery($query);
         try {
-            $order = $this->db->loadObject(\VirtueMartModelZasilkovna\Order\Order::class);
+            $order = Order::fromArray($this->db->loadAssoc());
         } catch (\RuntimeException $exception) {
             vmWarn(500, $query . ' ' . $exception->getMessage());
         }

@@ -92,6 +92,21 @@ class Order
     private $tax_id;
 
     /**
+     * @param $orderData
+     *
+     * @return self
+     */
+    public static function fromArray($orderData)
+    {
+        $order = new self();
+        foreach ($orderData as $property => $value) {
+            $order->$property = $value;
+        }
+
+        return $order;
+    }
+
+    /**
      * @return int
      */
     public function getId()
