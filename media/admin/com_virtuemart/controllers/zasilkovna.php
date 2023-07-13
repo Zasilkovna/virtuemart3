@@ -91,7 +91,7 @@ class VirtuemartControllerZasilkovna extends VmController
 
         $redir = 'index.php?option=com_virtuemart';
         $app = JFactory::getApplication();
-        if ($app->input->get('task') === 'apply') {
+        if ($app->input->getString('task') === 'apply') {
             $redir = $this->redirectPath;
         }
         $this->updateZasilkovnaOrders();

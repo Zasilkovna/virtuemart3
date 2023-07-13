@@ -123,15 +123,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     public function handleSaveSelectedPoint() {
         $app = JFactory::getApplication();
-        $branchId = (int)$app->input->get('branch_id');
+        $branchId = $app->input->getInt('branch_id');
         if ($branchId) {
-            $methodId = (int)$app->input->get('shipment_id');
+            $methodId = $app->input->getInt('shipment_id', 0);
             $this->shipmentMethodStorage->set($methodId, 'branch_id', $branchId);
-            $this->shipmentMethodStorage->set($methodId, 'branch_currency', $app->input->get('branch_currency', ''));
-            $this->shipmentMethodStorage->set($methodId, 'branch_name_street', $app->input->get('branch_name_street', ''));
-            $this->shipmentMethodStorage->set($methodId, 'branch_country', $app->input->get('branch_country', ''));
-            $this->shipmentMethodStorage->set($methodId, 'branch_carrier_id', $app->input->get('branch_carrier_id', ''));
-            $this->shipmentMethodStorage->set($methodId, 'branch_carrier_pickup_point', $app->input->get('branch_carrier_pickup_point', ''));
+            $this->shipmentMethodStorage->set($methodId, 'branch_currency', $app->input->getString('branch_currency', ''));
+            $this->shipmentMethodStorage->set($methodId, 'branch_name_street', $app->input->getString('branch_name_street', ''));
+            $this->shipmentMethodStorage->set($methodId, 'branch_country', $app->input->getString('branch_country', ''));
+            $this->shipmentMethodStorage->set($methodId, 'branch_carrier_id', $app->input->getString('branch_carrier_id', ''));
+            $this->shipmentMethodStorage->set($methodId, 'branch_carrier_pickup_point', $app->input->getString('branch_carrier_pickup_point', ''));
         }
 
         $response = (object)[
@@ -163,7 +163,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     public function handleUpdateCarriers() {
         $app = JFactory::getApplication();
-        $token = $app->input->get('token', '');
+        $token = $app->input->getString('token', '');
         $expectedToken = $this->model->getConfig('cron_token');
 
         if ($token !== $expectedToken) {

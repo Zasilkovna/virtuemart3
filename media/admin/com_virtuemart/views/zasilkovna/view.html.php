@@ -129,7 +129,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $this->addStandardDefaultViewLists($ordersModel, 'created_on');
         $this->lists['state_list'] = $this->renderOrderstatesList();
 
-        $shipping_method_selectec_id = (int)$mainframe->input->get('order_exported');
+        $shipping_method_selectec_id = $mainframe->input->getInt('order_exported', 0);
         $orderslist = $ordersModel->getOrdersListByShipment($shipping_method_selectec_id);
 
         $this->orderstatuses = $orderStates;
@@ -158,14 +158,6 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
          */
 
         /* Toolbar */
-        $bar = JToolbar::getInstance('toolbar');
-
-        $bar->appendButton(
-            'Custom', '<button onclick="validateForm();" '
-            . 'class="btn btn-small button-apply btn-success validate"><span class="icon-apply icon-white" aria-hidden="true"></span>'
-            . JText::_('Save') . '</button>', 'apply'
-        );
-
         JToolBarHelper::save('updateAndExportZasilkovnaOrders', 'CSV');
         /** @var VirtueMartModelZasilkovna $zas_model */
         $zas_model = VmModel::getModel('zasilkovna');
@@ -188,7 +180,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
     public function renderOrderstatesList() {
         $app = JFactory::getApplication();
-        $orderstates = $app->input->get('order_status_code', '');
+        $orderstates = $app->input->getString('order_status_code', '');
 
         $query = 'SELECT `order_status_code` as value, `order_status_name` as text
 			FROM `#__virtuemart_orderstates`

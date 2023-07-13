@@ -426,13 +426,13 @@ class VirtueMartModelZasilkovna extends VmModel
         if (empty($countries)) {
             $hdCarriers = array_filter($hdCarriers,
                 static function ($hdCarrier) use ($blockingCountries) {
-                    return !in_array($hdCarrier['vm_country'], $blockingCountries, true);
+                    return !in_array($hdCarrier['vm_country'], $blockingCountries);
                 });
         } else {
             $allowedCountries = array_diff($countries, $blockingCountries);
             $hdCarriers = array_filter($hdCarriers,
                 static function ($hdCarrier) use ($allowedCountries) {
-                    return in_array($hdCarrier['vm_country'], $allowedCountries, true);
+                    return in_array($hdCarrier['vm_country'], $allowedCountries);
                 });
         }
 
