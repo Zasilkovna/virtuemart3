@@ -92,11 +92,11 @@ class Order
     private $tax_id;
 
     /**
-     * @param $orderData
+     * @param array $orderData
      *
      * @return self
      */
-    public static function fromArray($orderData)
+    public static function fromArray(array $orderData)
     {
         $order = new self();
         foreach ($orderData as $property => $value) {

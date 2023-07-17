@@ -1105,16 +1105,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $wasZasilkovna = null;
         if (!$isBeingCreated) {
             $persistedMethod = $this->getPluginMethod($data['virtuemart_shipmentmethod_id']);
-
-            // To save parameters in VirtueMart 4
-            $table->_varsToPushParam = $persistedMethod->_varsToPushParam;
-            foreach ($table->_varsToPushParam as $k => $v) {
-                if ( ! isset($table->{$k})) {
-                    $table->{$k} = $data['params'][$k];
-                }
-            }
-
             if ($persistedMethod) {
+                // To save parameters in VirtueMart 4
+                $table->_varsToPushParam = $persistedMethod->_varsToPushParam;
+                foreach ($table->_varsToPushParam as $k => $v) {
+                    if ( ! isset($table->{$k})) {
+                        $table->{$k} = $data['params'][$k];
+                    }
+                }
+
                 $wasZasilkovna = $persistedMethod->shipment_element === VirtueMartModelZasilkovna::PLG_NAME;
             }
         }
