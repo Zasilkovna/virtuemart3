@@ -5,3 +5,7 @@
 .virtuemart-admin-area .control-field {
     padding: 5px;
 }
+
+.control-group.hidden {
+    display: none;
+}
