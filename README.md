@@ -1,6 +1,6 @@
 [Návod v češtině](https://github.com/Zasilkovna/virtuemart3#modul-pro-virtuemart-3--joomla-3)
 
-# Module for VirtueMart 3 & 4 + Joomla 3
+# Module for VirtueMart 3 or 4 + Joomla 3 or 4
 
 ### Download module
 
@@ -70,7 +70,7 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 
 #### Supported versions:
 
-- VirtueMart 3 & 4 + Joomla 3
+- VirtueMart 3 or 4 + Joomla 3 or 4
 - If you have trouble using the module, please contact us at [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
 
 #### Functions provided:
@@ -115,7 +115,7 @@ Users, who modified the file `components/com_virtuemart/views/cart/tmpl/select_p
 
 ```
 
-# Modul pro VirtueMart 3 & 4 + Joomla 3
+# Modul pro VirtueMart 3 nebo 4 + Joomla 3 nebo 4
 
 ### Stažení modulu
 
@@ -186,7 +186,7 @@ Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Met
 
 #### Podporované verze:
 
-- VirtueMart 3 & 4 + Joomla 3
+- VirtueMart 3 nebo 4 + Joomla 3 nebo 4
 - Při problému s použitím modulu nás kontaktujte na adrese [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz)
 
 #### Poskytované funkce:
