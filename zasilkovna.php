@@ -122,14 +122,16 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @return \JResponseJson
      */
     public function handleSaveSelectedPoint() {
-        if (JRequest::getInt('branch_id')) {
-            $methodId = JRequest::getInt('shipment_id');
-            $this->shipmentMethodStorage->set($methodId, 'branch_id', JRequest::getInt('branch_id'));
-            $this->shipmentMethodStorage->set($methodId, 'branch_currency', JRequest::getVar('branch_currency', ''));
-            $this->shipmentMethodStorage->set($methodId, 'branch_name_street', JRequest::getVar('branch_name_street', ''));
-            $this->shipmentMethodStorage->set($methodId, 'branch_country', JRequest::getVar('branch_country', ''));
-            $this->shipmentMethodStorage->set($methodId, 'branch_carrier_id', JRequest::getVar('branch_carrier_id', ''));
-            $this->shipmentMethodStorage->set($methodId, 'branch_carrier_pickup_point', JRequest::getVar('branch_carrier_pickup_point', ''));
+        $app = JFactory::getApplication();
+        $branchId = $app->input->getInt('branch_id');
+        if ($branchId) {
+            $methodId = $app->input->getInt('shipment_id', 0);
+            $this->shipmentMethodStorage->set($methodId, 'branch_id', $branchId);
+            $this->shipmentMethodStorage->set($methodId, 'branch_currency', $app->input->getString('branch_currency', ''));
+            $this->shipmentMethodStorage->set($methodId, 'branch_name_street', $app->input->getString('branch_name_street', ''));
+            $this->shipmentMethodStorage->set($methodId, 'branch_country', $app->input->getString('branch_country', ''));
+            $this->shipmentMethodStorage->set($methodId, 'branch_carrier_id', $app->input->getString('branch_carrier_id', ''));
+            $this->shipmentMethodStorage->set($methodId, 'branch_carrier_pickup_point', $app->input->getString('branch_carrier_pickup_point', ''));
         }
 
         $response = (object)[
@@ -160,7 +162,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * Updates carriers.
      */
     public function handleUpdateCarriers() {
-        $token = JRequest::getVar('token', '');
+        $app = JFactory::getApplication();
+        $token = $app->input->getString('token', '');
         $expectedToken = $this->model->getConfig('cron_token');
 
         if ($token !== $expectedToken) {
@@ -798,8 +801,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
             $html[$key] = '';
 
-            if($this->checkConditions($cart, $method, $cart->pricesUnformatted)) {
-                $methodSalesPrice = $this->calculateSalesPrice($cart, $method, $cart->pricesUnformatted);
+            if($this->checkConditions($cart, $method, $cart->cartPrices)) {
+                $methodSalesPrice = $this->calculateSalesPrice($cart, $method, $cart->cartPrices);
                 $method->$method_name = $this->renderPluginName($method);
                 $baseHtml = $this->getPluginHtml($method, $selected, $methodSalesPrice);
 
@@ -1025,10 +1028,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /**
      * @param VirtueMartCart $cart
      * @param array $cart_prices
-     * @param $cart_prices_name
+     * @param string $cart_prices_name
      * @return mixed
      */
-    public function plgVmonSelectedCalculatePriceShipment(VirtueMartCart $cart, array &$cart_prices, &$cart_prices_name) {
+    public function plgVmOnSelectedCalculatePriceShipment(VirtueMartCart $cart, array &$cart_prices, &$cart_prices_name) {
         $cart->automaticSelectedShipment = false;
         return $this->onSelectedCalculatePrice($cart, $cart_prices, $cart_prices_name);
     }
@@ -1100,10 +1103,17 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $isBeingCreated = empty($data['virtuemart_shipmentmethod_id']);
         $isZasilkovna = isset($data['shipment_element']) && $data['shipment_element'] === VirtueMartModelZasilkovna::PLG_NAME;
         $wasZasilkovna = null;
-        $persistedMethod = null;
         if (!$isBeingCreated) {
             $persistedMethod = $this->getPluginMethod($data['virtuemart_shipmentmethod_id']);
             if ($persistedMethod) {
+                // To save parameters in VirtueMart 4
+                $table->_varsToPushParam = $persistedMethod->_varsToPushParam;
+                foreach ($table->_varsToPushParam as $k => $v) {
+                    if ( ! isset($table->{$k})) {
+                        $table->{$k} = $data['params'][$k];
+                    }
+                }
+
                 $wasZasilkovna = $persistedMethod->shipment_element === VirtueMartModelZasilkovna::PLG_NAME;
             }
         }

@@ -205,7 +205,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $packet = $gw->createPacket($apiPassword, $attributes);
                 $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET zasilkovna_packet_id=" . (int)$packet->id . " WHERE order_number = '" . $db->escape($order['order_number']) . "'; ";
                 $db->setQuery($q);
-                $db->loadAssocList();
+                $db->execute();
                 $exportedOrders[] = array('order_number' => $order['order_number'], 'zasilkovna_id' => $packet->id);
                 $exportedOrdersNumber[] = $order['order_number'];
             }
@@ -242,7 +242,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $db = JFactory::getDBO();
         $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET exported=0, zasilkovna_packet_id=0 WHERE virtuemart_order_id = " . (int)$order_id . ";";
         $db->setQuery($q);
-        $db->loadAssocList();
+        $db->execute();
 
         return true;
     }
@@ -259,7 +259,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $printedLabelsString = implode("','", $escapedLabels);
             $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET printed_label=1 WHERE zasilkovna_packet_id IN ('" . $printedLabelsString . "') ";
             $db->setQuery($q);
-            $db->loadAssocList();
+            $db->execute();
         }
     }
 
@@ -280,8 +280,9 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     }
 
     public function exportToCSV($orders_id_arr) {
+        $app = JFactory::getApplication();
         if(sizeof($orders_id_arr) == 0) {
-            JError::raiseWarning(100, JTEXT::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_CSV'));
+            $app->enqueueMessage(JTEXT::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_CSV'), 'warning');
 
             return;
         }
@@ -301,7 +302,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         if (!empty($unusableOrders)) {
             $warningMesage = JText::_('PLG_VMSHIPMENT_PACKETERY_MISSING_BRANCH_CSV_EXPORT')
                 . implode(',', $unusableOrders);
-			\Joomla\CMS\Factory::getApplication()->enqueueMessage($warningMesage, 'warning');
+            $app->enqueueMessage($warningMesage, 'warning');
             return;
         }
 
@@ -744,7 +745,8 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $where[] = ' o.virtuemart_shipmentmethod_id = ' . (int)$shipment_id;
         }
 
-        if($search = JRequest::getString('search', false)) {
+        $app = JFactory::getApplication();
+        if ($search = (string)$app->get('search')) {
 
             $search = '"%' . $this->_db->getEscaped($search, true) . '%"';
 
@@ -752,7 +754,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
 
 
-        if($order_status_code = JRequest::getString('order_status_code', false)) {
+        if ($order_status_code = (string)$app->get('order_status_code')) {
             $where[] = ' o.order_status = "' . $db->escape($order_status_code) . '" ';
         }
 
@@ -763,7 +765,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $whereString = '';
         }
 
-        if(JRequest::getCmd('view') == 'orders') {
+        if ($app->get('view') == 'orders') {
             $ordering = $this->_getOrdering();
         }
         else {

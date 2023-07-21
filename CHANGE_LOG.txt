@@ -4,6 +4,8 @@
       - Added: customer address to API export
       - Updated: carrier table migration
       - Added: carrier labels print
+      - Added: compatibility with VirtueMart 4
+      - Updated: deprecated methods replaced
 
 1.3.1 - Fixed: SQL input escaping added in places where SQL is constructed
       - Updated: Schema migration simplified by using GenericTableUpdater

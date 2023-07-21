@@ -63,13 +63,11 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         }
 
         usort($shipments, "cmpShipments"); //sort, coz it comes in random order
-        $this->assignRef('shipmentMethods', $shipments);
+        $this->shipmentMethods = $shipments;
 
-        $moduleVersion = VirtueMartModelZasilkovna::VERSION;
-        $this->assignRef('moduleVersion', $moduleVersion);
-        $this->assignRef('errors', $model->errors);
-        $this->assignRef('warnings', $model->warnings);
-
+        $this->moduleVersion = VirtueMartModelZasilkovna::VERSION;
+        $this->errors = $model->errors;
+        $this->warnings = $model->warnings;
 
         $paymentModel = VmModel::getModel('paymentmethod');
         $payments = $paymentModel->getPayments();
@@ -78,15 +76,12 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         }
 
         usort($payments, "cmpPayments"); //sort, coz it comes in random order
-        $this->assignRef('paymentMethods', $payments);
+        $this->paymentMethods = $payments;
 
         $usermodel = VmModel::getModel('user');
 
         /** @var VirtueMartModelZasilkovna_orders $ordersModel */
         $ordersModel = VmModel::getModel('zasilkovna_orders');
-
-        $task = JRequest::getWord('task');
-
 
         if(!class_exists('vmPSPlugin')) require(JPATH_VM_PLUGINS . DS . 'vmpsplugin.php');
 
@@ -102,52 +97,23 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
         $config = VmConfig::loadConfig();
         unset ($config->_params['pdf_invoice']); // parameter remove and replaced by inv_os
-        $this->assignRef('config', $config);
+        $this->config = $config;
 
         $mainframe = JFactory::getApplication();
-        $this->assignRef('joomlaconfig', $mainframe);
+        $this->joomlaconfig = $mainframe;
 
-        $userparams = JComponentHelper::getParams('com_users');
-        $this->assignRef('userparams', $userparams);
-
-        $templateList = ShopFunctions::renderTemplateList(JText::_('COM_VIRTUEMART_ADMIN_CFG_JOOMLA_TEMPLATE_DEFAULT'));
-
-        $this->assignRef('jTemplateList', $templateList);
-
-        $vmLayoutList = $configModel->getLayoutList('virtuemart');
-        $this->assignRef('vmLayoutList', $vmLayoutList);
-
-
-        $categoryLayoutList = $configModel->getLayoutList('category');
-        $this->assignRef('categoryLayoutList', $categoryLayoutList);
-
-        $productLayoutList = $configModel->getLayoutList('productdetails');
-        $this->assignRef('productLayoutList', $productLayoutList);
-
-        $noimagelist = $configModel->getNoImageList();
-        $this->assignRef('noimagelist', $noimagelist);
-
-        $orderStatusModel = VmModel::getModel('orderstatus');
-
-
-        $this->assignRef('orderStatusModel', $orderStatusModel);
-
-
-        $currConverterList = $configModel->getCurrencyConverterList();
-        $this->assignRef('currConverterList', $currConverterList);
-
-        $activeLanguages = $configModel->getActiveLanguages(VmConfig::get('active_languages'));
-        $this->assignRef('activeLanguages', $activeLanguages);
-
-        $orderByFields = $configModel->getProductFilterFields('browse_orderby_fields');
-        $this->assignRef('orderByFields', $orderByFields);
-
-        $searchFields = $configModel->getProductFilterFields('browse_search_fields');
-        $this->assignRef('searchFields', $searchFields);
-
-        $aclGroups = $usermodel->getAclGroupIndentedTree();
-        $this->assignRef('aclGroups', $aclGroups);
-
+        $this->userparams = JComponentHelper::getParams('com_users');
+        $this->jTemplateList = ShopFunctions::renderTemplateList(JText::_('COM_VIRTUEMART_ADMIN_CFG_JOOMLA_TEMPLATE_DEFAULT'));
+        $this->vmLayoutList = $configModel->getLayoutList('virtuemart');
+        $this->categoryLayoutList = $configModel->getLayoutList('category');
+        $this->productLayoutList = $configModel->getLayoutList('productdetails');
+        $this->noimagelist = $configModel->getNoImageList();
+        $this->orderStatusModel = $orderStatusModel;
+        $this->currConverterList = $configModel->getCurrencyConverterList();
+        $this->activeLanguages = $configModel->getActiveLanguages(VmConfig::get('active_languages'));
+        $this->orderByFields = $configModel->getProductFilterFields('browse_orderby_fields');
+        $this->searchFields = $configModel->getProductFilterFields('browse_search_fields');
+        $this->aclGroups = $usermodel->getAclGroupIndentedTree();
 
         if(is_Dir(VmConfig::get('vmtemplate') . DS . 'images' . DS . 'availability' . DS)) {
             $imagePath = VmConfig::get('vmtemplate') . '/images/availability/';
@@ -155,8 +121,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         else {
             $imagePath = '/components/com_virtuemart/assets/images/availability/';
         }
-        $this->assignRef('imagePath', $imagePath);
-
+        $this->imagePath = $imagePath;
 
         $this->setLayout('orders');
 
@@ -164,11 +129,10 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $this->addStandardDefaultViewLists($ordersModel, 'created_on');
         $this->lists['state_list'] = $this->renderOrderstatesList();
 
-        $shipping_method_selectec_id = JRequest::getInt('order_exported');
+        $shipping_method_selectec_id = $mainframe->input->getInt('order_exported', 0);
         $orderslist = $ordersModel->getOrdersListByShipment($shipping_method_selectec_id);
 
-
-        $this->assignRef('orderstatuses', $orderStates);
+        $this->orderstatuses = $orderStates;
 
         if(!class_exists('CurrencyDisplay')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'currencydisplay.php');
 
@@ -194,38 +158,29 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
          */
 
         /* Toolbar */
-        $bar = JToolbar::getInstance('toolbar');
-
-        $bar->appendButton(
-            'Custom', '<button onclick="validateForm();" '
-            . 'class="btn btn-small button-apply btn-success validate"><span class="icon-apply icon-white" aria-hidden="true"></span>'
-            . JText::_('Save') . '</button>', 'apply'
-        );
-
         JToolBarHelper::save('updateAndExportZasilkovnaOrders', 'CSV');
         /** @var VirtueMartModelZasilkovna $zas_model */
         $zas_model = VmModel::getModel('zasilkovna');
 
-        $this->assignRef('media_url', $zas_model->_media_url);
+        $this->media_url = $zas_model->_media_url;
         $restrictionInstalled = $zas_model->isShipmentPaymentRestrictionInstalled();
-        $this->assignRef('restrictionInstalled', $restrictionInstalled);
+        $this->restrictionInstalled = $restrictionInstalled;
 
         JToolBarHelper::save('submitToZasilkovna', JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_ORDERS_TO_ZASILKOVNA'));
         JToolBarHelper::custom('printLabels', 'copy', '', JText::_('PLG_VMSHIPMENT_PACKETERY_DO_PRINT_LABELS'), false, false);
 
         /* Assign the data */
-        $this->assignRef('orderslist', $orderslist);
-        $pagination = $ordersModel->getPagination();
-        $this->assignRef('pagination', $pagination);
+        $this->orderslist = $orderslist;
+        $this->pagination = $ordersModel->getPagination();
 
-        $shipmentSelect = $this->renderShipmentsList();
-        $this->assignRef('shipmentSelect', $shipmentSelect);
-        $model->raiseErrors();
+        $this->shipmentSelect = $this->renderShipmentsList();
+        $model->raiseErrors($mainframe);
         parent::display($tpl);
     }
 
     public function renderOrderstatesList() {
-        $orderstates = JRequest::getWord('order_status_code', '');
+        $app = JFactory::getApplication();
+        $orderstates = $app->input->getString('order_status_code', '');
 
         $query = 'SELECT `order_status_code` as value, `order_status_name` as text
 			FROM `#__virtuemart_orderstates`
@@ -239,7 +194,8 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
     public function renderShipmentsList()
     {
-        $selected_shipment = JRequest::getInt('order_exported', '');
+        $app = JFactory::getApplication();
+        $selected_shipment = (int)$app->get('order_exported');
 
         $objList = array();
         $allObj = new stdClass;

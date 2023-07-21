@@ -59,7 +59,7 @@ class VirtuemartControllerZasilkovna extends VmController
         $message = null;
 
         $model->updateCarriers();
-        $model->raiseErrors();
+        $model->raiseErrors(JFactory::getApplication());
         
         if (empty($model->errors)) {
             $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_UPDATED'), FlashMessage::TYPE_MESSAGE);
@@ -90,7 +90,8 @@ class VirtuemartControllerZasilkovna extends VmController
         }
 
         $redir = 'index.php?option=com_virtuemart';
-        if (JRequest::getCmd('task') === 'apply') {
+        $app = JFactory::getApplication();
+        if ($app->input->getString('task') === 'apply') {
             $redir = $this->redirectPath;
         }
         $this->updateZasilkovnaOrders();
@@ -148,8 +149,9 @@ class VirtuemartControllerZasilkovna extends VmController
             );
         }
 
+        $app = JFactory::getApplication();
         foreach ($result as $error) {
-            JError::raiseWarning(100, $error);
+            $app->enqueueMessage($error, 'warning');
         }
 
         $this->setRedirect($this->redirectPath);
@@ -185,10 +187,19 @@ class VirtuemartControllerZasilkovna extends VmController
         } elseif (count($_POST['exportOrders']) === count($exportedOrders)) {
             $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ALL_ORDERS_SUBMITTED'), FlashMessage::TYPE_MESSAGE);
         } else {
-            JError::raiseWarning(100,
-                JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMITTED_ORDERS') . ": " . count($exportedOrders) . ". " . JText::_('PLG_VMSHIPMENT_PACKETERY_NOT_SUBMITTED_ORDERS') . ": (" . count($failedOrders) . "):");
+            $app = JFactory::getApplication();
+            $app->enqueueMessage(
+                sprintf(
+                    '%s: %s. %s: (%s):',
+                    JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMITTED_ORDERS'),
+                    count($exportedOrders),
+                    JText::_('PLG_VMSHIPMENT_PACKETERY_NOT_SUBMITTED_ORDERS'),
+                    count($failedOrders)
+                ),
+                'warning'
+            );
             foreach ($failedOrders as $failedOrder) {
-                JError::raiseWarning(100, $failedOrder['order_number'] . ": " . $failedOrder['message']);
+                $app->enqueueMessage($failedOrder['order_number'] . ": " . $failedOrder['message'], 'warning');
             }
             $this->messageType = FlashMessage::TYPE_ERROR;
         }
@@ -235,9 +246,10 @@ class VirtuemartControllerZasilkovna extends VmController
         );
 
         $validationReport = $this->orderDetail->validateFormData($formData);
+        $app = JFactory::getApplication();
         if (!$validationReport->isValid()) {
             foreach ($validationReport->getErrors() as $error) {
-                JError::raiseWarning(600, $error);
+                $app->enqueueMessage($error, 'warning');
             }
             $this->setRedirectWithMessage($redirectPath);
 
@@ -251,7 +263,7 @@ class VirtuemartControllerZasilkovna extends VmController
                 FlashMessage::TYPE_MESSAGE);
         } else {
             foreach ($zasOrdersModel->errors as $error) {
-                JError::raiseWarning(600, $error);
+                $app->enqueueMessage($error, 'warning');
             }
         }
 

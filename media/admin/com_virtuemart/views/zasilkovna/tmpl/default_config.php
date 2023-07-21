@@ -6,7 +6,8 @@
 
     echo '<div id="zasilkovna-messages"></div>';
 
-    $buttonHtml = '<button onclick="validateForm();" class="btn btn-small button-apply btn-success validate"><span class="icon-apply icon-white" aria-hidden="true"></span>'. JText::_('Save') . '</button>';
+    $buttonHtml = '<button onclick="validateForm();" class="btn btn-small button-apply btn-success validate"><span class="icon-apply icon-white" aria-hidden="true"></span> ' .
+                  JText::_('Save') . '</button>';
     JToolbar::getInstance('toolbar')->prependButton('Custom', $buttonHtml, 'applyZas');
 ?>
 

@@ -40,15 +40,16 @@ class Repository
      */
     public function getOrderByVmOrderId($virtuemart_order_id)
     {
+        $order = null;
         $query = $this->db->getQuery(true);
         $query->select('*')
             ->from(self::PACKETERY_ORDER_TABLE_NAME)
             ->where('virtuemart_order_id = ' . $this->db->quote($virtuemart_order_id));
         $this->db->setQuery($query);
-        $order = $this->db->loadObject(\VirtueMartModelZasilkovna\Order\Order::class);
-
-        if (!$order) {
-            vmWarn(500, $query . " " . $this->db->getErrorMsg());
+        try {
+            $order = Order::fromArray($this->db->loadAssoc());
+        } catch (\RuntimeException $exception) {
+            vmWarn(500, $query . ' ' . $exception->getMessage());
         }
 
         return $order;

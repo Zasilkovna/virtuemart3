@@ -62,9 +62,7 @@
         </thead>
         <tbody>
         <?php
-        if(count($this->orderslist) > 0) {
-
-            $keyword = JRequest::getWord('keyword');
+        if (count($this->orderslist) > 0) {
             foreach($this->orderslist as $key => $order) {
 				$existBranchOrCarrier = !empty($order->branch_id);
 				$disabled = "";

@@ -225,7 +225,6 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function getCurrencyCode($currency_id)
     {
-        $vendorId = VirtueMartModelVendor::getLoggedVendor();
         $db = JFactory::getDBO();
         $q = 'SELECT   `currency_code_3` FROM `#__virtuemart_currencies` WHERE `virtuemart_currency_id`=' . (int)$currency_id;
         $db->setQuery($q);
@@ -375,12 +374,14 @@ class VirtueMartModelZasilkovna extends VmModel
 
     /**
      * Shows errors in module administration
+     * @param \Joomla\CMS\Application\AdministratorApplication $app
+     * @return void
      */
-    public function raiseErrors()
+    public function raiseErrors(\Joomla\CMS\Application\AdministratorApplication $app)
     {
         if(is_array($this->errors)) {
             foreach($this->errors as $error) {
-                JError::raiseWarning(600, $error);
+                $app->enqueueMessage($error, 'warning');
             }
         }
     }
@@ -422,16 +423,17 @@ class VirtueMartModelZasilkovna extends VmModel
         $countries = $method->getAllowedCountries();
         $blockingCountries = $method->getBlockingCountries();
 
+        // Joomla 3 returns ints from db as string, Joomla 4 as ints, therefore in_array must not be strict.
         if (empty($countries)) {
             $hdCarriers = array_filter($hdCarriers,
                 static function ($hdCarrier) use ($blockingCountries) {
-                    return !in_array($hdCarrier['vm_country'], $blockingCountries, true);
+                    return !in_array($hdCarrier['vm_country'], $blockingCountries);
                 });
         } else {
             $allowedCountries = array_diff($countries, $blockingCountries);
             $hdCarriers = array_filter($hdCarriers,
                 static function ($hdCarrier) use ($allowedCountries) {
-                    return in_array($hdCarrier['vm_country'], $allowedCountries, true);
+                    return in_array($hdCarrier['vm_country'], $allowedCountries);
                 });
         }
 
