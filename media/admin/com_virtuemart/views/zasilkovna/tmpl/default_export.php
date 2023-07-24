@@ -15,9 +15,14 @@
         font-size: inherit;
     }
 
-	.error {
-		background-color: #ebccd1;
-	}
+    .zasilkovna.table thead th {
+        font-size: 0.75rem;
+        vertical-align: top;
+    }
+
+    .error {
+        background-color: #ebccd1;
+    }
 </style>
 
 <form action="index.php?option=com_virtuemart&view=zasilkovna&task=export" method="post" name="adminForm" id="adminForm">
@@ -35,7 +40,7 @@
         </div>
         <div id="resultscounter"></div>
     </div>
-    <table class="adminlist jgrid table table-striped zasilkovna" cellspacing="0" cellpadding="0">
+    <table class="zasilkovna table table-striped table-sm">
         <thead>
         <tr>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT'); ?><br><input type="checkbox" name="cbExport" id="cbExport" value="" onclick="zasilkovnaCheckAll(this);" /></th>
@@ -48,6 +53,7 @@
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_WEIGHT'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PACKET_ID'); ?></th>
+            <!-- for cancel button -->
             <th></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_RECEIVER_NAME'); ?></th>
@@ -57,28 +63,27 @@
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CREATED_ON'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_STATUS'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_TOTAL'); ?></th>
-
         </tr>
         </thead>
         <tbody>
         <?php
         if (count($this->orderslist) > 0) {
             foreach($this->orderslist as $key => $order) {
-				$existBranchOrCarrier = !empty($order->branch_id);
-				$disabled = "";
-				$submitted = false;
-				if(isset($order->zasilkovna_packet_id) && $order->zasilkovna_packet_id != 0) {
-					$disabled = " disabled ";
-					$submitted = true;
-				}
-				$disabledForNotSubmitted = (!$submitted) ? 'disabled' : ' ';
-				$disabledExport = (!$existBranchOrCarrier ? 'disabled' : '');
-				$checkBox = '<input type="checkbox" id="cbExport" name="exportOrders[]" value="' . htmlentities($order->order_number) . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . ($order->exported || !$existBranchOrCarrier ? '' : 'checked') . ' ' .$disabledExport . ' >';
-			 	$class = ($existBranchOrCarrier ? "row" . $key % 2 : "error");
-				if (!$existBranchOrCarrier) {
-					$warningMesage = JText::_('PLG_VMSHIPMENT_PACKETERY_MISSING_BRANCH_ORDER');
-					\Joomla\CMS\Factory::getApplication()->enqueueMessage($warningMesage, 'warning');
-				}
+                $existBranchOrCarrier = !empty($order->branch_id);
+                $disabled = "";
+                $submitted = false;
+                if(isset($order->zasilkovna_packet_id) && $order->zasilkovna_packet_id != 0) {
+                    $disabled = " disabled ";
+                    $submitted = true;
+                }
+                $disabledForNotSubmitted = (!$submitted) ? 'disabled' : ' ';
+                $disabledExport = (!$existBranchOrCarrier ? 'disabled' : '');
+                $checkBox = '<input type="checkbox" id="cbExport" name="exportOrders[]" value="' . htmlentities($order->order_number) . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . ($order->exported || !$existBranchOrCarrier ? '' : 'checked') . ' ' .$disabledExport . ' >';
+                $class = ($existBranchOrCarrier ? "row" . $key % 2 : "error");
+                if (!$existBranchOrCarrier) {
+                    $warningMesage = JText::_('PLG_VMSHIPMENT_PACKETERY_MISSING_BRANCH_ORDER');
+                    \Joomla\CMS\Factory::getApplication()->enqueueMessage($warningMesage, 'warning');
+                }
                 ?>
                 <tr class="<?php echo $class; ?>">
                     <!-- Checkbox -->
@@ -111,19 +116,19 @@
 
                     <!-- is cod -->
                     <td><?php
-						$cod = $order->packet_cod;
-						echo '<input size="8" type="input" name="orders[' . $key . '][packet_cod]" value="' . htmlentities($cod) . '"' . $disabled . '> ';
+                        $cod = $order->packet_cod;
+                        echo '<input size="8" type="input" name="orders[' . $key . '][packet_cod]" value="' . htmlentities($cod) . '"' . $disabled . '> ';
                         ?>
                     </td>
                     <!-- email -->
-                    <td><?php 
+                    <td><?php
                         if ($order->email){
                             $email = $order->email;
                         }
                         else{
                             $email = $order->billing_email;
                         }
-					    echo htmlentities($email);
+                        echo htmlentities($email);
                         ?>
                     </td>
                     <!-- phone -->
@@ -131,16 +136,16 @@
                     <!-- packet price -->
                     <td><?php echo '<input size="8" type="input" name="orders[' . $key . '][zasilkovna_packet_price]" value="' . htmlentities($order->zasilkovna_packet_price) . '"' . $disabled . '> ' . htmlentities($order->branch_currency); ?></td>
                     <!-- weight-->
-                    <td><?php echo '<input class="packetery-editable-input" size="8" type="number" step="0.0001" name="orders[' . $key . '][weight]" value="' . (is_numeric($order->weight) ? (float)$order->weight : '') . '"' . $disabled . '> kg'; ?></td>
+                    <td><?php echo '<input class="packetery-editable-input" size="8" type="number" step="0.0001" name="orders[' . $key . '][weight]" value="' . (is_numeric($order->weight) ? (float)$order->weight : '') . '"' . $disabled . '>&nbsp;kg'; ?></td>
                     <!-- packet id -->
                     <td>
-					<?php
-					$packetId = "";
-					if($order->zasilkovna_packet_id !== "0") {
-					?>
-						<a href="<?php echo sprintf(plgVmShipmentZasilkovna::TRACKING_URL, urlencode($order->zasilkovna_packet_id)); ?>" target="_blank"><?php echo htmlentities($order->zasilkovna_packet_id); ?></a>
-					<?php } ?>
-					</td>
+                        <?php
+                        $packetId = "";
+                        if($order->zasilkovna_packet_id !== "0") {
+                            ?>
+                            <a href="<?php echo sprintf(plgVmShipmentZasilkovna::TRACKING_URL, urlencode($order->zasilkovna_packet_id)); ?>" target="_blank"><?php echo htmlentities($order->zasilkovna_packet_id); ?></a>
+                        <?php } ?>
+                    </td>
                     <!--  cancel packet id button -->
                     <?php
                     $link = 'index.php?option=com_virtuemart&view=zasilkovna&task=cancelOrderSubmitToZasilkovna&cancel_order_id=' . htmlentities($order->virtuemart_order_id);
@@ -184,7 +189,7 @@
         </tbody>
         <tfoot>
         <tr>
-            <td colspan="11">
+            <td colspan="19">
                 <?php echo $this->pagination->getListFooter(); ?>
             </td>
         </tr>
@@ -197,7 +202,7 @@
         <select name="print_type" id="print_type" style="font-size: 10px; " onchange="document.cookie = 'print_type_sel=' + this.value + '; expires=' + (new Date(2014, 2, 3)).toUTCString() + '; path=/';">
             <option value="A7_on_A4" selected><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A7_ON_A4'); ?></option>
             <option value="A6_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A6_ON_A4'); ?></option>
-			<option value="A6_on_A6"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A6_ON_A6'); ?></option>
+            <option value="A6_on_A6"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A6_ON_A6'); ?></option>
             <option value="A7_on_A7"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A7_ON_A7'); ?></option>
             <option value="A8_on_A8"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A8_ON_A8'); ?></option>
             <option value="105x35mm_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_105X35MM_ON_A4'); ?></option>
