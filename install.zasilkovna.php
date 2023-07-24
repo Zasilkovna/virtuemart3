@@ -171,14 +171,24 @@ class plgVmShipmentZasilkovnaInstallerScript {
                 }
             }
 
-			$db = JFactory::getDBO();
-			$q = "
-INSERT INTO #__virtuemart_adminmenuentries (`module_id`, `parent_id`, `name`, `link`, `depends`, `icon_class`, `ordering`, `published`, `tooltip`, `view`, `task`) VALUES
-							(5, 0, 'ZASILKOVNA', '', '', 'vmicon vmicon-16-zasilkovna', 1, 1, '', 'zasilkovna', '');";
-			$db->setQuery($q);
-			$db->execute();
+            $db = JFactory::getDBO();
+            $q = "INSERT INTO #__virtuemart_adminmenuentries SET
+                `module_id` = 5,
+                `parent_id` = 0,
+                `name` = 'ZASILKOVNA',
+                `link` = '',
+                `depends` = '',
+                `icon_class` = 'vmicon vmicon-16-lorry',
+                `uikit_icon` = 'shipment',
+                `ordering` = 1,
+                `published` = 1,
+                `tooltip` = '',
+                `view` = 'zasilkovna',
+                `task` = '';";
+            $db->setQuery($q);
+            $db->execute();
 
-		}
+        }
 
         if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.php';
 
