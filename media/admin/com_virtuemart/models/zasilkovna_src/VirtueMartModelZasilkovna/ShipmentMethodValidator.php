@@ -177,12 +177,16 @@ class ShipmentMethodValidator
                 if (!$vmCarrierCountry->published) {
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
+
+                // virtuemart_country_id in Joomla 3 is string, in Joomla 4 it's int, $allowedCountries are strings
+                // TODO enhance the solution?
                 $carrierVmCountryId = $vmCarrierCountry->virtuemart_country_id;
-                if (!empty($allowedCountries) && !in_array($carrierVmCountryId, $allowedCountries, true)) {
+
+                if (!empty($allowedCountries) && !in_array($carrierVmCountryId, $allowedCountries)) {
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
                 if ((empty($allowedCountries) || in_array($carrierVmCountryId, $allowedCountries,
-                            true)) && in_array($carrierVmCountryId, $blockingCountries, true)) {
+                            true)) && in_array($carrierVmCountryId, $blockingCountries)) {
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
             }
