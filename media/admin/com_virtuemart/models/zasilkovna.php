@@ -423,7 +423,7 @@ class VirtueMartModelZasilkovna extends VmModel
         $countries = $method->getAllowedCountries();
         $blockingCountries = $method->getBlockingCountries();
 
-        // Joomla 3 returns ints from db as string, Joomla 4 as ints, therefore in_array must not be strict.
+        // Up to PHP 8.0 ints are returned from db as strings, from PHP 8.1 as ints, therefore in_array must not be strict.
         if (empty($countries)) {
             $hdCarriers = array_filter($hdCarriers,
                 static function ($hdCarrier) use ($blockingCountries) {
