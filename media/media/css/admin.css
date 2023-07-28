@@ -47,3 +47,14 @@ legend {
     background-color: #ffffff;
     bottom: 55px;
 }
+
+.uk-card-body #packeteryUpdateOrderDetail fieldset {
+    margin: 10px;
+}
+
+.uk-card-body #showPacketeryUpdateOrderDetail .vmicon-16-editadd {
+    float: left;
+    margin-right: 5px;
+    position: relative;
+    top: 5px;
+}

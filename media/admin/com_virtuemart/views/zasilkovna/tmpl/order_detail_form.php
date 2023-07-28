@@ -11,9 +11,12 @@ $adultContentChecked = $order->getAdultContent() ? 'checked' : '';
 $token = \JHtml::_('form.token');
 
 ?>
-<a id="showPacketeryUpdateOrderDetail" class="btn btn-small" href="#"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_EDIT_PACKET_DETAIL'); ?>
-    <span class="vmicon vmicon-16-editadd"></span>
-</a>
+<div class="w-100 mt-2">
+    <a id="showPacketeryUpdateOrderDetail" class="btn btn-small uk-button uk-button-small uk-button-default md-bg-white" href="#">
+        <span class="vmicon vmicon-16-editadd"></span>
+        <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_EDIT_PACKET_DETAIL'); ?>
+    </a>
+</div>
 <div id="packeteryUpdateOrderDetail" class="vm-absolute">
     <form action="index.php?option=com_virtuemart&view=zasilkovna&task=updatePacketeryOrderDetail" method="post" id="packeteryUpdateOrderDetailForm">
         <div>
@@ -24,9 +27,9 @@ $token = \JHtml::_('form.token');
                 <table class="admintable table">
                     <thead>
                         <tr>
-                            <td colspan="2">
-                                <h1><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_EDIT_DETAIL'); ?></h1>
-                            </td>
+                            <th colspan="2">
+                                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_EDIT_DETAIL'); ?>
+                            </th>
                         </tr>
                     </thead>
                     <tr>
@@ -53,11 +56,15 @@ $token = \JHtml::_('form.token');
                     </tr>
                     <tr>
                         <td colspan="2">
-                            <a href="#" title="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_SAVE'); ?>" onclick="javascript:savePacketeryUpdateOrderDetail(event)">
+                            <a href="#" title="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_SAVE'); ?>"
+                               onclick="savePacketeryUpdateOrderDetail(event);"
+                               class="btn btn-small uk-button uk-button-small uk-button-default md-bg-white">
                                 <span class="icon-nofloat vmicon vmicon-16-save"></span>
                                 &nbsp;<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_SAVE'); ?>
                             </a>
-                            <a href="#" title="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CANCEL'); ?>" onclick="javascript:cancelPacketeryUpdateOrderDetail(event);">
+                            <a href="#" title="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CANCEL'); ?>"
+                               onclick="cancelPacketeryUpdateOrderDetail(event);"
+                               class="btn btn-small uk-button uk-button-small uk-button-default md-bg-white">
                                 <span class="icon-nofloat vmicon vmicon-16-remove"></span>
                                 &nbsp;<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CANCEL'); ?>
                             </a>
