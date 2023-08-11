@@ -23,6 +23,14 @@
 
     // INCLUDE JS AND CSS
     $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/admin.css?v=' . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css'));
+
+    // from vmuikit_adminuihelper.php
+    $adminTemplateCssPath = 'administrator/templates/vmadmin/html/com_virtuemart/';
+    $adminTemplateCssUikit = $adminTemplateCssPath . 'assets/uikit/css';
+    $adminTemplateCssVm = $adminTemplateCssPath . 'assets/css';
+    vmJsApi::css('uikit.min',$adminTemplateCssUikit);
+    vmJsApi::css(VmConfig::get('backendStyle', 'default-white-blue'),$adminTemplateCssVm);
+
     $document->addScript(JUri::root()."media/com_zasilkovna/media/js/repeater.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/repeater.js'));
     $document->addScript(JUri::root()."media/com_zasilkovna/media/js/admin.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/admin.js'));
 ?>

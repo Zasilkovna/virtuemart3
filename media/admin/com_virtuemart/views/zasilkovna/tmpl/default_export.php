@@ -40,7 +40,14 @@
         </div>
         <div id="resultscounter"></div>
     </div>
-    <table class="zasilkovna table table-striped table-sm">
+    <?php
+    if (version_compare(vmVersion::$RELEASE, '4', '<')) {
+        $classes = 'table table-striped table-sm';
+    } else {
+        $classes = 'uk-table uk-table-small uk-table-striped uk-table-responsive';
+    }
+    ?>
+    <table class="zasilkovna <?php echo $classes; ?>">
         <thead>
         <tr>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT'); ?><br><input type="checkbox" name="cbExport" id="cbExport" value="" onclick="zasilkovnaCheckAll(this);" /></th>

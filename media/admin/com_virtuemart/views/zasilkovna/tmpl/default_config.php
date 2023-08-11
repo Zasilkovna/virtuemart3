@@ -1,8 +1,6 @@
 <?php defined('_JEXEC') or die('Restricted access');
     /** @var VirtueMartModelZasilkovna $model */
     $model = VmModel::getModel('zasilkovna');
-    $document = JFactory::getDocument();
-    $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/admin.css?v=' . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css'));
 
     echo '<div id="zasilkovna-messages"></div>';
 
