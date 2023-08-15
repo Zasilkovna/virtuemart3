@@ -193,7 +193,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     $attributes['carrierPickupPoint'] = $order['carrier_point'];
                 }
 
-                if ($order['is_carrier'] === '1' && $order['carrier_point'] === '') {
+                if ((int)$order['is_carrier'] === 1 && $order['carrier_point'] === '') {
                     $attributes['street'] = $order['recipient_street'];
                     $attributes['city'] = $order['recipient_city'];
                     $attributes['zip'] = $order['recipient_zip'];
