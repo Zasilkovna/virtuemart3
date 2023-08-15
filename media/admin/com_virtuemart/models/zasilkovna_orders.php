@@ -346,6 +346,16 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         exit();
     }
 
+    /**
+     * @param string $orderNumber
+     * @return float
+     */
+    public function getOrderTotal($orderNumber) {
+        $db = JFactory::getDBO();
+        $db->setQuery('SELECT `order_total` FROM `#__virtuemart_orders` WHERE `order_number` = "' . $orderNumber . '"');
+
+        return (float) $db->loadResult();
+    }
 
     public function updateOrders($orders) {
         $db = JFactory::getDBO();
@@ -363,7 +373,11 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $set_q[] = " packet_cod = " . (float) str_replace(',', '.', $order['packet_cod']) . " ";
                 //$set_q[] = " email = '" . $db->escape($order['email']) . "' ";
                 //$set_q[] = " phone = '" . $db->escape($order['phone']) . "' ";
-                $set_q[] = " zasilkovna_packet_price = " . (float) str_replace(',','.', $order['zasilkovna_packet_price']) . " ";
+
+                if ($order['zasilkovna_packet_price'] === '') {
+                    $order['zasilkovna_packet_price'] = $this->getOrderTotal($order['order_number']);
+                }
+                $set_q[] = " zasilkovna_packet_price = " . (float)str_replace(',', '.', $order['zasilkovna_packet_price']) . " ";
 
                 if ($order['weight'] === '') {
                     $set_q[] = " weight = NULL ";
@@ -795,16 +809,6 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 			RIGHT JOIN ' . $this->zas_model->getDbTableName() . ' as plg ON plg.order_number=o.order_number
 			LEFT JOIN #__virtuemart_zasilkovna_carriers as brnch ON brnch.id=plg.branch_id';
     }
-
-    function getInvoiceNumber($virtuemart_order_id) {
-
-        $db = JFactory::getDBO();
-        $q = 'SELECT `invoice_number` FROM `#__virtuemart_invoices` WHERE `virtuemart_order_id`= "' . (int)$virtuemart_order_id . '" ';
-        $db->setQuery($q);
-
-        return $db->loadresult();
-    }
-
 
     /**
      * Retrieve the details for an order line item.

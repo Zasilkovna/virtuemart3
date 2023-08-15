@@ -1,8 +1,5 @@
-#toolbar-apply{
-    display:none;
-}
-.zasilkovna {
-    font-size: 81%;
+#toolbar-apply {
+    display: none;
 }
 
 .zasilkovna td {
@@ -19,16 +16,27 @@
     width: 60px;
 }
 
+.zasilkovna.table thead th {
+    font-size: 0.75rem;
+    vertical-align: top;
+}
+
+.zasilkovna img {
+    max-width: none;
+}
+
+.zasilkovna .error {
+    background-color: #ebccd1;
+}
+
 fieldset {
     margin: 35px 0 35px 10px;
 }
-legend {
-    background-color: #cccccc;
-    border-radius: 8px;
-}
+
 .repeater {
-    width:40%;
+    width: 40%;
 }
+
 .invalid {
     border-color: red !important;
 }
@@ -42,7 +50,7 @@ legend {
 }
 
 #packeteryUpdateOrderDetail {
-    display:none;
+    display: none;
     z-index: 1000;
     background-color: #ffffff;
     bottom: 55px;
@@ -57,4 +65,12 @@ legend {
     margin-right: 5px;
     position: relative;
     top: 5px;
+}
+
+.mb-4 {
+    margin-bottom: 1.5rem;
+}
+
+.pl-3 {
+    padding-left: 1rem;
 }

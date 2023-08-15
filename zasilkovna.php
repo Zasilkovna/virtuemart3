@@ -982,11 +982,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             ));
 
         $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
-        $html = $this->getOrderShipmentHtml($order);
 
-        $orderDetailHtml = $this->orderDetail->renderToString($order);
-        
-        return $html .  $orderDetailHtml;
+        return $this->orderDetail->renderToString($order);
     }
 
     /**
@@ -996,29 +993,17 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     function getOrderShipmentHtml(\VirtueMartModelZasilkovna\Order\Order $order)
     {
-        if(!$order) {
+        if (!$order) {
             return '';
         }
 
-        if(!class_exists('CurrencyDisplay')) {
-            require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'currencydisplay.php');
-        }
-
-        $currency = CurrencyDisplay::getInstance();
-        $taxId = $order->getTaxId();
-        $tax = ShopFunctions::getTaxByID($taxId);
-        $taxDisplay = is_array($tax) ? $tax['calc_value'] . ' ' . $tax['calc_value_mathop'] : $taxId;
-        $taxDisplay = ($taxDisplay == -1) ? JText::_('COM_VIRTUEMART_PRODUCT_TAX_NONE') : $taxDisplay;
+        JFactory::getLanguage()->load('plg_vmshipment_zasilkovna');
 
         $html = '<table class="adminlist">' . "\n";
-
-        JFactory::getLanguage()->load('plg_vmshipment_zasilkovna');
         $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_SHIPPING_NAME', $order->getShipmentName());
-
         if (!$order->isHomeDelivery()) {
             $html .= $this->getHtmlRowBE('PLG_VMSHIPMENT_PACKETERY_BRANCH', $order->getBranchNameStreet());
         }
-
         $html .= $this->getHtmlRowBE('COM_VIRTUEMART_CURRENCY', $order->getBranchCurrency());
         $html .= '</table>' . "\n";
 
