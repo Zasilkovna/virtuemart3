@@ -175,7 +175,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
             $q = "INSERT INTO #__virtuemart_adminmenuentries SET
                 `module_id` = 5,
                 `parent_id` = 0,
-                `name` = 'ZASILKOVNA',
+                `name` = 'Packeta',
                 `link` = '',
                 `depends` = '',
                 `icon_class` = 'vmicon vmicon-16-lorry',
@@ -196,6 +196,97 @@ class plgVmShipmentZasilkovnaInstallerScript {
         if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0', '<')) {
             $this->migratePricingRules();
         }
+
+		$this->addBackendJoomlaMenuEntry();
+	}
+
+	/**
+	 * @return void
+	 */
+	private function addBackendJoomlaMenuEntry() {
+		if ( version_compare( JVERSION, '4.0.0', '<' ) ) {
+			return;
+		}
+
+		JTable::addIncludePath( VMPATH_ROOT . '/administrator/components/com_menus/tables' );
+		JModelLegacy::addIncludePath( VMPATH_ROOT . '/administrator/components/com_menus/models', 'MenusModel' );
+
+		$db = JFactory::getDbo();
+		$db->setQuery( 'SELECT extension_id FROM #__extensions WHERE `type` = "component" AND `element` = "com_virtuemart"' );
+		$virtueMartExtensionId = $db->loadResult();
+
+		$parentId = $this->getJoomlaMenuItem( 'main', 'com-virtuemart', $virtueMartExtensionId, 1 );
+		if ( $parentId === 0 ) {
+			return;
+		}
+
+		$data = [];
+
+		$data['menutype']          = 'main';
+		$data['title']             = 'Packeta';
+		$data['alias']             = 'com-zasilkovna';
+		$data['path']              = 'com-zasilkovna';
+		$data['link']              = 'index.php?option=com_virtuemart&view=zasilkovna';
+		$data['img']               = '';
+		$data['params']            = '{}';
+		$data['note']              = '';
+		$data['type']              = 'component';
+		$data['published']         = 1;
+		$data['parent_id']         = $parentId;
+		$data['level']             = 2;
+		$data['component_id']      = $virtueMartExtensionId;
+		$data['checked_out']       = 0;
+		$data['checked_out_time']  = '0000-00-00 00:00:00';
+		$data['browserNav']        = 0;
+		$data['access']            = 1;
+		$data['template_style_id'] = 0;
+		$data['home']              = 0;
+		$data['language']          = '*';
+		$data['client_id']         = 1;
+
+		$menuModel  = JModelLegacy::getInstance( 'Item', 'MenusModel', [] );
+		$data['id'] = $this->getJoomlaMenuItem( $data['menutype'], $data['alias'], $data['component_id'], $data['client_id'] );
+		$menuModel->setState( 'item.id', $data['id'] );
+		$data['menuordering'] = $data['id'];
+		$menuModel->save( $data );
+
+		$data['id'] = $this->getJoomlaMenuItem( $data['menutype'], $data['alias'], $data['component_id'], 0 );
+		if ( $data['id'] > 0 ) {
+			$menuModel->setState( 'item.id', $data['id'] );
+			$menuModel->save( $data );
+		}
+	}
+
+	/**
+	 * @param string $menutType
+	 * @param string $alias
+	 * @param int    $componentId
+	 * @param int    $clientId
+	 *
+	 * @return int
+	 */
+	private function getJoomlaMenuItem( $menutType, $alias, $componentId, $clientId ) {
+		$db    = JFactory::getDbo();
+		$query = $db->getQuery( true )
+		            ->select( $db->quoteName( 'id' ) )
+		            ->from( $db->quoteName( '#__menu' ) )
+		            ->where(
+						[
+				            $db->quoteName( 'menutype' ) . ' = :menutype',
+				            $db->quoteName( 'alias' ) . ' = :alias',
+				            $db->quoteName( 'component_id' ) . ' = :component_id',
+				            $db->quoteName( 'client_id' ) . ' = :client_id',
+				            $db->quoteName( 'published' ) . ' = 1',
+			            ]
+		            )
+		            ->bind( ':menutype', $menutType )
+		            ->bind( ':alias', $alias )
+		            ->bind( ':component_id', $componentId )
+		            ->bind( ':client_id', $clientId );
+
+		$db->setQuery( $query );
+
+		return (int) $db->loadResult();
 	}
 
     /**
