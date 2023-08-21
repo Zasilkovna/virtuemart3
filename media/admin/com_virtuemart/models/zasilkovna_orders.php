@@ -352,7 +352,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
      */
     public function getOrderTotal($orderNumber) {
         $db = JFactory::getDBO();
-        $db->setQuery('SELECT `order_total` FROM `#__virtuemart_orders` WHERE `order_number` = "' . $orderNumber . '"');
+        $db->setQuery('SELECT `order_total` FROM `#__virtuemart_orders` WHERE `order_number` = ' . $db->quote($orderNumber));
 
         return (float) $db->loadResult();
     }
