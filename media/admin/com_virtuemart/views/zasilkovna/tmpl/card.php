@@ -7,7 +7,7 @@
         <div class="uk-card-header">
             <div class="uk-card-title">
                 <span class="md-color-cyan-600 uk-margin-small-right" uk-icon="icon: <?php echo $icon; ?>; ratio: 1.2"></span>
-                <?php echo $title; ?></div>
+                <?php echo htmlspecialchars($title); ?></div>
         </div>
         <div class="uk-card-body">
             <?php echo $content; ?>
