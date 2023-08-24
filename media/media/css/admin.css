@@ -74,3 +74,8 @@ fieldset {
 .pl-3 {
     padding-left: 1rem;
 }
+
+#zasilkovna_api_pass, #zasilkovna_eshop_label {
+    max-width: 400px;
+    width: 400px;
+}
