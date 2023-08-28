@@ -3,7 +3,13 @@
     // INCLUDE JOOMLA FORMVALIDATOR
     JHtml::_('behavior.formvalidator');
 
-    AdminUIHelper::startAdminArea($this);
+    $adminTemplate = VMPATH_ROOT . '/administrator/templates/vmadmin/html/com_virtuemart/';
+    JLoader::register('vmuikitAdminUIHelper', $adminTemplate . 'helpers/vmuikit_adminuihelper.php');
+    if (class_exists('vmuikitAdminUIHelper')) {
+        vmuikitAdminUIHelper::startAdminArea($this);
+    } else {
+        AdminUIHelper::startAdminArea($this);
+    }
 
     /** @var VirtueMartModelZasilkovna $model */
     $model = VmModel::getModel('zasilkovna');
@@ -23,16 +29,22 @@
 
     // INCLUDE JS AND CSS
     $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/admin.css?v=' . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css'));
+
     $document->addScript(JUri::root()."media/com_zasilkovna/media/js/repeater.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/repeater.js'));
     $document->addScript(JUri::root()."media/com_zasilkovna/media/js/admin.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/admin.js'));
 ?>
 <form action="index.php" method="post" name="adminForm" id="adminForm">
     <?php // Loading Templates in Tabs
-        AdminUIHelper::buildTabs($this, array(
-            'export' => JText::_('PLG_VMSHIPMENT_PACKETERY_ORDERS_TAB'),
-            'config' => JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_TAB'),
-            'carriers' => JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_TAB'),
-        ));
+    $tabs = [
+        'export' => JText::_('PLG_VMSHIPMENT_PACKETERY_ORDERS_TAB'),
+        'config' => JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_TAB'),
+        'carriers' => JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_TAB'),
+    ];
+    if (class_exists('vmuikitAdminUIHelper')) {
+        vmuikitAdminUIHelper::buildTabs($this, $tabs);
+    } else {
+        AdminUIHelper::buildTabs($this, $tabs);
+    }
     ?>
     <!-- Hidden Fields -->
     <input type="hidden" name="task" value="" />
@@ -43,7 +55,11 @@
     ?>
 </form>
 <?php
+if (class_exists('vmuikitAdminUIHelper')) {
+    vmuikitAdminUIHelper::endAdminArea();
+} else {
     AdminUIHelper::endAdminArea();
+}
 ?>
 <script>
     jQuery("a.toolbar").each(function() {

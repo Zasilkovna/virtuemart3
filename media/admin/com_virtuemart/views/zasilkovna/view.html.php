@@ -44,8 +44,6 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
             require(VMPATH_ADMIN . DS . 'helpers' . DS . 'html.php');
         if(!class_exists('VmImage'))
             require(VMPATH_ADMIN . DS . 'helpers' . DS . 'image.php');
-        if(!class_exists('CurrencyDisplay'))
-            require(VMPATH_ADMIN . DS . 'helpers' . DS . 'currencydisplay.php');
 
         $configModel = VmModel::getModel('config');
 
@@ -133,23 +131,6 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $orderslist = $ordersModel->getOrdersListByShipment($shipping_method_selectec_id);
 
         $this->orderstatuses = $orderStates;
-
-        if(!class_exists('CurrencyDisplay')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'currencydisplay.php');
-
-        /* Apply currency This must be done per order since it's vendor specific */
-        $_currencies = array(); // Save the currency data during this loop for performance reasons
-        if($orderslist) {
-            foreach($orderslist as $virtuemart_order_id => $order) {
-
-                //This is really interesting for multi-X, but I avoid to support it now already, lets stay it in the code
-                if(!array_key_exists('v' . $order->virtuemart_vendor_id, $_currencies)) {
-                    $_currencies['v' . $order->virtuemart_vendor_id] = CurrencyDisplay::getInstance('', $order->virtuemart_vendor_id);
-                }
-                $order->order_total = $_currencies['v' . $order->virtuemart_vendor_id]->priceDisplay($order->order_total);
-                $order->invoiceNumber = $ordersModel->getInvoiceNumber($order->virtuemart_order_id);
-
-            }
-        }
 
         /*
          * UpdateStatus removed from the toolbar; don't understand how this was intented to work but

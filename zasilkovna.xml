@@ -47,10 +47,11 @@
                                validate="carrier"
                                showon="shipping_type:hdcarriers"/>
                         <field name="vendor_groups" type="checkboxes" default="" multiple="multiple"
-                               label="PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUPS" showon="shipping_type:pickuppoints">
-                            <option value="alzabox">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ALZABOX</option>
+                               label="PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUPS"
+                               showon="shipping_type:pickuppoints">
                             <option value="zpoint">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ZPOINT</option>
                             <option value="zbox">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ZBOX</option>
+                            <option value="alzabox">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ALZABOX</option>
                         </field>
                     </form>
                 </field>
