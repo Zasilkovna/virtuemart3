@@ -281,7 +281,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         //    $shippingDetails = $order['details']['ST'];
 
         // IF BILLING AND SHIPPING DETAILS ARE DIFFERENT USE SHIPPING DETAILS
-        if($billing->STsameAsBT == "0" ){
+        if((int)$billing->STsameAsBT === 0){
             // FALLBACK TO BILLING CONTACT IF NECESSARY, BECAUSE OF THE POSSIBILITY TO HAVE SHIPPING ADDRESS ENTIRELY WITHOUT CONTACT
             $noShippingContact = (
                 empty($shipping->email) &&
@@ -794,7 +794,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
             if ($isHdCarrier) {
                 $hdCarrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
-                if (!$hdCarrier || $hdCarrier->deleted === '1' || ( $countryCode !== '' && $hdCarrier->country !== $countryCode)) {
+                if (!$hdCarrier || (int)$hdCarrier->deleted === 1 || ( $countryCode !== '' && $hdCarrier->country !== $countryCode)) {
                     continue;
                 }
             }
@@ -952,7 +952,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if ($zasMethod->isHdCarrier()) {
             $this->clearPickedDeliveryPoint($virtuemartShipmentMethodId);
             $hdCarrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
-            if (!$hdCarrier || $hdCarrier->deleted === '1' || $hdCarrier->country !== $countryCode) {
+            if (!$hdCarrier || (int)$hdCarrier->deleted === 1 || $hdCarrier->country !== $countryCode) {
                 $cart->virtuemart_shipmentmethod_id = null; // makes selected shipping method disappear
             }
         }

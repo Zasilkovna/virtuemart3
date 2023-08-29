@@ -1,7 +1,7 @@
 <?php
 
 namespace VirtueMartModelZasilkovna\Order;
-
+use Joomla\CMS\Debug\Debug;
 class Repository
 {
     const PACKETERY_ORDER_TABLE_NAME = "#__virtuemart_shipment_plg_zasilkovna";
@@ -31,7 +31,7 @@ class Repository
 
         $result = $this->db->loadAssoc();
 
-        return $result && $result['zasilkovna_packet_id'] !== "0";
+        return $result && (int)$result['zasilkovna_packet_id'] !== 0;
     }
 
     /**
