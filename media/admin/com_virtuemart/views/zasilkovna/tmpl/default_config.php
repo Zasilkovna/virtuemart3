@@ -150,7 +150,7 @@ foreach ($paymentplugin_payments as $paymentplugin_payment)
 
             $configRecordName='zasilkovna_combination_payment_'.$paymentId.'_shipment_'.$selectedShipment;
 
-            if ($model->getConfig($configRecordName, '1') == '0')
+            if ((int)$model->getConfig($configRecordName, '1') === 0)
             {
                 continue;
             }

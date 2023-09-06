@@ -31,7 +31,7 @@ class Repository
 
         $result = $this->db->loadAssoc();
 
-        return $result && $result['zasilkovna_packet_id'] !== "0";
+        return $result && (int)$result['zasilkovna_packet_id'] !== 0;
     }
 
     /**

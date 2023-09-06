@@ -69,6 +69,6 @@ abstract class AbstractResolver
             return false;
         }
 
-        return $obj->enabled === '1';
+        return (int)$obj->enabled === 1;
     }
 }
