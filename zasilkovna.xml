@@ -89,6 +89,15 @@
                 </field>
             </fieldset>
 
+            <fieldset name="template">
+                <field name="shipment_logos" type="vmfiles" multiple="true" directory="/images/virtuemart/shipment"
+                        label="VMSHIPMENT_WEIGHT_COUNTRIES_LOGOS"
+                       size="40"
+                       default="" hide_default="1" hide_none="true"
+                       stripext="0" exclude="index.html"
+                       description="VMSHIPMENT_WEIGHT_COUNTRIES_LOGOS_DESC"/>
+            </fieldset>
+
             <fieldset name="restrictions">
                 <field name="checkConditionsCore" value="1" default="1" type="hidden"/>
                 <field
