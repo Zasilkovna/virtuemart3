@@ -5,7 +5,7 @@ namespace VirtueMartModelZasilkovna\Carrier;
 class VendorGroups
 {
     // constant values are used in zasilkovna.xml
-	const ZPOINT = 'zpoint';
+    const ZPOINT = 'zpoint';
     const ZBOX = 'zbox';
 
     static private $countryCodeMapping = [
