@@ -235,21 +235,6 @@ class VirtueMartModelZasilkovna extends VmModel
     /**
      * @return bool
      */
-    public function isShipmentPaymentRestrictionInstalled()
-    {
-        $file = JPATH_SITE . '/components/com_virtuemart/views/cart/tmpl/select_payment.php';
-        if(strpos(file_get_contents($file), 'ZASILKOVNA') !== false) {
-            return true;
-        }
-        else {
-            return false;
-        }
-    }
-
-
-    /**
-     * @return bool
-     */
     public function checkConfiguration()
     {
         if($this->checked_configuration) return $this->config_ok;
