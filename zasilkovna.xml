@@ -51,7 +51,6 @@
                                showon="shipping_type:pickuppoints">
                             <option value="zpoint">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ZPOINT</option>
                             <option value="zbox">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ZBOX</option>
-                            <option value="alzabox">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ALZABOX</option>
                         </field>
                     </form>
                 </field>
