@@ -104,6 +104,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
             recurse_delete($media_path);
 
             $this->removeAdministratorFiles();
+            $this->removeAlzaboxFromShipmentParams();
         }
 	}
 
@@ -597,6 +598,54 @@ class plgVmShipmentZasilkovnaInstallerScript {
         }
 
         $model->updateConfig($config);
+    }
+
+    /**
+     * @return void
+     */
+    private function removeAlzaboxFromShipmentParams() {
+        $db = JFactory::getDBO();
+        $db->setQuery('SELECT `virtuemart_shipmentmethod_id`, `shipment_params` FROM `#__virtuemart_shipmentmethods` WHERE `shipment_element` = "zasilkovna" AND `shipment_params` LIKE "%alzabox%"');
+        $methods = $db->loadObjectList();
+
+        foreach ($methods as $method) {
+            $newParams = $this->removeAlzaboxFromShipmentParamsString($method->shipment_params);
+            $updateQuery = sprintf(
+                'UPDATE `#__virtuemart_shipmentmethods` SET `shipment_params` = %s WHERE `virtuemart_shipmentmethod_id` = %d',
+                $db->quote($newParams),
+                (int)$method->virtuemart_shipmentmethod_id
+            );
+
+            $db->setQuery($updateQuery);
+            $db->execute();
+        }
+    }
+
+    /**
+     * @param string $shipmentParamsString
+     * @return string
+     */
+    private function removeAlzaboxFromShipmentParamsString($shipmentParamsString) {
+        // Split the string into JSON part and the rest
+        list($jsonPart, $rest) = explode("|", $shipmentParamsString, 2);
+
+        // Remove 'delivery_settings=' from the start of the JSON part
+        $jsonPart = str_replace('delivery_settings=', '', $jsonPart);
+
+        // Check if the string contains "alzabox"
+        if (strpos($jsonPart, 'alzabox') !== false) {
+            $arr = json_decode($jsonPart, true);
+
+            // Remove "alzabox" from the vendor_groups array
+            if (($key = array_search('alzabox', $arr['vendor_groups'], true)) !== false) {
+                unset($arr['vendor_groups'][$key]);
+                $arr['vendor_groups'] = array_values($arr['vendor_groups']);
+            }
+
+            $jsonPart = json_encode($arr);
+        }
+
+        return 'delivery_settings=' . $jsonPart . "|" . $rest;
     }
 }
 
