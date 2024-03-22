@@ -194,7 +194,10 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
      */
     private function showLimitationsRemovedNotice()
     {
-        $readmeDeprecationUrl = JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION_README_URL');
+        $readmeDeprecationUrl = sprintf(
+            'https://github.com/Zasilkovna/virtuemart3/blob/master/README.md%s',
+            JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION_README_URL_ANCHOR')
+        );
 
         $dismissUrl = Juri::base(true) . '/index.php?option=com_virtuemart&view=zasilkovna&task=dismissLimitationsRemovedNotice';
         $dismissButtonHtml = sprintf(
