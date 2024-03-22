@@ -609,6 +609,9 @@ class plgVmShipmentZasilkovnaInstallerScript {
                 unset($config[$key]);
             }
         }
+
+        unset($config['zasilkovna_deprecation_warning_dismissed']);
+
         $zasilkovnaModel->updateConfig($config);
     }
 }
