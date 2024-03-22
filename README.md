@@ -91,9 +91,10 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 In case you are using another third-party cart module, please write to [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
 Packeta module may not work with another OPC module.
 
-### Warning - Feature drop plan: Delivery and payment limitations settings
+<a id="settings-payment_method"></a>
+### Warning - Feature drop: Delivery and payment limitations settings
 
-**In July 2023** we are going to discontinue settings for Delivery and payment limitations from Packeta module configuration. 
+We have discontinued settings for Delivery and payment limitations from Packeta module configuration. 
 We recommend to use native VirtueMart settings for this purpose.
 
 To restrict some Payment methods for some Shipping methods, please use VirtueMart settings:
@@ -101,6 +102,7 @@ To restrict some Payment methods for some Shipping methods, please use VirtueMar
 VirtueMart Control panel -> left panel menu Shop -> Payment Methods -> Edit Payment Method -> tab Payment Method Information -> Shipments
 
 In this field add Shipping methods that are allowed for this Payment method or leave it blank for all Shipping methods.
+![Payment method settings](img/settings-payment_method.png)
 
 Users, who modified the file `components/com_virtuemart/views/cart/tmpl/select_payment.php`,  are advised to revert the changes to the original state for better performance:
 ```php
@@ -206,9 +208,10 @@ Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Met
 Pokud používáte nějaký jiný modul košíku třetí strany, napište nám [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
 Modul Zásilkovny nemusí být s jiným OPC modulem funkční.
 
-### Upozornění - Plán odstranění funkce: Omezení dopravy a platby
+<a id="nastaveni-platebni_metody"></a>
+### Upozornění - Odstranění funkce: Omezení dopravy a platby
 
-**V červenci 2023** odstraníme v konfiguraci modulu Zásilkovna nastavení pro omezení doprava-platba.
+Odstranili jsme v konfiguraci modulu Zásilkovna nastavení pro omezení doprava-platba.
 Doporučujeme pro tento účel používat nativní nastavení VirtueMartu.
 
 Chcete-li omezit některé způsoby platby pro některé způsoby dopravy, použijte, prosím, nastavení VirtueMart:
@@ -216,6 +219,7 @@ Chcete-li omezit některé způsoby platby pro některé způsoby dopravy, použ
 VirtueMart Control panel -> levý panel menu Shop -> Payment methods -> Upravit platební metodu -> záložka Payment Method Information -> Shipments
 
 Do tohoto pole přidejte Přepravní metody, které jsou pro tuto Platební metodu povoleny, nebo jej nechte prázdné pro všechny Přepravní metody.
+![Nastavení platební metody](img/nastaveni-platebni_metoda.png)
 
 Uživatelům, kteří upravili soubor `components/com_virtuemart/views/cart/tmpl/select_payment.php`, doporučujeme vrátit změny kvůli výkonu do původního stavu:
 

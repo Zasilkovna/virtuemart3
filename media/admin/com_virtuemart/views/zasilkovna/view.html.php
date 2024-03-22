@@ -50,8 +50,8 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel();
 
-        if(!$model->getConfig(VirtuemartControllerZasilkovna::ZASILKOVNA_DEPRECATION_WARNING_DISMISSED, false)) {
-            $this->showDeprecationWarning();
+        if(!$model->getConfig(VirtuemartControllerZasilkovna::ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED, false)) {
+            $this->showLimitationsRemovedNotice();
         }
 
         $shipModel = VmModel::getModel('shipmentmethod');
@@ -144,8 +144,6 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $zas_model = VmModel::getModel('zasilkovna');
 
         $this->media_url = $zas_model->_media_url;
-        $restrictionInstalled = $zas_model->isShipmentPaymentRestrictionInstalled();
-        $this->restrictionInstalled = $restrictionInstalled;
 
         JToolBarHelper::save('submitToZasilkovna', JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_ORDERS_TO_ZASILKOVNA'));
         JToolBarHelper::custom('printLabels', 'copy', '', JText::_('PLG_VMSHIPMENT_PACKETERY_DO_PRINT_LABELS'), false, false);
@@ -194,27 +192,30 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
     /**
      * @return void
      */
-    private function showDeprecationWarning()
+    private function showLimitationsRemovedNotice()
     {
-        $readmeDeprecationUrl = JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION_README_URL');
+        $readmeDeprecationUrl = sprintf(
+            'https://github.com/Zasilkovna/virtuemart3/blob/master/README.md%s',
+            JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION_README_URL_ANCHOR')
+        );
 
-        $dismissUrl = Juri::base(true) . '/index.php?option=com_virtuemart&view=zasilkovna&task=dismissDeprecationWarning';
+        $dismissUrl = Juri::base(true) . '/index.php?option=com_virtuemart&view=zasilkovna&task=dismissLimitationsRemovedNotice';
         $dismissButtonHtml = sprintf(
             '<a class="btn btn-warning" href="%s">%s</a>',
             $dismissUrl,
             JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION_DISMISS')
         );
 
-        $depracationMessageHtml = sprintf(
+        $limitationsRemovedMessageHtml = sprintf(
             JText::_('PLG_VMSHIPMENT_PACKETERY_PAYMENT_SHIPMENT_RESTRICTION_DEPRECATION'),
             sprintf('<a href="%s" target="_blank">', $readmeDeprecationUrl),
             '</a>'
         );
 
-        $fullFlashMessage = sprintf('%s<br>%s', $depracationMessageHtml, $dismissButtonHtml);
+        $fullFlashMessage = sprintf('%s<br>%s', $limitationsRemovedMessageHtml, $dismissButtonHtml);
 
         /** @var JApplicationCms $app */
         $app = JFactory::getApplication();
-        $app->enqueueMessage($fullFlashMessage, \VirtueMartModelZasilkovna\FlashMessage::TYPE_WARNING);
+        $app->enqueueMessage($fullFlashMessage, \VirtueMartModelZasilkovna\FlashMessage::TYPE_NOTICE);
     }
 }
