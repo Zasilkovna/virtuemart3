@@ -34,7 +34,7 @@ use VirtueMartModelZasilkovna\Label;
  */
 class VirtuemartControllerZasilkovna extends VmController
 {
-    const ZASILKOVNA_DEPRECATION_WARNING_DISMISSED = 'zasilkovna_deprecation_warning_dismissed';
+    const ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED = 'zasilkovna_limitations_removed_notice_dismissed';
 
     /** @var \VirtueMartModelZasilkovna\Order\Detail */
     private $orderDetail;
@@ -273,14 +273,14 @@ class VirtuemartControllerZasilkovna extends VmController
     /**
      * @return void
      */
-    public function dismissDeprecationWarning()
+    public function dismissLimitationsRemovedNotice()
     {
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
         $config = $model->loadConfig();
 
-        if (!isset($config[self::ZASILKOVNA_DEPRECATION_WARNING_DISMISSED]) || $config[self::ZASILKOVNA_DEPRECATION_WARNING_DISMISSED] === false) {
-            $config[self::ZASILKOVNA_DEPRECATION_WARNING_DISMISSED] = true;
+        if (!isset($config[self::ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED]) || $config[self::ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED] === false) {
+            $config[self::ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED] = true;
             $model->updateConfig($config);
         }
 
