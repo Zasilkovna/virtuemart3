@@ -163,7 +163,8 @@ class ShipmentMethodValidator
                 $report->addError('NO_HD_CARRIER_SELECTED');
             } else {
                 $carrier = $this->carrierRepository->getCarrierById($hdCarrierId);
-                if ($carrier === null || $carrier->deleted === 1) {
+                // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+                if ($carrier === null || $carrier->deleted == 1) {
                     $report->addError(
                         'HD_CARRIER_NOT_EXISTS',
                         $carrier->name ? [$carrier->name] : ['ID: ' . $hdCarrierId]
@@ -178,15 +179,15 @@ class ShipmentMethodValidator
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
 
-                // virtuemart_country_id in Joomla 3 is string, in Joomla 4 it's int, $allowedCountries are strings
-                // TODO enhance the solution?
                 $carrierVmCountryId = $vmCarrierCountry->virtuemart_country_id;
 
-                if (!empty($allowedCountries) && !in_array($carrierVmCountryId, $allowedCountries)) {
+                // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+                if (!empty($allowedCountries) && !in_array($carrierVmCountryId, $allowedCountries, false)) {
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
+                // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
                 if ((empty($allowedCountries) || in_array($carrierVmCountryId, $allowedCountries,
-                            true)) && in_array($carrierVmCountryId, $blockingCountries)) {
+                            false)) && in_array($carrierVmCountryId, $blockingCountries, false)) {
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
             }

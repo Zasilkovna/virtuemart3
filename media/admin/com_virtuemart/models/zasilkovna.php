@@ -423,17 +423,18 @@ class VirtueMartModelZasilkovna extends VmModel
         $countries = $method->getAllowedCountries();
         $blockingCountries = $method->getBlockingCountries();
 
-        // Up to PHP 8.0 ints are returned from db as strings, from PHP 8.1 as ints, therefore in_array must not be strict.
         if (empty($countries)) {
             $hdCarriers = array_filter($hdCarriers,
                 static function ($hdCarrier) use ($blockingCountries) {
-                    return !in_array($hdCarrier['vm_country'], $blockingCountries);
+                    // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
+                    return !in_array($hdCarrier['vm_country'], $blockingCountries, false);
                 });
         } else {
             $allowedCountries = array_diff($countries, $blockingCountries);
             $hdCarriers = array_filter($hdCarriers,
                 static function ($hdCarrier) use ($allowedCountries) {
-                    return in_array($hdCarrier['vm_country'], $allowedCountries);
+                    // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+                    return in_array($hdCarrier['vm_country'], $allowedCountries, false);
                 });
         }
 

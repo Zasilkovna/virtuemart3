@@ -788,13 +788,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                     $countries = $method->countries;
                 }
             }
-            if(count($countries) && !in_array($address['virtuemart_country_id'], $countries)) {
+            // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+            if(count($countries) && !in_array($address['virtuemart_country_id'], $countries, false)) {
                 continue;
             }
 
             if ($isHdCarrier) {
                 $hdCarrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
-                if (!$hdCarrier || (int)$hdCarrier->deleted === 1 || ($countryCode !== '' && $hdCarrier->country !== $countryCode)) {
+                // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+                if (!$hdCarrier || $hdCarrier->deleted == 1 || ( $countryCode !== '' && $hdCarrier->country !== $countryCode)) {
                     continue;
                 }
             }
@@ -952,7 +954,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if ($zasMethod->isHdCarrier()) {
             $this->clearPickedDeliveryPoint($virtuemartShipmentMethodId);
             $hdCarrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
-            if (!$hdCarrier || (int)$hdCarrier->deleted === 1 || $hdCarrier->country !== $countryCode) {
+            // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+            if (!$hdCarrier || $hdCarrier->deleted == 1 || $hdCarrier->country !== $countryCode) {
                 $cart->virtuemart_shipmentmethod_id = null; // makes selected shipping method disappear
             }
         }
