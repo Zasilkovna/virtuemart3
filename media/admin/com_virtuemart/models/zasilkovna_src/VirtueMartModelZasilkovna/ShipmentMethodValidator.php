@@ -178,7 +178,6 @@ class ShipmentMethodValidator
                 if (!$vmCarrierCountry->published) {
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
-
                 $carrierVmCountryId = $vmCarrierCountry->virtuemart_country_id;
 
                 // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
@@ -186,8 +185,9 @@ class ShipmentMethodValidator
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
                 // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
-                if ((empty($allowedCountries) || in_array($carrierVmCountryId, $allowedCountries,
-                            false)) && in_array($carrierVmCountryId, $blockingCountries, false)) {
+                if ((empty($allowedCountries)
+                        || in_array($carrierVmCountryId, $allowedCountries,false))
+                        && in_array($carrierVmCountryId, $blockingCountries, false)) {
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
             }
