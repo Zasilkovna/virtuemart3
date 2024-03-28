@@ -102,7 +102,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
         if ($route === 'update') {
             $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna';
             recurse_delete($media_path);
-
+            $this->removeObsoleteShippingPaymentRestrictionsFromConfig();
             $this->removeAdministratorFiles();
             $this->removeAlzaboxFromShipmentParams();
         }
@@ -646,6 +646,19 @@ class plgVmShipmentZasilkovnaInstallerScript {
         }
 
         return 'delivery_settings=' . $jsonPart . "|" . $rest;
+    }
+
+    private function removeObsoleteShippingPaymentRestrictionsFromConfig() {
+        /** @var VirtueMartModelZasilkovna $zasilkovnaModel */
+        $zasilkovnaModel = VmModel::getModel('zasilkovna');
+        $config = $zasilkovnaModel->loadConfig();
+
+        foreach ($config as $key => $value) {
+            if (strpos($key, 'zasilkovna_combination') === 0) {
+                unset($config[$key]);
+            }
+        }
+        $zasilkovnaModel->updateConfig($config);
     }
 }
 
