@@ -488,16 +488,6 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 }
             }
 
-
-			/**
-            if( $row['is_cod'] == 1 ) {
-                $cod = $total;
-            }
-            else {
-                $cod = 0;
-            }
-			 */
-
 			$orderForExport['order_number'] = $row['order_number'];
 			$orderForExport['recipient_firstname'] = $row['first_name'];
             $orderForExport['recipient_lastname'] = $row['last_name'];
