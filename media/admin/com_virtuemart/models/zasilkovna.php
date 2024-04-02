@@ -133,44 +133,6 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * Returns list of supported countries, parameters 'country' and 'lang' are used in the widget
-     * support for new country can be easily added by expanding the array
-     *
-     * @param bool $unsupported In some cases option for unsupported countries is needed
-     * @return array List of supported countries
-     */
-    public function getCountries($unsupported = false)
-    {
-        $countries = array(
-            "cz" => array(
-                "country" => "cz"
-            ),
-            "sk" => array(
-                "country" => "sk"
-            ),
-            "pl" => array(
-                "country" => "pl"
-            ),
-            "hu" => array(
-                "country" => "hu"
-            ),
-            "ro" => array(
-                "country" => "ro"
-            )
-        );
-        if($unsupported){
-            $countries = array_merge(array(
-                "other" => array(
-                    "country" => "null"
-                )
-            ), $countries);
-        }
-
-        return $countries;
-    }
-
-
-    /**
      * Returns model's table name
      * @return string
      */
