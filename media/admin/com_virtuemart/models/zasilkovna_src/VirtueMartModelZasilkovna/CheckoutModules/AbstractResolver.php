@@ -69,7 +69,6 @@ abstract class AbstractResolver
             return false;
         }
 
-        // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
-        return $obj->enabled == 1;
+        return (int)$obj->enabled === 1;
     }
 }

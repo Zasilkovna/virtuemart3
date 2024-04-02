@@ -186,15 +186,14 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     'weight' => $order['weight'],
                     'currency' => $order['currency'],
                     'eshop' => $sender_label = $this->zas_model->getConfig('zasilkovna_eshop_label'),
-                    'adultContent' => ($order['adult_content'] == 1 ? true : false)
+                    'adultContent' => (int)$order['adult_content'] === 1,
                 );
 
                 if (!empty($order['carrier_point'])) {
                     $attributes['carrierPickupPoint'] = $order['carrier_point'];
                 }
 
-                // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
-                if ($order['is_carrier'] == 1 && $order['carrier_point'] === '') {
+                if ((int)$order['is_carrier'] === 1 && $order['carrier_point'] === '') {
                     $attributes['street'] = $order['recipient_street'];
                     $attributes['city'] = $order['recipient_city'];
                     $attributes['zip'] = $order['recipient_zip'];
@@ -364,7 +363,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         foreach($orders as $key => $order) {
             $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET ";
             $set_q = array();
-            if($order['submitted'] == '1') {
+            if ((int)$order['submitted'] === 1) {
                 //$set_q[] = " zasilkovna_packet_id = " . $order['zasilkovna_packet_id'];
                 continue; // skip update of order if order is submitted
             }
