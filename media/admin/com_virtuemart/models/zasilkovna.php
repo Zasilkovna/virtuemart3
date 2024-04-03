@@ -370,17 +370,18 @@ class VirtueMartModelZasilkovna extends VmModel
         $countries = $method->getAllowedCountries();
         $blockingCountries = $method->getBlockingCountries();
 
-        // Joomla 3 returns ints from db as string, Joomla 4 as ints, therefore in_array must not be strict.
         if (empty($countries)) {
             $hdCarriers = array_filter($hdCarriers,
                 static function ($hdCarrier) use ($blockingCountries) {
-                    return !in_array($hdCarrier['vm_country'], $blockingCountries);
+                    // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
+                    return !in_array($hdCarrier['vm_country'], $blockingCountries, false);
                 });
         } else {
             $allowedCountries = array_diff($countries, $blockingCountries);
             $hdCarriers = array_filter($hdCarriers,
                 static function ($hdCarrier) use ($allowedCountries) {
-                    return in_array($hdCarrier['vm_country'], $allowedCountries);
+                    // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+                    return in_array($hdCarrier['vm_country'], $allowedCountries, false);
                 });
         }
 

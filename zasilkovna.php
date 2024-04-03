@@ -788,7 +788,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                     $countries = $method->countries;
                 }
             }
-            if(count($countries) && !in_array($address['virtuemart_country_id'], $countries)) {
+            // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+            if (count($countries) && !in_array($address['virtuemart_country_id'], $countries, false)) {
                 continue;
             }
 

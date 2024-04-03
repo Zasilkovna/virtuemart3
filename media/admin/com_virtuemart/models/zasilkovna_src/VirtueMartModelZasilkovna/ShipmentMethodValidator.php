@@ -163,7 +163,7 @@ class ShipmentMethodValidator
                 $report->addError('NO_HD_CARRIER_SELECTED');
             } else {
                 $carrier = $this->carrierRepository->getCarrierById($hdCarrierId);
-                if ($carrier === null || $carrier->deleted === 1) {
+                if ($carrier === null || (int)$carrier->deleted === 1) {
                     $report->addError(
                         'HD_CARRIER_NOT_EXISTS',
                         $carrier->name ? [$carrier->name] : ['ID: ' . $hdCarrierId]
@@ -178,11 +178,19 @@ class ShipmentMethodValidator
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
                 $carrierVmCountryId = $vmCarrierCountry->virtuemart_country_id;
-                if (!empty($allowedCountries) && !in_array($carrierVmCountryId, $allowedCountries, true)) {
+
+                // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+                if (!empty($allowedCountries) && !in_array($carrierVmCountryId, $allowedCountries, false)) {
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
-                if ((empty($allowedCountries) || in_array($carrierVmCountryId, $allowedCountries,
-                            true)) && in_array($carrierVmCountryId, $blockingCountries, true)) {
+                // 2x intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+                if (
+                    (
+                        empty($allowedCountries) ||
+                        in_array($carrierVmCountryId, $allowedCountries, false)
+                    ) &&
+                    in_array($carrierVmCountryId, $blockingCountries, false)
+                ) {
                     $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
                 }
             }

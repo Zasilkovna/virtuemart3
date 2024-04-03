@@ -186,7 +186,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     'weight' => $order['weight'],
                     'currency' => $order['currency'],
                     'eshop' => $sender_label = $this->zas_model->getConfig('zasilkovna_eshop_label'),
-                    'adultContent' => ($order['adult_content'] == 1 ? true : false)
+                    'adultContent' => (int)$order['adult_content'] === 1,
                 );
 
                 if (!empty($order['carrier_point'])) {
@@ -363,7 +363,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         foreach($orders as $key => $order) {
             $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET ";
             $set_q = array();
-            if($order['submitted'] == '1') {
+            if ((int)$order['submitted'] === 1) {
                 //$set_q[] = " zasilkovna_packet_id = " . $order['zasilkovna_packet_id'];
                 continue; // skip update of order if order is submitted
             }
@@ -487,16 +487,6 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     $phone = $phone_n;
                 }
             }
-
-
-			/**
-            if( $row['is_cod'] == 1 ) {
-                $cod = $total;
-            }
-            else {
-                $cod = 0;
-            }
-			 */
 
 			$orderForExport['order_number'] = $row['order_number'];
 			$orderForExport['recipient_firstname'] = $row['first_name'];
