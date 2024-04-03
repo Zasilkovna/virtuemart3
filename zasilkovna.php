@@ -795,7 +795,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
             if ($isHdCarrier) {
                 $hdCarrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
-                if (!$hdCarrier || (int)$hdCarrier->deleted === 1 || ( $countryCode !== '' && $hdCarrier->country !== $countryCode)) {
+                if (!$hdCarrier || (int)$hdCarrier->deleted === 1 || ($countryCode !== '' && $hdCarrier->country !== $countryCode)) {
                     continue;
                 }
             }

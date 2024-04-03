@@ -163,8 +163,7 @@ class ShipmentMethodValidator
                 $report->addError('NO_HD_CARRIER_SELECTED');
             } else {
                 $carrier = $this->carrierRepository->getCarrierById($hdCarrierId);
-                // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
-                if ($carrier === null || $carrier->deleted == 1) {
+                if ($carrier === null || (int)$carrier->deleted === 1) {
                     $report->addError(
                         'HD_CARRIER_NOT_EXISTS',
                         $carrier->name ? [$carrier->name] : ['ID: ' . $hdCarrierId]
