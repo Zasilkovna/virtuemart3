@@ -17,16 +17,6 @@
 
     $model->loadLanguage();
 
-    // PASS COUNTRY LIST TO JAVASCRIPT
-    $countries = [];
-    foreach ($model->getCountries(true) as $key => $value)
-        $countries[] = "'".$key."'";
-
-    $document->addScriptDeclaration("
-        var supportedCountries = [".implode(',', $countries)."];
-    ");
-
-
     // INCLUDE JS AND CSS
     $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/admin.css?v=' . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css'));
 
