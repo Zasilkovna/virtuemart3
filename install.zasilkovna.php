@@ -585,7 +585,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
         recurse_delete($vm_admin_path . DS . 'views' . DS . 'zasilkovna' . DS);
         recurse_delete($vm_admin_path . DS . 'controllers' . DS . 'zasilkovna.php');
         recurse_delete($vm_admin_path . DS . 'fields' . DS . 'vmzasilkovnacountries.php');
-        recurse_delete($vm_admin_path . DS . 'fields' . DS . 'vmzasilkovnhdcarriers.php');
+        recurse_delete($vm_admin_path . DS . 'fields' . DS . 'vmzasilkovnahdcarriers.php');
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'en-GB' . DS . 'en-GB.plg_vmshipment_zasilkovna.ini');
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'cs-CZ' . DS . 'cs-CZ.plg_vmshipment_zasilkovna.ini');
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'sk-SK' . DS . 'sk-SK.plg_vmshipment_zasilkovna.ini', true);
