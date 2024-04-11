@@ -11,7 +11,7 @@
 }
 .block-with-rows {
     display: flex;
-    flex-direction:column;
+    flex-direction: column;
     white-space: nowrap;
 }
 .min-width-200 {
