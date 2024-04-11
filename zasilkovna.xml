@@ -50,7 +50,7 @@
                         <field name="vendor_groups" type="checkboxes" default="" multiple="multiple"
                                label="PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUPS"
                                showon="shipping_type:pickuppoints"
-                               class="min-width-150">
+                               class="block-with-rows min-width-200">
                             <option value="zpoint">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ZPOINT</option>
                             <option value="zbox">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ZBOX</option>
                         </field>

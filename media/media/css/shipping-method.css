@@ -9,9 +9,12 @@
 .control-group.hidden {
     display: none;
 }
-.min-width-150 {
-    min-width: 150px;
+.block-with-rows {
+    display: flex;
+    flex-direction:column;
+    white-space: nowrap;
 }
 .min-width-200 {
     min-width: 200px;
 }
+
