@@ -14,7 +14,23 @@
     flex-direction: column;
     white-space: nowrap;
 }
-.min-width-200 {
-    min-width: 200px;
+.reset-min-width {
+    min-width: inherit!important;
 }
-
+.controls fieldset#params_delivery_settings__shipping_type {
+    min-width: inherit!important;
+}
+.radio div.form-check {
+    padding-left: 0px!important;
+}
+.packeta_shipping_type input[type="radio"] {
+    display: inline-block!important;
+    float: left!important;
+}
+.packeta_shipping_type label {
+    display: inline-block!important;
+    clear: left!important;
+    float: none!important;
+    min-width: inherit!important;
+    width: 80%!important;
+}
