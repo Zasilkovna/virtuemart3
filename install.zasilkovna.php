@@ -558,9 +558,6 @@ class plgVmShipmentZasilkovnaInstallerScript {
      */
     public function uninstall($adapter) {
         $db = JFactory::getDBO();
-        $q = sprintf("DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_MENU_ENTRY);
-        $db->setQuery($q);
-        $db->execute();
 
         // Table dropping was added in 1.3.1. Before that tables existed after plugin uninstall.
         $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_shipment_plg_zasilkovna_backup;");
@@ -574,7 +571,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
         $db->execute();
 
         $this->removeAdministratorFiles();
-        $this->removeBackendJoomlaMenuEntry();
+        $this->removeBackendMenuEntries();
     }
 
     private function removeAdministratorFiles() {
@@ -614,24 +611,25 @@ class plgVmShipmentZasilkovnaInstallerScript {
     /**
      * @return void
      */
-    private function removeBackendJoomlaMenuEntry()
+    private function removeBackendMenuEntries()
     {
+        $db = JFactory::getDbo();
+        $q = sprintf("DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_MENU_ENTRY);
+        $db->setQuery($q);
+        $db->execute();
+
         if (version_compare(JVERSION, '4.0.0', '<')) {
             return;
         }
 
-        $db = JFactory::getDbo();
         $alias = self::PLUGIN_ALIAS;
-        $clientId = 1;
         $query = $db->getQuery(true)
             ->delete($db->quoteName('#__menu'))
             ->where([
                 $db->quoteName('alias') . ' = :alias',
-                $db->quoteName('client_id') . ' = :client_id',
-                $db->quoteName('published') . ' = 1',
+                $db->quoteName('client_id') . ' = 1',
             ])
-            ->bind(':alias', $alias)
-            ->bind(':client_id', $clientId);
+            ->bind(':alias', $alias);
 
         $db->setQuery($query);
         $db->execute();
