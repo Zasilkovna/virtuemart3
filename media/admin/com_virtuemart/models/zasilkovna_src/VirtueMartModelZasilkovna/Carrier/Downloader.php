@@ -85,6 +85,10 @@ class Downloader
      */
     private function downloadJson($language)
     {
+        if (!$this->apiKey) {
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_API_KEY_NOT_SET'));
+        }
+
         $url = sprintf(self::API_URL, $this->apiKey, $language);
         $response = $this->fetch($url);
 
