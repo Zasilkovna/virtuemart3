@@ -58,8 +58,8 @@ class VirtueMartModelZasilkovna extends VmModel
 
         $this->config = $this->loadConfig();
 
-        $this->api_pass = $this->config['zasilkovna_api_pass'];
-        $this->api_key = substr($this->config['zasilkovna_api_pass'], 0, 16);
+        $this->api_pass = isset($this->config['zasilkovna_api_pass']) ? $this->config['zasilkovna_api_pass'] : '';
+        $this->api_key = isset($this->config['zasilkovna_api_pass']) ? substr($this->config['zasilkovna_api_pass'], 0, 16) : '';
         $this->_media_url = JURI::root(true) . "/media/com_zasilkovna/media/";
         $this->_media_path = JPATH_SITE . DS . "media" . DS . "com_zasilkovna" . DS . "media" . DS;
 

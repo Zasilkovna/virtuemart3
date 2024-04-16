@@ -64,6 +64,8 @@ function recurse_delete($dir, $ignore = false) {
 class plgVmShipmentZasilkovnaInstallerScript {
 
     private $migratingPricingRules = false;
+    const VM_MENU_ENTRY = 'Packeta';
+    const PLUGIN_ALIAS = 'com-zasilkovna';
 
     /**
      * @var string|null
@@ -146,19 +148,24 @@ class plgVmShipmentZasilkovnaInstallerScript {
         return (substr($haystack, -$length) === $needle);
     }
 
-	/**
-	 * Called after any type of action
-	 *
-	 * @param   string $route Which action is happening (install|uninstall|discover_install)
-	 * @param   JAdapterInstance|PluginAdapter $adapter The object responsible for running this script
-	 *
-	 * @return  boolean  True on success
-	 */
-	public function postflight($route, $adapter) {
-		$vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
+    /**
+     * Called after any type of action
+     *
+     * @param   string $route Which action is happening (install|uninstall|discover_install)
+     * @param   JAdapterInstance|PluginAdapter $adapter The object responsible for running this script
+     *
+     * @return  boolean  True on success
+     */
+    public function postflight($route, $adapter)
+    {
+        if ($route === 'uninstall') {
+            return true;
+        }
+
+        $vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
         $media_path = JPATH_ROOT . DS . 'media' . DS . 'com_zasilkovna' . DS;
-		if($route == "install") {
-			recurse_copy($media_path . 'admin' . DS . 'com_virtuemart' . DS, $vm_admin_path . DS);
+        if ($route === "install") {
+            recurse_copy($media_path . 'admin' . DS . 'com_virtuemart' . DS, $vm_admin_path . DS);
 
             $files = scandir($media_path . 'admin' . DS);
             foreach ($files as $index => $filename){
@@ -172,10 +179,10 @@ class plgVmShipmentZasilkovnaInstallerScript {
             }
 
             $db = JFactory::getDBO();
-            $q = "INSERT INTO #__virtuemart_adminmenuentries SET
+            $q = sprintf("INSERT INTO #__virtuemart_adminmenuentries SET
                 `module_id` = 5,
                 `parent_id` = 0,
-                `name` = 'Packeta',
+                `name` = '%s',
                 `link` = '',
                 `depends` = '',
                 `icon_class` = 'vmicon vmicon-16-lorry',
@@ -184,13 +191,17 @@ class plgVmShipmentZasilkovnaInstallerScript {
                 `published` = 1,
                 `tooltip` = '',
                 `view` = 'zasilkovna',
-                `task` = '';";
+                `task` = '';",
+                self::VM_MENU_ENTRY);
+
             $db->setQuery($q);
             $db->execute();
 
         }
 
-        if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.php';
+        if (!class_exists('plgVmShipmentZasilkovna')) {
+            require_once VMPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.php';
+        }
 
         $this->createCronToken();
         if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0', '<')) {
@@ -224,8 +235,8 @@ class plgVmShipmentZasilkovnaInstallerScript {
         $data = [];
 
         $data['menutype'] = 'main';
-        $data['title'] = 'Packeta';
-        $data['alias'] = 'com-zasilkovna';
+        $data['title'] = self::VM_MENU_ENTRY;
+        $data['alias'] = self::PLUGIN_ALIAS;
         $data['path'] = 'com-zasilkovna';
         $data['link'] = 'index.php?option=com_virtuemart&view=zasilkovna';
         $data['img'] = '';
@@ -540,18 +551,15 @@ class plgVmShipmentZasilkovnaInstallerScript {
         $this->migratingPricingRules = false;
     }
 
-	/**
-	 * Called on uninstallation
-	 *
-	 * @param   JAdapterInstance|PluginAdapter $adapter The object responsible for running this script
-	 */
-	public function uninstall($adapter) {
-		$db = JFactory::getDBO();
-		$q = "DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = 'zasilkovna';";
-		$db->setQuery($q);
-		$db->execute();
+    /**
+     * Called on uninstallation
+     *
+     * @param   JAdapterInstance|PluginAdapter $adapter The object responsible for running this script
+     */
+    public function uninstall($adapter) {
+        $db = JFactory::getDBO();
 
-		// Table dropping was added in 1.3.1. Before that tables existed after plugin uninstall.
+        // Table dropping was added in 1.3.1. Before that tables existed after plugin uninstall.
         $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_shipment_plg_zasilkovna_backup;");
         $db->execute();
 
@@ -562,8 +570,9 @@ class plgVmShipmentZasilkovnaInstallerScript {
         $db->setQuery("DROP TABLE IF EXISTS #__virtuemart_zasilkovna_carriers;");
         $db->execute();
 
-		$this->removeAdministratorFiles();
-	}
+        $this->removeAdministratorFiles();
+        $this->removeBackendMenuEntries();
+    }
 
     private function removeAdministratorFiles() {
         $vm_admin_path = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart';
@@ -573,9 +582,9 @@ class plgVmShipmentZasilkovnaInstallerScript {
         recurse_delete($vm_admin_path . DS . 'views' . DS . 'zasilkovna' . DS);
         recurse_delete($vm_admin_path . DS . 'controllers' . DS . 'zasilkovna.php');
         recurse_delete($vm_admin_path . DS . 'fields' . DS . 'vmzasilkovnacountries.php');
-        recurse_delete($vm_admin_path . DS . 'fields' . DS . 'vmzasilkovnhdcarriers.php');
-        recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'en-GB' . DS . 'en-GB.plg_vmshipment_zasilkovna.ini');
-        recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'cs-CZ' . DS . 'cs-CZ.plg_vmshipment_zasilkovna.ini');
+        recurse_delete($vm_admin_path . DS . 'fields' . DS . 'vmzasilkovnahdcarriers.php');
+        recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'en-GB' . DS . 'en-GB.plg_vmshipment_zasilkovna.ini', true);
+        recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'cs-CZ' . DS . 'cs-CZ.plg_vmshipment_zasilkovna.ini', true);
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'sk-SK' . DS . 'sk-SK.plg_vmshipment_zasilkovna.ini', true);
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'pl-PL' . DS . 'pl-PL.plg_vmshipment_zasilkovna.ini', true);
         recurse_delete(JPATH_ADMINISTRATOR . DS . 'language' . DS . 'hu-HU' . DS . 'hu-HU.plg_vmshipment_zasilkovna.ini', true);
@@ -597,6 +606,33 @@ class plgVmShipmentZasilkovnaInstallerScript {
         }
 
         $model->updateConfig($config);
+    }
+
+    /**
+     * @return void
+     */
+    private function removeBackendMenuEntries()
+    {
+        $db = JFactory::getDbo();
+        $q = sprintf("DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_MENU_ENTRY);
+        $db->setQuery($q);
+        $db->execute();
+
+        if (version_compare(JVERSION, '4.0.0', '<')) {
+            return;
+        }
+
+        $alias = self::PLUGIN_ALIAS;
+        $query = $db->getQuery(true)
+            ->delete($db->quoteName('#__menu'))
+            ->where([
+                $db->quoteName('alias') . ' = :alias',
+                $db->quoteName('client_id') . ' = 1',
+            ])
+            ->bind(':alias', $alias);
+
+        $db->setQuery($query);
+        $db->execute();
     }
 }
 
