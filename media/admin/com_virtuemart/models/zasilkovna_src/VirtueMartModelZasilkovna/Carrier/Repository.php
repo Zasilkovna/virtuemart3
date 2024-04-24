@@ -101,11 +101,7 @@ class Repository
         return $db->loadAssocList();
     }
 
-    /**
-     * @param int $carrierId
-     * @return null|\stdClass
-     */
-    public function getCarrierById($carrierId)
+    public function getCarrierById(int $carrierId): ?\stdClass
     {
         $db = \JFactory::getDBO();
         $db->setQuery(
@@ -114,6 +110,7 @@ class Repository
                    vzc.name, 
                    vzc.country, 
                    vzc.deleted,
+                   vzc.requires_size,
                    vc.virtuemart_country_id AS vm_country
                 FROM #__virtuemart_zasilkovna_carriers vzc
                 LEFT JOIN #__virtuemart_countries vc 

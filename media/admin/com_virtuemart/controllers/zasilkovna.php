@@ -70,23 +70,32 @@ class VirtuemartControllerZasilkovna extends VmController
 
     /**
      * Handle the save task.
-     * @param int $data
+     * @param mixed $data
      * @throws Exception
      */
-    public function save($data = 0)
+    public function save($data = 0): void
     {
         vRequest::vmCheckToken();
-        $data = vRequest::getPost();
-        $message = null;
+        if ($data === 0) {
+            $data = vRequest::getPost();
+        }
 
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
         $currentData = $model->loadConfig();
 
+        $errors = [];
         if (strlen($data['zasilkovna_api_pass']) !== 32) {
-            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID'), FlashMessage::TYPE_ERROR);
+            $errors['zasilkovna_api_pass'] = JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID');
+        }
+
+        $validData = $this->getValidatedDimensionsData($data, $errors);
+        $model->updateConfig(array_replace_recursive($currentData, $validData));
+
+        if ($errors === []) {
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_SAVED'), FlashMessage::TYPE_MESSAGE);
         } else {
-            $model->updateConfig(array_replace_recursive($currentData, $data));
+            $message = new FlashMessage(implode("<br>", $errors), FlashMessage::TYPE_ERROR);
         }
 
         $redir = 'index.php?option=com_virtuemart';
@@ -294,5 +303,52 @@ class VirtuemartControllerZasilkovna extends VmController
     private function getExportOrders()
     {
         return isset($_POST['exportOrders']) && is_array($_POST['exportOrders']) ? $_POST['exportOrders'] : [];
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @param array<string,string> $errors
+     * @return array<string, mixed>
+     */
+    private function getValidatedDimensionsData(array $data, array &$errors = []): array
+    {
+        if (!isset($data['zasilkovna_use_default_weight']) || $data['zasilkovna_use_default_weight'] === '0') {
+            $data['zasilkovna_use_default_weight'] = false;
+            $data['zasilkovna_default_weight'] = null;
+        } else {
+            if (!isset($data['zasilkovna_default_weight']) || (float) $data['zasilkovna_default_weight'] < 0.001) {
+                $errors['zasilkovna_default_weight'] = sprintf(
+                    JText::_('PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_MUST_BE_POSITIVE'),
+                    JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT')
+                );
+            } else {
+                $data['zasilkovna_default_weight'] = round((float) $data['zasilkovna_default_weight'], 3);
+            }
+        }
+
+        $fields = [
+            'zasilkovna_default_length' => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_LENGTH',
+            'zasilkovna_default_width' => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_WIDTH',
+            'zasilkovna_default_height' => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_HEIGHT',
+        ];
+        if (!isset($data['zasilkovna_use_default_dimensions']) || $data['zasilkovna_use_default_dimensions'] === '0') {
+            $data['zasilkovna_use_default_dimensions'] = false;
+            foreach(array_keys($fields) as $field) {
+                $data[$field] = null;
+            }
+        } else {
+            foreach ($fields as $field => $label) {
+                if (!isset($data[$field]) || (int)$data[$field] < 1) {
+                    $errors[$field] = sprintf(
+                        JText::_('PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_MUST_BE_POSITIVE'),
+                        JText::_($label)
+                    );
+                } else {
+                    $data[$field] = (int)$data[$field];
+                }
+            }
+        }
+
+        return $data;
     }
 }

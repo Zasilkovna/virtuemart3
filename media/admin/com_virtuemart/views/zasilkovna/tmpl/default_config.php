@@ -2,6 +2,7 @@
 
 use VirtueMartModelZasilkovna\Box\Renderer;
 use VirtueMartModelZasilkovna\Order\Detail;
+use Joomla\CMS\Factory;
 
 defined('_JEXEC') || die('Restricted access');
 
@@ -79,9 +80,91 @@ ob_start();
 $codContent = ob_get_clean();
 
 ob_start();
+// Default weight and dimensions start
 ?>
+    <table class="admintable">
+        <tr>
+            <th>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_USE_DEFAULT_WEIGHT'); ?>
+            </th>
+            <td class="pl-3">
+                <?php echo VmHTML::checkbox('zasilkovna_use_default_weight', (bool)$model->getConfig('zasilkovna_use_default_weight')); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT'); ?>
+            </th>
+            <td class="pl-3">
+                <input
+                    name="zasilkovna_default_weight"
+                    type="number"
+                    min="0"
+                    step="0.001"
+                    value="<?php echo $model->getConfig('zasilkovna_default_weight', '0'); ?>"
+                    placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_KG'); ?>"
+                />
+            </td>
+        </tr>
+        <tr><th></th><td>&nbsp;</td></tr>
+        <tr>
+            <th>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_USE_DEFAULT_DIMENSIONS'); ?>
+            </th>
+            <td class="pl-3">
+                <?php echo VmHTML::checkbox('zasilkovna_use_default_dimensions', (bool)$model->getConfig('zasilkovna_use_default_dimensions')); ?>
+            </td>
+        </tr>
+        <tr>
+            <th>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_LENGTH'); ?>
+            </th>
+            <td class="pl-3">
+                <input
+                    name="zasilkovna_default_length"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value="<?php echo $model->getConfig('zasilkovna_default_length', '0'); ?>"
+                    placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_MM'); ?>"
+                />
+            </td>
+        <tr>
+            <th>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_WIDTH'); ?>
+            </th>
+            <td class="pl-3">
+                <input
+                    name="zasilkovna_default_width"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value="<?php echo $model->getConfig('zasilkovna_default_width', '0'); ?>"
+                    placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_MM'); ?>"
+                />
+            </td>
+        </tr>
+        <tr>
+            <th>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_HEIGHT'); ?>
+            </th>
+            <td class="pl-3">
+                <input
+                    name="zasilkovna_default_height"
+                    type="number"
+                    min="0"
+                    step="1"
+                    value="<?php echo $model->getConfig('zasilkovna_default_height', '0'); ?>"
+                    placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_MM'); ?>"
+                />
+            </td>
+        </tr>
+    </table>
 
 <?php
+$weightDimensionsContent = ob_get_clean();
+ob_start();
+
 $renderer->setVariables([
     'title' => JText::_('PLG_VMSHIPMENT_PACKETERY_SETTINGS'),
     'icon' => 'cog',
@@ -93,5 +176,12 @@ $renderer->setVariables([
     'title' => JText::_('PLG_VMSHIPMENT_PACKETERY_COD'),
     'icon' => 'tag',
     'content' => $codContent,
+]);
+echo $renderer->renderToString();
+
+$renderer->setVariables([
+    'title' => JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT_DIMENSIONS_TITLE'),
+    'icon' => 'cog',
+    'content' => $weightDimensionsContent,
 ]);
 echo $renderer->renderToString();

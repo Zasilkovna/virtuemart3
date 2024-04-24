@@ -247,7 +247,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * This event is fired after the order has been stored; it gets the shipment method-
      * specific data.
      *
-     * @return mixed Null when this method was not selected, otherwise true
+     * @return null|bool Null when this method was not selected, otherwise true
      * @author Valerie Isaksen
      */
     function plgVmConfirmedOrder(VirtueMartCart $cart, $order) {
@@ -326,6 +326,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $is_carrier = 1;
             $branch_id = $carrier->id;
             $branch_name_street = $carrier->name ?: $carrier->id;
+        } elseif ($is_carrier === 1) {
+            $carrier = $this->carrierRepository->getCarrierById($branch_id);
         }
 
         $values['virtuemart_order_id'] = $details->virtuemart_order_id;
@@ -351,8 +353,23 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['exported'] = 0;
         $values['shipment_name'] = $method->shipment_name;
         $values['shipment_cost'] = $this->getCosts($cart, ShipmentMethod::fromRandom($method), "");
-        $values['weight'] = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
+        $weight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
+
+        if (!$weight && $this->model->getConfig('zasilkovna_use_default_weight') === '1') {
+            $weight = (float)$this->model->getConfig('zasilkovna_default_weight', 0);
+        }
+        $values['weight'] = $weight;
         $values['tax_id'] = $method->tax_id;
+
+        if ($is_carrier === 1
+            && $carrier
+            && $carrier->requires_size === 1
+            && $this->model->getConfig('zasilkovna_use_default_dimensions') === '1'
+        ) {
+            $values['length'] = (int)$this->model->getConfig('zasilkovna_default_length', 0);
+            $values['width'] = (int)$this->model->getConfig('zasilkovna_default_width', 0);
+            $values['height'] = (int)$this->model->getConfig('zasilkovna_default_height', 0);
+        }
         $this->storePSPluginInternalData($values);
 
         return true;

@@ -16,7 +16,7 @@ if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugin
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.4.0';
+    const VERSION = '2.0.0';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
