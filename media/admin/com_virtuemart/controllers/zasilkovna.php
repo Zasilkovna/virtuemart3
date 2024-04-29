@@ -111,7 +111,7 @@ class VirtuemartControllerZasilkovna extends VmController
      */
     public function exportZasilkovnaOrders()
     {
-        $this->zasOrdersModel->exportToCSV($_POST['exportOrders']);
+        $this->zasOrdersModel->exportToCSV($this->getExportOrders());
     }
 
     /**
@@ -177,14 +177,15 @@ class VirtuemartControllerZasilkovna extends VmController
     public function submitToZasilkovna()
     {
         $this->updateZasilkovnaOrders();
-        $result = $this->zasOrdersModel->submitToZasilkovna($_POST['exportOrders']);
+        $exportOrders = $this->getExportOrders();
+        $result = $this->zasOrdersModel->submitToZasilkovna($exportOrders);
         $exportedOrders = $result['exported'];
         $failedOrders = $result['failed'];
         $message = null;
 
-        if (count($_POST['exportOrders']) === 0) {
+        if (count($exportOrders) === 0) {
             $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_NO_ORDERS_SELECTED'), FlashMessage::TYPE_ERROR);
-        } elseif (count($_POST['exportOrders']) === count($exportedOrders)) {
+        } elseif (count($exportOrders) === count($exportedOrders)) {
             $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ALL_ORDERS_SUBMITTED'), FlashMessage::TYPE_MESSAGE);
         } else {
             $app = JFactory::getApplication();
@@ -285,5 +286,13 @@ class VirtuemartControllerZasilkovna extends VmController
         }
 
         $this->setRedirect($this->redirectPath);
+    }
+
+    /**
+     * @return array
+     */
+    private function getExportOrders()
+    {
+        return isset($_POST['exportOrders']) && is_array($_POST['exportOrders']) ? $_POST['exportOrders'] : [];
     }
 }
