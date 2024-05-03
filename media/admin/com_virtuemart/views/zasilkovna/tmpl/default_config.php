@@ -188,3 +188,5 @@ $renderer->setVariables([
     'content' => $weightDimensionsContent,
 ]);
 echo $renderer->renderToString();
+
+$this->configStorage->clear(VirtuemartControllerZasilkovna::FROM_POST, VirtuemartControllerZasilkovna::FORM_VALUES);
