@@ -2,12 +2,13 @@
 
 use VirtueMartModelZasilkovna\Box\Renderer;
 use VirtueMartModelZasilkovna\Order\Detail;
-use Joomla\CMS\Factory;
+use VirtueMartModelZasilkovna\ConfigurationValidator as ConfigValidator;
 
 defined('_JEXEC') || die('Restricted access');
 
 /** @var VirtueMartModelZasilkovna $model */
 $model = VmModel::getModel('zasilkovna');
+
 
 $renderer = new Renderer();
 $renderer->setTemplate(Detail::TEMPLATES_DIR . DS . 'card.php');
@@ -31,7 +32,7 @@ ob_start();
             <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS'); ?>
         </th>
         <td class="pb-10 pl-3">
-            <?php echo VmHTML::input('zasilkovna_api_pass', $model->getConfig('zasilkovna_api_pass')); ?><br>
+            <?php echo VmHTML::input(ConfigValidator::KEY_API_PASS, $this->getFormValue(ConfigValidator::KEY_API_PASS)); ?><br>
             <?php echo JText::sprintf('PLG_VMSHIPMENT_PACKETERY_FIND_API_PASS_IN_CS', '<a href="https://client.packeta.com/support" target="_blank">','</a>'); ?><br>
             <?php echo JText::sprintf('PLG_VMSHIPMENT_PACKETERY_NO_ACCOUNT_REGISTER_HERE','<a href="https://client.packeta.com/registration" target=\"_blank\">', '</a>'); ?>
         </td>
@@ -41,7 +42,7 @@ ob_start();
             <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL')?>
         </th>
         <td class="pb-10 pl-3">
-            <?php echo VmHTML::input('zasilkovna_eshop_label', $model->getConfig('zasilkovna_eshop_label')); ?><br>
+            <?php echo VmHTML::input(ConfigValidator::KEY_ESHOP_LABEL, $this->getFormValue(ConfigValidator::KEY_ESHOP_LABEL)); ?><br>
             <?php echo JText::sprintf(
                 'PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL_DESC',
                 '<a href="https://client.packeta.com" target="_blank">',
@@ -65,13 +66,15 @@ $baseContent = ob_get_clean();
 ob_start();
 ?>
 <table class="admintable">
-    <?php foreach ($this->paymentMethods as $paymentMethod) { ?>
+    <?php foreach ($this->paymentMethods as $paymentMethod) {
+        $field = ConfigValidator::KEY_PAYMENT_METHOD_PREFIX . $paymentMethod->virtuemart_paymentmethod_id;
+    ?>
         <tr>
             <th>
                 <?php echo $paymentMethod->payment_name; ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::checkbox('zasilkovna_payment_method_' . $paymentMethod->virtuemart_paymentmethod_id, $model->getConfig('zasilkovna_payment_method_' . $paymentMethod->virtuemart_paymentmethod_id, '0') ); ?>
+                <?php echo VmHTML::checkbox($field, $this->getFormValue($field, '0') ); ?>
             </td>
         </tr>
     <?php } ?>
@@ -88,31 +91,30 @@ ob_start();
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_USE_DEFAULT_WEIGHT'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::checkbox('zasilkovna_use_default_weight', (bool)$model->getConfig('zasilkovna_use_default_weight')); ?>
+                <?php echo VmHTML::checkbox(ConfigValidator::KEY_USE_DEFAULT_WEIGHT, (bool)$this->getFormValue(ConfigValidator::KEY_USE_DEFAULT_WEIGHT)); ?>
             </td>
         </tr>
         <tr>
-            <th>
+            <th class="pb-28">
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT'); ?>
             </th>
-            <td class="pl-3">
+            <td class="pl-3 pb-28">
                 <input
-                    name="zasilkovna_default_weight"
+                    name="<?php echo ConfigValidator::KEY_DEFAULT_WEIGHT; ?>"
                     type="number"
                     min="0"
                     step="0.001"
-                    value="<?php echo $model->getConfig('zasilkovna_default_weight', '0'); ?>"
+                    value="<?php echo ($this->getFormValue(ConfigValidator::KEY_DEFAULT_WEIGHT)); ?>"
                     placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_KG'); ?>"
                 />
             </td>
         </tr>
-        <tr><th></th><td>&nbsp;</td></tr>
         <tr>
             <th>
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_USE_DEFAULT_DIMENSIONS'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::checkbox('zasilkovna_use_default_dimensions', (bool)$model->getConfig('zasilkovna_use_default_dimensions')); ?>
+                <?php echo VmHTML::checkbox('zasilkovna_use_default_dimensions', (bool)$this->getFormValue('zasilkovna_use_default_dimensions')); ?>
             </td>
         </tr>
         <tr>
@@ -121,25 +123,26 @@ ob_start();
             </th>
             <td class="pl-3">
                 <input
-                    name="zasilkovna_default_length"
+                    name="<?php echo ConfigValidator::KEY_DEFAULT_LENGTH; ?>"
                     type="number"
                     min="0"
                     step="1"
-                    value="<?php echo $model->getConfig('zasilkovna_default_length', '0'); ?>"
+                    value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_LENGTH); ?>"
                     placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_MM'); ?>"
                 />
             </td>
+        </tr>
         <tr>
             <th>
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_WIDTH'); ?>
             </th>
             <td class="pl-3">
                 <input
-                    name="zasilkovna_default_width"
+                    name="<?php echo ConfigValidator::KEY_DEFAULT_WIDTH; ?>"
                     type="number"
                     min="0"
                     step="1"
-                    value="<?php echo $model->getConfig('zasilkovna_default_width', '0'); ?>"
+                    value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_WIDTH); ?>"
                     placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_MM'); ?>"
                 />
             </td>
@@ -150,11 +153,11 @@ ob_start();
             </th>
             <td class="pl-3">
                 <input
-                    name="zasilkovna_default_height"
+                    name="<?php echo ConfigValidator::KEY_DEFAULT_HEIGHT; ?>"
                     type="number"
                     min="0"
                     step="1"
-                    value="<?php echo $model->getConfig('zasilkovna_default_height', '0'); ?>"
+                    value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_HEIGHT); ?>"
                     placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_MM'); ?>"
                 />
             </td>

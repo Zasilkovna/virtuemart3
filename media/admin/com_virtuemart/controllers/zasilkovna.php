@@ -35,6 +35,8 @@ use VirtueMartModelZasilkovna\Label;
 class VirtuemartControllerZasilkovna extends VmController
 {
     const ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED = 'zasilkovna_limitations_removed_notice_dismissed';
+    public const FROM_POST = 'fromPost';
+    public const FORM_VALUES = 'formValues';
 
     /** @var \VirtueMartModelZasilkovna\Order\Detail */
     private $orderDetail;
@@ -80,23 +82,7 @@ class VirtuemartControllerZasilkovna extends VmController
             $data = vRequest::getPost();
         }
 
-        /** @var VirtueMartModelZasilkovna $model */
-        $model = VmModel::getModel('zasilkovna');
-        $currentData = $model->loadConfig();
-
-        $errors = [];
-        if (strlen($data['zasilkovna_api_pass']) !== 32) {
-            $errors['zasilkovna_api_pass'] = JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID');
-        }
-
-        $validData = $this->getValidatedDimensionsData($data, $errors);
-        $model->updateConfig(array_replace_recursive($currentData, $validData));
-
-        if ($errors === []) {
-            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_SAVED'), FlashMessage::TYPE_MESSAGE);
-        } else {
-            $message = new FlashMessage(implode("<br>", $errors), FlashMessage::TYPE_ERROR);
-        }
+        $message = $this->updateZasilkovnaConfig($data);
 
         $redir = 'index.php?option=com_virtuemart';
         $app = JFactory::getApplication();
@@ -307,48 +293,46 @@ class VirtuemartControllerZasilkovna extends VmController
 
     /**
      * @param array<string, mixed> $data
-     * @param array<string,string> $errors
-     * @return array<string, mixed>
+     * @return FlashMessage
      */
-    private function getValidatedDimensionsData(array $data, array &$errors = []): array
+    private function updateZasilkovnaConfig(array $data): FlashMessage
     {
-        if (!isset($data['zasilkovna_use_default_weight']) || $data['zasilkovna_use_default_weight'] === '0') {
-            $data['zasilkovna_use_default_weight'] = false;
-            $data['zasilkovna_default_weight'] = null;
-        } else {
-            if (!isset($data['zasilkovna_default_weight']) || (float) $data['zasilkovna_default_weight'] < 0.001) {
-                $errors['zasilkovna_default_weight'] = sprintf(
-                    JText::_('PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_MUST_BE_POSITIVE'),
-                    JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT')
-                );
-            } else {
-                $data['zasilkovna_default_weight'] = round((float) $data['zasilkovna_default_weight'], 3);
-            }
-        }
+        $configStorage = new VirtueMartModelZasilkovna\SessionStorage(JFactory::getSession(), 'packeteryConfig');
+        $configStorage->set(self::FROM_POST, self::FORM_VALUES, $data);
 
-        $fields = [
-            'zasilkovna_default_length' => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_LENGTH',
-            'zasilkovna_default_width' => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_WIDTH',
-            'zasilkovna_default_height' => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_HEIGHT',
-        ];
-        if (!isset($data['zasilkovna_use_default_dimensions']) || $data['zasilkovna_use_default_dimensions'] === '0') {
-            $data['zasilkovna_use_default_dimensions'] = false;
-            foreach(array_keys($fields) as $field) {
-                $data[$field] = null;
-            }
-        } else {
-            foreach ($fields as $field => $label) {
-                if (!isset($data[$field]) || (int)$data[$field] < 1) {
-                    $errors[$field] = sprintf(
-                        JText::_('PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_MUST_BE_POSITIVE'),
-                        JText::_($label)
-                    );
+        /** @var VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $currentData = $model->loadConfig();
+
+        $formValidator = new VirtueMartModelZasilkovna\ConfigurationValidator($data);
+        $formValidator->validate();
+
+        if (!$formValidator->isValid()) {
+            $errors = $formValidator->getErrors();
+            $messages = [];
+
+            //$error is either error string translation key, or array where 1st element is sprintf template and others are sprintf arguments (all untranslated)
+            foreach ($errors as $formField => $error) {
+                if (!is_array($error)) {
+                    $messages[] = JText::_($error);
                 } else {
-                    $data[$field] = (int)$data[$field];
+                    $messages[] = sprintf(
+                        JText::_($error[0]),
+                        ...array_map(
+                            static function ($item) {
+                                return JText::_($item);
+                            },
+                            array_slice($error, 1))
+                    );
                 }
             }
+
+            return  new FlashMessage(implode("<br>", $messages), FlashMessage::TYPE_ERROR);
         }
 
-        return $data;
+        $model->updateConfig(array_replace_recursive($currentData, $formValidator->getValidData()));
+        $configStorage->clear(self::FROM_POST, self::FORM_VALUES);
+
+        return  new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_SAVED'), FlashMessage::TYPE_MESSAGE);
     }
 }

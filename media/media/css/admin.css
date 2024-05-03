@@ -45,6 +45,10 @@ fieldset {
     padding-bottom: 10px;
 }
 
+.pb-28 {
+    padding-bottom: 28px;
+}
+
 .va-middle {
     vertical-align: middle !important;
 }

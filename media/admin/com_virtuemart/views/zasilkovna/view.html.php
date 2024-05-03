@@ -37,6 +37,14 @@ $zas_model->checkConfiguration();
  */
 class VirtuemartViewZasilkovna extends VmViewAdmin {
 
+    public VirtueMartModelZasilkovna $model;
+    public \VirtueMartModelZasilkovna\SessionStorage $configStorage;
+    public function __construct($config = array()) {
+        parent::__construct($config);
+        $this->model = VmModel::getModel();
+        $this->configStorage = new \VirtueMartModelZasilkovna\SessionStorage(JFactory::getSession(),'packeteryConfig');
+    }
+
     function display($tpl = NULL) {
 
 
@@ -99,6 +107,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
         $mainframe = JFactory::getApplication();
         $this->joomlaconfig = $mainframe;
+        $session = JFactory::getSession();
 
         $this->userparams = JComponentHelper::getParams('com_users');
         $this->jTemplateList = ShopFunctions::renderTemplateList(JText::_('COM_VIRTUEMART_ADMIN_CFG_JOOMLA_TEMPLATE_DEFAULT'));
@@ -217,5 +226,18 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         /** @var JApplicationCms $app */
         $app = JFactory::getApplication();
         $app->enqueueMessage($fullFlashMessage, \VirtueMartModelZasilkovna\FlashMessage::TYPE_NOTICE);
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $default
+     * @return array|mixed|string
+     */
+    public function getFormValue(string $name, mixed $default = ''): mixed
+    {
+        $fromSession = $this->configStorage->get(VirtuemartControllerZasilkovna::FROM_POST, VirtuemartControllerZasilkovna::FORM_VALUES)[$name] ?? null;
+        $fromConfig = $this->model->getConfig($name, $default);
+
+        return $fromSession ?? $fromConfig;
     }
 }

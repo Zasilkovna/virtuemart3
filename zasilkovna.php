@@ -1,5 +1,6 @@
 <?php
 
+use VirtueMartModelZasilkovna\ConfigurationValidator;
 use VirtueMartModelZasilkovna\ShipmentMethod;
 use VirtueMartModelZasilkovna\Carrier\VendorGroups;
 
@@ -49,8 +50,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /** @var \VirtueMartModelZasilkovna\CheckoutModuleDetector */
     protected $checkoutModuleDetector;
 
-    /** @var \VirtueMartModelZasilkovna\ShipmentMethodStorage */
-    private $shipmentMethodStorage;
+    private \VirtueMartModelZasilkovna\SessionStorage $shipmentMethodStorage;
 
     /** @var \VirtueMartModelZasilkovna\ShipmentMethodValidator */
     protected $shipmentMethodValidator;
@@ -91,7 +91,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $this->model = VmModel::getModel('zasilkovna');
         $this->session = JFactory::getSession();
         $this->checkoutModuleDetector = new \VirtueMartModelZasilkovna\CheckoutModuleDetector();
-        $this->shipmentMethodStorage = new \VirtueMartModelZasilkovna\ShipmentMethodStorage($this->session);
+        $this->shipmentMethodStorage = new \VirtueMartModelZasilkovna\SessionStorage($this->session, 'packeteryShipmentMethods');
         $this->shipmentMethodValidator = new \VirtueMartModelZasilkovna\ShipmentMethodValidator();
         $this->orderDetail = new \VirtueMartModelZasilkovna\Order\Detail();
         $this->orderRepository = new \VirtueMartModelZasilkovna\Order\Repository();
@@ -250,7 +250,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @return null|bool Null when this method was not selected, otherwise true
      * @author Valerie Isaksen
      */
-    function plgVmConfirmedOrder(VirtueMartCart $cart, $order) {
+    function plgVmConfirmedOrder(VirtueMartCart $cart, array $order): ?bool {
         if (!($method = $this->getVmPluginMethod($order['details']['BT']->virtuemart_shipmentmethod_id))) {
             return null; // Another method was selected, do nothing
         }
@@ -274,7 +274,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         $this->clearPickedDeliveryPoint($cart->virtuemart_shipmentmethod_id);
 
-        $codSettings = $this->model->getConfig('zasilkovna_payment_method_'.$cart->virtuemart_paymentmethod_id, 0);
+        $codSettings = $this->model->getConfig(ConfigurationValidator::KEY_PAYMENT_METHOD_PREFIX . $cart->virtuemart_paymentmethod_id, 0);
 
         $billing=$order['details']['BT'];
         $shipping=$order['details']['ST'];
@@ -355,8 +355,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['shipment_cost'] = $this->getCosts($cart, ShipmentMethod::fromRandom($method), "");
         $weight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
 
-        if (!$weight && $this->model->getConfig('zasilkovna_use_default_weight') === '1') {
-            $weight = (float)$this->model->getConfig('zasilkovna_default_weight', 0);
+        if (!$weight && $this->model->getConfig(ConfigurationValidator::KEY_USE_DEFAULT_WEIGHT) === true) {
+            $weight = (float)$this->model->getConfig(ConfigurationValidator::KEY_DEFAULT_WEIGHT);
         }
         $values['weight'] = $weight;
         $values['tax_id'] = $method->tax_id;
@@ -364,12 +364,18 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if ($is_carrier === 1
             && $carrier
             && $carrier->requires_size === 1
-            && $this->model->getConfig('zasilkovna_use_default_dimensions') === '1'
+            && $this->model->getConfig(ConfigurationValidator::KEY_USE_DEFAULT_DIMENSIONS) === true
         ) {
-            $values['length'] = (int)$this->model->getConfig('zasilkovna_default_length', 0);
-            $values['width'] = (int)$this->model->getConfig('zasilkovna_default_width', 0);
-            $values['height'] = (int)$this->model->getConfig('zasilkovna_default_height', 0);
+            $values['length'] = (int)$this->model->getConfig(ConfigurationValidator::KEY_DEFAULT_LENGTH);
+            $values['width'] = (int)$this->model->getConfig(ConfigurationValidator::KEY_DEFAULT_WIDTH);
+            $values['height'] = (int)$this->model->getConfig(ConfigurationValidator::KEY_DEFAULT_HEIGHT);
+        } else {
+            //empty string to force null in database
+            $values['length'] = '';
+            $values['width'] = '';
+            $values['height'] = '';
         }
+
         $this->storePSPluginInternalData($values);
 
         return true;

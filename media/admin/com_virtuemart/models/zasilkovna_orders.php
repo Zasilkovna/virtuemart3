@@ -159,11 +159,11 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     }
 
     /**
-     * @param $orders_id_arr
+     * @param string[] $orders_id_arr
      * @return array<string,array<string,mixed>>
      * @throws Exception
      */
-    public function submitToZasilkovna($orders_id_arr): array
+    public function submitToZasilkovna(array $orders_id_arr): array
     {
 
         $db = JFactory::getDBO();
@@ -198,11 +198,10 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $dimensions = ['length', 'width', 'height'];
                 $size = [];
                 foreach ($dimensions as $dimension) {
-                    if (isset($order[$dimension]) && $order[$dimension] > 0) {
                         $size[$dimension] = $order[$dimension];
-                    }
                 }
-                if (count($size) === 3) {
+
+                if ($order['length']) {
                     $attributes['size'] = $size;
                 }
 
@@ -351,9 +350,9 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $row['recipient_city'],
                 $row['recipient_zip'],
                 $row['carrier_point'],
-                $row['width'],
-                $row['height'],
-                $row['depth'],
+                $row['width'] ?? '',
+                $row['height'] ?? '',
+                $row['length'] ?? '',
             );
 
             echo "," . implode(',', $order) . PHP_EOL;
@@ -448,11 +447,11 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     }
 
     /**
-     * @param $orders_arr
+     * @param string[] $orders_arr
      * @return array<array<string,mixed>>
      * @throws Exception
      */
-    protected function prepareForExport($orders_arr): array
+    protected function prepareForExport(array $orders_arr): array
     {
         if (!$orders_arr)
         {
@@ -539,9 +538,9 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $orderForExport['recipient_zip'] = $row['zip_code'];
             $orderForExport['carrier_point'] = $row['carrier_pickup_point'];
             $orderForExport['is_carrier'] = $row['is_carrier'];
-            $orderForExport['width'] = $row['width'] > 0 ? $row['width'] : "";
-            $orderForExport['height'] = $row['height'] > 0 ? $row['height'] : "";
-            $orderForExport['length'] = $row['length'] > 0 ? $row['length'] : "";
+            $orderForExport['width'] = $row['width'];
+            $orderForExport['height'] = $row['height'];
+            $orderForExport['length'] = $row['length'];
             $orderForExport['zasilkovna_packet_id'] = $row['zasilkovna_packet_id'];
 
             $ordersForExport[] = $orderForExport;
