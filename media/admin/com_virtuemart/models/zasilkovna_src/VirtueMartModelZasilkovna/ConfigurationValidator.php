@@ -14,11 +14,11 @@ class ConfigurationValidator
     public const KEY_PAYMENT_METHOD_PREFIX = 'zasilkovna_payment_method_';
     public const CONFIG_DEFAULTS = [
         self::KEY_USE_DEFAULT_WEIGHT => false,
-        self::KEY_DEFAULT_WEIGHT => 0,
+        self::KEY_DEFAULT_WEIGHT => '',
         self::KEY_USE_DEFAULT_DIMENSIONS => false,
-        self::KEY_DEFAULT_LENGTH => 0,
-        self::KEY_DEFAULT_WIDTH => 0,
-        self::KEY_DEFAULT_HEIGHT => 0,
+        self::KEY_DEFAULT_LENGTH => '',
+        self::KEY_DEFAULT_WIDTH => '',
+        self::KEY_DEFAULT_HEIGHT => '',
         self::KEY_API_PASS => '',
         self::KEY_ESHOP_LABEL => '',
     ];
@@ -54,53 +54,60 @@ class ConfigurationValidator
         $this->setValidDataForNotValidatedFields();
     }
 
-    private function validateWeight(): void {
-        if ($this->configuration[self::KEY_USE_DEFAULT_WEIGHT] === '1') {
-            if (empty($this->configuration[self::KEY_DEFAULT_WEIGHT])
-                || (float)$this->configuration[self::KEY_DEFAULT_WEIGHT] < 0.001) {
-                $this->errors[self::KEY_DEFAULT_WEIGHT] = [
-                    'PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_MUST_BE_POSITIVE',
-                    'PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT',
-                ];
-                return;
-            }
-            $this->validData[self::KEY_DEFAULT_WEIGHT] = round((float)$this->configuration[self::KEY_DEFAULT_WEIGHT], 3);
-            $this->validData[self::KEY_USE_DEFAULT_WEIGHT] = true;
-            return;
-        }
-        $this->validData[self::KEY_USE_DEFAULT_WEIGHT] = false;
-        $this->validData[self::KEY_DEFAULT_WEIGHT] = self::CONFIG_DEFAULTS[self::KEY_DEFAULT_WEIGHT];
+private function validateWeight(): void {
+    if (
+        (
+            !empty($this->configuration[self::KEY_DEFAULT_WEIGHT])
+            || $this->configuration[self::KEY_DEFAULT_WEIGHT] === '0'
+        )
+        && (
+            !is_numeric($this->configuration[self::KEY_DEFAULT_WEIGHT])
+            || (float)$this->configuration[self::KEY_DEFAULT_WEIGHT] < 0.001
+        )
+    ) {
+        $this->errors[self::KEY_DEFAULT_WEIGHT] = [
+            'PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_MUST_BE_POSITIVE',
+            'PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT',
+        ];
+
+        return;
     }
 
-    private function validateDimensions(): void {
+        if ($this->configuration[self::KEY_USE_DEFAULT_WEIGHT] === '1' && empty($this->configuration[self::KEY_DEFAULT_WEIGHT])) {
+            $this->errors[self::KEY_DEFAULT_WEIGHT] = [
+                'PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_IS_REQUIRED',
+                'PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT',
+            ];
+            return;
+        }
+
+        $this->validData[self::KEY_DEFAULT_WEIGHT] = is_numeric($this->configuration[self::KEY_DEFAULT_WEIGHT]) ? round((float)$this->configuration[self::KEY_DEFAULT_WEIGHT], 3) : '';
+        $this->validData[self::KEY_USE_DEFAULT_WEIGHT] = $this->configuration[self::KEY_USE_DEFAULT_WEIGHT] === '1';
+    }
+
+    private function validateDimensions(): void
+    {
         $fields = [
             self::KEY_DEFAULT_LENGTH => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_LENGTH',
             self::KEY_DEFAULT_WIDTH => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_WIDTH',
             self::KEY_DEFAULT_HEIGHT => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_DIMENSIONS_HEIGHT',
         ];
 
-        if (!isset($this->configuration[self::KEY_USE_DEFAULT_DIMENSIONS])
-            || $this->configuration[self::KEY_USE_DEFAULT_DIMENSIONS] === '0'
-        ) {
-            $this->validData[self::KEY_USE_DEFAULT_DIMENSIONS] = false;
-            foreach (array_keys($fields) as $field) {
-                $this->validData[$field] = self::CONFIG_DEFAULTS[$field];
-            }
-            return;
-        }
-
-        $validDimensions = [];
         foreach ($fields as $field => $label) {
-            if (!isset($this->configuration[$field]) || (int)$this->configuration[$field] < 1) {
-                $this->errors[$field] = ['PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_MUST_BE_POSITIVE', $label];
-            } else {
-                $validDimensions[$field] = (int)$this->configuration[$field];
+            if ((!empty($this->configuration[$field]) || $this->configuration[$field] === '0')
+                && (!is_numeric($this->configuration[$field]) || (int)$this->configuration[$field] < 1)
+            ) {
+                $this->errors[$field] = ['PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_MUST_BE_POSITIVE_INTEGER', $label];
+                continue;
             }
+            if ($this->configuration[self::KEY_USE_DEFAULT_DIMENSIONS] === '1' && empty($this->configuration[$field])) {
+                $this->errors[$field] = ['PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_IS_REQUIRED', $label];
+                continue;
+            }
+
+            $this->validData[$field] = is_numeric($this->configuration[$field]) ? (int)$this->configuration[$field] : '';
         }
-        if (count($validDimensions) === count($fields)) {
-            $this->validData[self::KEY_USE_DEFAULT_DIMENSIONS] = true;
-            $this->validData = array_merge($this->validData, $validDimensions);
-        }
+        $this->validData[self::KEY_USE_DEFAULT_DIMENSIONS] = $this->configuration[self::KEY_USE_DEFAULT_DIMENSIONS] === '1';
     }
 
     private function validateApiPassword(): void {

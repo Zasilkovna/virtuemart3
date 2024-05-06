@@ -105,7 +105,6 @@ ob_start();
                     min="0"
                     step="0.001"
                     value="<?php echo ($this->getFormValue(ConfigValidator::KEY_DEFAULT_WEIGHT)); ?>"
-                    placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_KG'); ?>"
                 />
             </td>
         </tr>
@@ -128,7 +127,6 @@ ob_start();
                     min="0"
                     step="1"
                     value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_LENGTH); ?>"
-                    placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_MM'); ?>"
                 />
             </td>
         </tr>
@@ -143,7 +141,6 @@ ob_start();
                     min="0"
                     step="1"
                     value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_WIDTH); ?>"
-                    placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_MM'); ?>"
                 />
             </td>
         </tr>
@@ -158,7 +155,6 @@ ob_start();
                     min="0"
                     step="1"
                     value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_HEIGHT); ?>"
-                    placeholder="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_POSITIVE_VALUE_IN_MM'); ?>"
                 />
             </td>
         </tr>
