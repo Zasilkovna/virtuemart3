@@ -713,7 +713,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @author Valerie Isaksen
      * @author Max Milbers
      */
-    public function plgVmDisplayListFEShipment(VirtueMartCart $cart, $selected = 0, &$htmlIn) {
+    public function plgVmDisplayListFEShipment(VirtueMartCart $cart, $selected, &$htmlIn) {
         $js_html = '';
         if ($this->getPluginMethods($cart->vendorId) === 0) {
             return FALSE;

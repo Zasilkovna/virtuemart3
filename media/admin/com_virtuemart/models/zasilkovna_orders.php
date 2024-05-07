@@ -548,7 +548,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
      */
     private function normalizePhone($value)
     {
-        $value = str_replace(' ', '', trim($value));
+        $value = str_replace(' ', '', trim($value ?? ''));
 
         // only + and numbers are allowed
         if (preg_match('/^\+?\d+$/', $value) !== 1)
@@ -611,9 +611,9 @@ class VirtueMartModelZasilkovna_orders extends VmModel
      *
      * get next/previous order id
      */
-    public function getOrderId($direction = 'DESC', $order_id) {
+    public function getOrderId($direction, $order_id) {
 
-        if($direction == 'ASC') {
+        if ($direction === 'ASC') {
             $arrow = '>';
         }
         else {
