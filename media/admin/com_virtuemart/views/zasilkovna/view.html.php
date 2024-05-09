@@ -38,11 +38,11 @@ $zas_model->checkConfiguration();
 class VirtuemartViewZasilkovna extends VmViewAdmin {
 
     public VirtueMartModelZasilkovna $model;
-    public \VirtueMartModelZasilkovna\SessionStorage $configStorage;
+    public \VirtueMartModelZasilkovna\ConfigSessionStorage $configStorage;
     public function __construct($config = array()) {
         parent::__construct($config);
         $this->model = VmModel::getModel();
-        $this->configStorage = new \VirtueMartModelZasilkovna\SessionStorage(JFactory::getSession(),'packeteryConfig');
+        $this->configStorage = new \VirtueMartModelZasilkovna\ConfigSessionStorage(JFactory::getSession(),'packeteryConfig');
     }
 
     function display($tpl = NULL) {
@@ -235,7 +235,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
      */
     public function getFormValue(string $name, mixed $default = ''): mixed
     {
-        $fromSession = $this->configStorage->get(VirtuemartControllerZasilkovna::FROM_POST, VirtuemartControllerZasilkovna::FORM_VALUES)[$name] ?? null;
+        $fromSession = $this->configStorage->read()[$name] ?? null;
         $fromConfig = $this->model->getConfig($name, $default);
 
         return $fromSession ?? $fromConfig;

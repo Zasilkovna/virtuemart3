@@ -607,7 +607,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
         }
 
         foreach (ConfigurationValidator::CONFIG_DEFAULTS as $key => $value) {
-            if (!isset($config[$key])) {
+            if (!array_key_exists($key, $config)) {
                 $config[$key] = $value;
             }
         }

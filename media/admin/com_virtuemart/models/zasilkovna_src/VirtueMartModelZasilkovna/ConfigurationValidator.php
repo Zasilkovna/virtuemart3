@@ -27,7 +27,7 @@ class ConfigurationValidator
     /**
      * @var array<string, mixed>
      */
-    private array $configuration;
+    private array $formData;
 
     /**
      * @var array <string, string>|array<string, array<string>>
@@ -40,11 +40,11 @@ class ConfigurationValidator
     private array $validData = [];
 
     /**
-     * @param array<string, mixed> $configuration
+     * @param array<string, mixed> $formData
      */
-    public function __construct(array $configuration)
+    public function __construct(array $formData)
     {
-        $this->configuration = $configuration;
+        $this->formData = $formData;
     }
 
     public function validate(): void {
@@ -57,12 +57,12 @@ class ConfigurationValidator
 private function validateWeight(): void {
     if (
         (
-            !empty($this->configuration[self::KEY_DEFAULT_WEIGHT])
-            || $this->configuration[self::KEY_DEFAULT_WEIGHT] === '0'
+            !empty($this->formData[self::KEY_DEFAULT_WEIGHT])
+            || $this->formData[self::KEY_DEFAULT_WEIGHT] === '0'
         )
         && (
-            !is_numeric($this->configuration[self::KEY_DEFAULT_WEIGHT])
-            || (float)$this->configuration[self::KEY_DEFAULT_WEIGHT] < 0.001
+            !is_numeric($this->formData[self::KEY_DEFAULT_WEIGHT])
+            || (float)$this->formData[self::KEY_DEFAULT_WEIGHT] < 0.001
         )
     ) {
         $this->errors[self::KEY_DEFAULT_WEIGHT] = [
@@ -73,7 +73,7 @@ private function validateWeight(): void {
         return;
     }
 
-        if ($this->configuration[self::KEY_USE_DEFAULT_WEIGHT] === '1' && empty($this->configuration[self::KEY_DEFAULT_WEIGHT])) {
+        if ($this->formData[self::KEY_USE_DEFAULT_WEIGHT] === '1' && empty($this->formData[self::KEY_DEFAULT_WEIGHT])) {
             $this->errors[self::KEY_DEFAULT_WEIGHT] = [
                 'PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_IS_REQUIRED',
                 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT',
@@ -81,8 +81,8 @@ private function validateWeight(): void {
             return;
         }
 
-        $this->validData[self::KEY_DEFAULT_WEIGHT] = is_numeric($this->configuration[self::KEY_DEFAULT_WEIGHT]) ? round((float)$this->configuration[self::KEY_DEFAULT_WEIGHT], 3) : '';
-        $this->validData[self::KEY_USE_DEFAULT_WEIGHT] = $this->configuration[self::KEY_USE_DEFAULT_WEIGHT] === '1';
+        $this->validData[self::KEY_DEFAULT_WEIGHT] = is_numeric($this->formData[self::KEY_DEFAULT_WEIGHT]) ? round((float)$this->formData[self::KEY_DEFAULT_WEIGHT], 3) : '';
+        $this->validData[self::KEY_USE_DEFAULT_WEIGHT] = $this->formData[self::KEY_USE_DEFAULT_WEIGHT] === '1';
     }
 
     private function validateDimensions(): void
@@ -94,33 +94,33 @@ private function validateWeight(): void {
         ];
 
         foreach ($fields as $field => $label) {
-            if ((!empty($this->configuration[$field]) || $this->configuration[$field] === '0')
-                && (!is_numeric($this->configuration[$field]) || (int)$this->configuration[$field] < 1)
+            if ((!empty($this->formData[$field]) || $this->formData[$field] === '0')
+                && (!is_numeric($this->formData[$field]) || (int)$this->formData[$field] < 1)
             ) {
                 $this->errors[$field] = ['PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_MUST_BE_POSITIVE_INTEGER', $label];
                 continue;
             }
-            if ($this->configuration[self::KEY_USE_DEFAULT_DIMENSIONS] === '1' && empty($this->configuration[$field])) {
+            if ($this->formData[self::KEY_USE_DEFAULT_DIMENSIONS] === '1' && empty($this->formData[$field])) {
                 $this->errors[$field] = ['PLG_VMPSHIPMENT_PACKETERY_DEFAULT_FIELD_IS_REQUIRED', $label];
                 continue;
             }
 
-            $this->validData[$field] = is_numeric($this->configuration[$field]) ? (int)$this->configuration[$field] : '';
+            $this->validData[$field] = is_numeric($this->formData[$field]) ? (int)$this->formData[$field] : '';
         }
-        $this->validData[self::KEY_USE_DEFAULT_DIMENSIONS] = $this->configuration[self::KEY_USE_DEFAULT_DIMENSIONS] === '1';
+        $this->validData[self::KEY_USE_DEFAULT_DIMENSIONS] = $this->formData[self::KEY_USE_DEFAULT_DIMENSIONS] === '1';
     }
 
     private function validateApiPassword(): void {
-        if ($this->configuration[self::KEY_API_PASS] === '') {
+        if ($this->formData[self::KEY_API_PASS] === '') {
             $this->errors[self::KEY_API_PASS] = 'PLG_VMSHIPMENT_PACKETERY_API_PASS_NOT_SET';
             return;
         }
-        if (strlen($this->configuration[self::KEY_API_PASS]) !== 32) {
+        if (strlen($this->formData[self::KEY_API_PASS]) !== 32) {
             $this->errors[self::KEY_API_PASS] = 'PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID';
             return;
         }
 
-        $this->validData[self::KEY_API_PASS] = $this->configuration[self::KEY_API_PASS];
+        $this->validData[self::KEY_API_PASS] = $this->formData[self::KEY_API_PASS];
     }
 
     public function isValid(): bool {
@@ -142,10 +142,10 @@ private function validateWeight(): void {
     }
 
     private function setValidDataForNotValidatedFields(): void {
-        $this->validData[self::KEY_ESHOP_LABEL] = $this->configuration[self::KEY_ESHOP_LABEL] ?? self::CONFIG_DEFAULTS[self::KEY_ESHOP_LABEL];
+        $this->validData[self::KEY_ESHOP_LABEL] = $this->formData[self::KEY_ESHOP_LABEL] ?? self::CONFIG_DEFAULTS[self::KEY_ESHOP_LABEL];
 
         $paymentMethods = array_filter(
-            $this->configuration,
+            $this->formData,
             static function ($key) {
                 return str_starts_with($key, self::KEY_PAYMENT_METHOD_PREFIX);
             },

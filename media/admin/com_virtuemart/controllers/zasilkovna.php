@@ -35,8 +35,6 @@ use VirtueMartModelZasilkovna\Label;
 class VirtuemartControllerZasilkovna extends VmController
 {
     const ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED = 'zasilkovna_limitations_removed_notice_dismissed';
-    public const FROM_POST = 'fromPost';
-    public const FORM_VALUES = 'formValues';
 
     /** @var \VirtueMartModelZasilkovna\Order\Detail */
     private $orderDetail;
@@ -297,8 +295,8 @@ class VirtuemartControllerZasilkovna extends VmController
      */
     private function updateZasilkovnaConfig(array $data): FlashMessage
     {
-        $configStorage = new VirtueMartModelZasilkovna\SessionStorage(JFactory::getSession(), 'packeteryConfig');
-        $configStorage->set(self::FROM_POST, self::FORM_VALUES, $data);
+        $configStorage = new VirtueMartModelZasilkovna\ConfigSessionStorage(JFactory::getSession(), 'packeteryConfig');
+        $configStorage->write($data);
 
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
@@ -331,7 +329,7 @@ class VirtuemartControllerZasilkovna extends VmController
         }
 
         $model->updateConfig(array_replace_recursive($currentData, $formValidator->getValidData()));
-        $configStorage->clear(self::FROM_POST, self::FORM_VALUES);
+        $configStorage->remove(self::FROM_POST, self::FORM_VALUES);
 
         return  new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_SAVED'), FlashMessage::TYPE_MESSAGE);
     }

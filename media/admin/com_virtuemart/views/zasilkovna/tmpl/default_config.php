@@ -104,7 +104,7 @@ ob_start();
                     type="number"
                     min="0"
                     step="0.001"
-                    value="<?php echo ($this->getFormValue(ConfigValidator::KEY_DEFAULT_WEIGHT)); ?>"
+                    value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_WEIGHT); ?>"
                 />
             </td>
         </tr>
@@ -113,7 +113,7 @@ ob_start();
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_USE_DEFAULT_DIMENSIONS'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::checkbox('zasilkovna_use_default_dimensions', (bool)$this->getFormValue('zasilkovna_use_default_dimensions')); ?>
+                <?php echo VmHTML::checkbox(ConfigValidator::KEY_USE_DEFAULT_DIMENSIONS, (bool)$this->getFormValue(ConfigValidator::KEY_USE_DEFAULT_DIMENSIONS)); ?>
             </td>
         </tr>
         <tr>

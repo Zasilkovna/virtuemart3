@@ -29,7 +29,7 @@ class SessionStorage
      */
     public function get(int|string $id, string $key, mixed $default = null): mixed
     {
-        return $this->session->get($this->composeKey($id, $key), $default, $this->namespace);
+        return $this->session->get($this->composeKey($id, $key), $default);
     }
 
     /**
@@ -39,16 +39,16 @@ class SessionStorage
      */
     public function set(int|string $id, string $key, mixed $value): void
     {
-        $this->session->set($this->composeKey($id, $key), $value, $this->namespace);
+        $this->session->set($this->composeKey($id, $key), $value);
     }
 
     /**
      * @param int|string $id
      * @param string $key
      */
-    public function clear(int|string $id, string $key): void
+    public function remove(int|string $id, string $key): void
     {
-        $this->session->clear($this->composeKey($id, $key), $this->namespace);
+        $this->session->remove($this->composeKey($id, $key));
     }
 
     /**
@@ -62,6 +62,6 @@ class SessionStorage
             throw new \InvalidArgumentException('Id or key cannot be empty');
         }
 
-        return $id . '.' . $key;
+        return $this->namespace . '.' . $id . '.' . $key;
     }
 }
