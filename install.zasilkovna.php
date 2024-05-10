@@ -1,7 +1,7 @@
 <?php
 
 use Joomla\CMS\Installer\Adapter\PluginAdapter;
-use VirtueMartModelZasilkovna\ConfigurationValidator;
+use VirtueMartModelZasilkovna\ConfigConstants;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
@@ -606,7 +606,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
             $config['cron_token'] = substr(sha1(rand()), 0, 16);
         }
 
-        foreach (ConfigurationValidator::CONFIG_DEFAULTS as $key => $value) {
+        foreach (ConfigConstants::CONFIG_DEFAULTS as $key => $value) {
             if (!array_key_exists($key, $config)) {
                 $config[$key] = $value;
             }

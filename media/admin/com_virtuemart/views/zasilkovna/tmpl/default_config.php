@@ -1,8 +1,8 @@
 <?php
 
 use VirtueMartModelZasilkovna\Box\Renderer;
+use VirtueMartModelZasilkovna\ConfigConstants;
 use VirtueMartModelZasilkovna\Order\Detail;
-use VirtueMartModelZasilkovna\ConfigurationValidator as ConfigValidator;
 
 defined('_JEXEC') || die('Restricted access');
 
@@ -32,7 +32,7 @@ ob_start();
             <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS'); ?>
         </th>
         <td class="pb-10 pl-3">
-            <?php echo VmHTML::input(ConfigValidator::KEY_API_PASS, $this->getFormValue(ConfigValidator::KEY_API_PASS)); ?><br>
+            <?php echo VmHTML::input(ConfigConstants::KEY_API_PASS, $this->getFormValue(ConfigConstants::KEY_API_PASS)); ?><br>
             <?php echo JText::sprintf('PLG_VMSHIPMENT_PACKETERY_FIND_API_PASS_IN_CS', '<a href="https://client.packeta.com/support" target="_blank">','</a>'); ?><br>
             <?php echo JText::sprintf('PLG_VMSHIPMENT_PACKETERY_NO_ACCOUNT_REGISTER_HERE','<a href="https://client.packeta.com/registration" target=\"_blank\">', '</a>'); ?>
         </td>
@@ -42,7 +42,7 @@ ob_start();
             <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL')?>
         </th>
         <td class="pb-10 pl-3">
-            <?php echo VmHTML::input(ConfigValidator::KEY_ESHOP_LABEL, $this->getFormValue(ConfigValidator::KEY_ESHOP_LABEL)); ?><br>
+            <?php echo VmHTML::input(ConfigConstants::KEY_ESHOP_LABEL, $this->getFormValue(ConfigConstants::KEY_ESHOP_LABEL)); ?><br>
             <?php echo JText::sprintf(
                 'PLG_VMSHIPMENT_PACKETERY_ESHOP_LABEL_DESC',
                 '<a href="https://client.packeta.com" target="_blank">',
@@ -67,7 +67,7 @@ ob_start();
 ?>
 <table class="admintable">
     <?php foreach ($this->paymentMethods as $paymentMethod) {
-        $field = ConfigValidator::KEY_PAYMENT_METHOD_PREFIX . $paymentMethod->virtuemart_paymentmethod_id;
+        $field = ConfigConstants::KEY_PAYMENT_METHOD_PREFIX . $paymentMethod->virtuemart_paymentmethod_id;
     ?>
         <tr>
             <th>
@@ -91,7 +91,7 @@ ob_start();
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_USE_DEFAULT_WEIGHT'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::checkbox(ConfigValidator::KEY_USE_DEFAULT_WEIGHT, (bool)$this->getFormValue(ConfigValidator::KEY_USE_DEFAULT_WEIGHT)); ?>
+                <?php echo VmHTML::checkbox(ConfigConstants::KEY_USE_DEFAULT_WEIGHT, (bool)$this->getFormValue(ConfigConstants::KEY_USE_DEFAULT_WEIGHT)); ?>
             </td>
         </tr>
         <tr>
@@ -100,11 +100,11 @@ ob_start();
             </th>
             <td class="pl-3 pb-28">
                 <input
-                    name="<?php echo ConfigValidator::KEY_DEFAULT_WEIGHT; ?>"
+                    name="<?php echo ConfigConstants::KEY_DEFAULT_WEIGHT; ?>"
                     type="number"
                     min="0"
                     step="0.001"
-                    value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_WEIGHT); ?>"
+                    value="<?php echo $this->getFormValue(ConfigConstants::KEY_DEFAULT_WEIGHT); ?>"
                 />
             </td>
         </tr>
@@ -113,7 +113,7 @@ ob_start();
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_USE_DEFAULT_DIMENSIONS'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::checkbox(ConfigValidator::KEY_USE_DEFAULT_DIMENSIONS, (bool)$this->getFormValue(ConfigValidator::KEY_USE_DEFAULT_DIMENSIONS)); ?>
+                <?php echo VmHTML::checkbox(ConfigConstants::KEY_USE_DEFAULT_DIMENSIONS, (bool)$this->getFormValue(ConfigConstants::KEY_USE_DEFAULT_DIMENSIONS)); ?>
             </td>
         </tr>
         <tr>
@@ -122,11 +122,11 @@ ob_start();
             </th>
             <td class="pl-3">
                 <input
-                    name="<?php echo ConfigValidator::KEY_DEFAULT_LENGTH; ?>"
+                    name="<?php echo ConfigConstants::KEY_DEFAULT_LENGTH; ?>"
                     type="number"
                     min="0"
                     step="1"
-                    value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_LENGTH); ?>"
+                    value="<?php echo $this->getFormValue(ConfigConstants::KEY_DEFAULT_LENGTH); ?>"
                 />
             </td>
         </tr>
@@ -136,11 +136,11 @@ ob_start();
             </th>
             <td class="pl-3">
                 <input
-                    name="<?php echo ConfigValidator::KEY_DEFAULT_WIDTH; ?>"
+                    name="<?php echo ConfigConstants::KEY_DEFAULT_WIDTH; ?>"
                     type="number"
                     min="0"
                     step="1"
-                    value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_WIDTH); ?>"
+                    value="<?php echo $this->getFormValue(ConfigConstants::KEY_DEFAULT_WIDTH); ?>"
                 />
             </td>
         </tr>
@@ -150,11 +150,11 @@ ob_start();
             </th>
             <td class="pl-3">
                 <input
-                    name="<?php echo ConfigValidator::KEY_DEFAULT_HEIGHT; ?>"
+                    name="<?php echo ConfigConstants::KEY_DEFAULT_HEIGHT; ?>"
                     type="number"
                     min="0"
                     step="1"
-                    value="<?php echo $this->getFormValue(ConfigValidator::KEY_DEFAULT_HEIGHT); ?>"
+                    value="<?php echo $this->getFormValue(ConfigConstants::KEY_DEFAULT_HEIGHT); ?>"
                 />
             </td>
         </tr>
@@ -184,5 +184,3 @@ $renderer->setVariables([
     'content' => $weightDimensionsContent,
 ]);
 echo $renderer->renderToString();
-
-$this->configStorage->clear(VirtuemartControllerZasilkovna::FROM_POST, VirtuemartControllerZasilkovna::FORM_VALUES);

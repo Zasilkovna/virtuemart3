@@ -1,6 +1,6 @@
 <?php
 
-use VirtueMartModelZasilkovna\ConfigurationValidator;
+use VirtueMartModelZasilkovna\ConfigConstants;
 use VirtueMartModelZasilkovna\ShipmentMethod;
 use VirtueMartModelZasilkovna\Carrier\VendorGroups;
 
@@ -279,7 +279,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         $this->clearPickedDeliveryPoint($cart->virtuemart_shipmentmethod_id);
 
-        $codSettings = $this->model->getConfig(ConfigurationValidator::KEY_PAYMENT_METHOD_PREFIX . $cart->virtuemart_paymentmethod_id, 0);
+        $codSettings = $this->model->getConfig(ConfigConstants::KEY_PAYMENT_METHOD_PREFIX . $cart->virtuemart_paymentmethod_id, 0);
 
         $billing=$order['details']['BT'];
         $shipping=$order['details']['ST'];
@@ -320,6 +320,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         } else {
             $branch_id = $branch_carrier_id;
             $is_carrier = 1;
+            $carrier = $this->carrierRepository->getCarrierById($branch_id);
         }
 
         if ($zasMethod->isHdCarrier()) {
@@ -331,8 +332,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $is_carrier = 1;
             $branch_id = $carrier->id;
             $branch_name_street = $carrier->name ?: $carrier->id;
-        } elseif ($is_carrier === 1) {
-            $carrier = $this->carrierRepository->getCarrierById($branch_id);
         }
 
         $values['virtuemart_order_id'] = $details->virtuemart_order_id;
@@ -360,8 +359,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['shipment_cost'] = $this->getCosts($cart, ShipmentMethod::fromRandom($method), "");
         $weight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
 
-        if (!$weight && $this->model->getConfig(ConfigurationValidator::KEY_USE_DEFAULT_WEIGHT) === true) {
-            $weight = (float)$this->model->getConfig(ConfigurationValidator::KEY_DEFAULT_WEIGHT);
+        if (!$weight && $this->model->getConfig(ConfigConstants::KEY_USE_DEFAULT_WEIGHT) === true) {
+            $weight = (float)$this->model->getConfig(ConfigConstants::KEY_DEFAULT_WEIGHT);
         }
         $values['weight'] = $weight;
         $values['tax_id'] = $method->tax_id;
@@ -369,11 +368,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if ($is_carrier === 1
             && $carrier
             && $carrier->requires_size === 1
-            && $this->model->getConfig(ConfigurationValidator::KEY_USE_DEFAULT_DIMENSIONS) === true
+            && $this->model->getConfig(ConfigConstants::KEY_USE_DEFAULT_DIMENSIONS) === true
         ) {
-            $values['length'] = (int)$this->model->getConfig(ConfigurationValidator::KEY_DEFAULT_LENGTH);
-            $values['width'] = (int)$this->model->getConfig(ConfigurationValidator::KEY_DEFAULT_WIDTH);
-            $values['height'] = (int)$this->model->getConfig(ConfigurationValidator::KEY_DEFAULT_HEIGHT);
+            $values['length'] = (int)$this->model->getConfig(ConfigConstants::KEY_DEFAULT_LENGTH);
+            $values['width'] = (int)$this->model->getConfig(ConfigConstants::KEY_DEFAULT_WIDTH);
+            $values['height'] = (int)$this->model->getConfig(ConfigConstants::KEY_DEFAULT_HEIGHT);
         } else {
             //empty string to force null in database
             $values['length'] = '';

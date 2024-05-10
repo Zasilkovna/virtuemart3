@@ -12,7 +12,7 @@ class ConfigSessionStorage extends SessionStorage
      */
     public function read(): array
     {
-        return $this->get(self::ID, self::KEY);
+        return $this->get(self::ID, self::KEY) ?? [];
     }
 
     /**
@@ -21,7 +21,7 @@ class ConfigSessionStorage extends SessionStorage
      */
     public function write(mixed $data): void
     {
-        $this->set($data, self::ID, self::KEY);
+        $this->set(self::ID, self::KEY, $data);
     }
 
     public function flush(): void

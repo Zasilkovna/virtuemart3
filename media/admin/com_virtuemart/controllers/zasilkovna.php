@@ -296,7 +296,6 @@ class VirtuemartControllerZasilkovna extends VmController
     private function updateZasilkovnaConfig(array $data): FlashMessage
     {
         $configStorage = new VirtueMartModelZasilkovna\ConfigSessionStorage(JFactory::getSession(), 'packeteryConfig');
-        $configStorage->write($data);
 
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
@@ -306,6 +305,7 @@ class VirtuemartControllerZasilkovna extends VmController
         $formValidator->validate();
 
         if (!$formValidator->isValid()) {
+            $configStorage->write($data);
             $errors = $formValidator->getErrors();
             $messages = [];
 
@@ -328,8 +328,8 @@ class VirtuemartControllerZasilkovna extends VmController
             return  new FlashMessage(implode("<br>", $messages), FlashMessage::TYPE_ERROR);
         }
 
-        $model->updateConfig(array_replace_recursive($currentData, $formValidator->getValidData()));
-        $configStorage->remove(self::FROM_POST, self::FORM_VALUES);
+        $model->updateConfig(array_replace_recursive($currentData, $formValidator->normalize()));
+        $configStorage->flush();
 
         return  new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_SAVED'), FlashMessage::TYPE_MESSAGE);
     }

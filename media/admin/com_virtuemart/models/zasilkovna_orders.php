@@ -14,7 +14,7 @@ defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmModel')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmmodel.php');
 
-use VirtueMartModelZasilkovna\ConfigurationValidator;
+use VirtueMartModelZasilkovna\ConfigConstants;
 use VirtueMartModelZasilkovna\Label;
 
 /**
@@ -192,7 +192,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     'value' => $order['value'],
                     'weight' => $order['weight'],
                     'currency' => $order['currency'],
-                    'eshop' => $sender_label = $this->zas_model->getConfig(ConfigurationValidator::KEY_ESHOP_LABEL),
+                    'eshop' => $sender_label = $this->zas_model->getConfig(ConfigConstants::KEY_ESHOP_LABEL),
                     'adultContent' => (int)$order['adult_content'] === 1,
                 );
 
@@ -324,7 +324,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
 
         $exportedOrders = array();
-        $sender_label = $this->zas_model->getConfig(ConfigurationValidator::KEY_ESHOP_LABEL);
+        $sender_label = $this->zas_model->getConfig(ConfigConstants::KEY_ESHOP_LABEL);
 
         echo '"verze 5"'.PHP_EOL.PHP_EOL;
 

@@ -55,10 +55,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
         $configModel = VmModel::getModel('config');
 
-        /** @var VirtueMartModelZasilkovna $model */
-        $model = VmModel::getModel();
-
-        if(!$model->getConfig(VirtuemartControllerZasilkovna::ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED, false)) {
+        if(!$this->model->getConfig(VirtuemartControllerZasilkovna::ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED, false)) {
             $this->showLimitationsRemovedNotice();
         }
 
@@ -72,8 +69,8 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $this->shipmentMethods = $shipments;
 
         $this->moduleVersion = VirtueMartModelZasilkovna::VERSION;
-        $this->errors = $model->errors;
-        $this->warnings = $model->warnings;
+        $this->errors = $this->model->errors;
+        $this->warnings = $this->model->warnings;
 
         $paymentModel = VmModel::getModel('paymentmethod');
         $payments = $paymentModel->getPayments();
@@ -107,7 +104,6 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
         $mainframe = JFactory::getApplication();
         $this->joomlaconfig = $mainframe;
-        $session = JFactory::getSession();
 
         $this->userparams = JComponentHelper::getParams('com_users');
         $this->jTemplateList = ShopFunctions::renderTemplateList(JText::_('COM_VIRTUEMART_ADMIN_CFG_JOOMLA_TEMPLATE_DEFAULT'));
@@ -162,8 +158,9 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $this->pagination = $ordersModel->getPagination();
 
         $this->shipmentSelect = $this->renderShipmentsList();
-        $model->raiseErrors($mainframe);
+        $this->model->raiseErrors($mainframe);
         parent::display($tpl);
+        $this->configStorage->flush();
     }
 
     public function renderOrderstatesList() {
@@ -235,9 +232,14 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
      */
     public function getFormValue(string $name, mixed $default = ''): mixed
     {
-        $fromSession = $this->configStorage->read()[$name] ?? null;
-        $fromConfig = $this->model->getConfig($name, $default);
+        static $sessionData = null;
 
-        return $fromSession ?? $fromConfig;
+        if ($sessionData === null) {
+            $sessionData = $this->configStorage->read();
+        }
+
+        $fromSession = $sessionData[$name] ?? null;
+
+        return $fromSession ?? $this->model->getConfig($name, $default);
     }
 }
