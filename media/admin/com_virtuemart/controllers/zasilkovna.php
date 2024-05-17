@@ -295,4 +295,34 @@ class VirtuemartControllerZasilkovna extends VmController
     {
         return isset($_POST['exportOrders']) && is_array($_POST['exportOrders']) ? $_POST['exportOrders'] : [];
     }
+
+    private function isPluginEnabled()
+    {
+        $db = JFactory::getDbo();
+        $query = $db->getQuery(true)
+            ->select('enabled')
+            ->from('#__extensions')
+            ->where("element = 'zasilkovna'")
+            ->where("type = 'plugin'");
+        $db->setQuery($query);
+
+        return (bool) $db->loadResult();
+    }
+
+    public function display($cachable = false, $urlparams = false)
+    {
+        if (!$this->isPluginEnabled()) {
+            $extensionManagerUrl = 'index.php?option=com_installer&view=manage&filter[search]=zasilkovna';
+            $messageText = sprintf(
+                JText::_('PLG_VMSHIPMENT_PACKETERY_PLUGIN_DISABLED'),
+                '<a href="' . $extensionManagerUrl . '">',
+                '</a>'
+            );
+            $message = new FlashMessage($messageText, FlashMessage::TYPE_ERROR);
+            $this->setRedirectWithMessage('index.php?option=com_virtuemart&view=virtuemart', $message);
+            return $this;
+        }
+
+        return parent::display($cachable, $urlparams);
+    }
 }
