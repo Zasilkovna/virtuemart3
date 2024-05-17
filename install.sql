@@ -28,12 +28,6 @@ CREATE TABLE IF NOT EXISTS `#__virtuemart_shipment_plg_zasilkovna` (
 	`shipment_cost` decimal(10,2),
 	`shipment_package_fee` decimal(10,2),
 	`tax_id` smallint(1),
-	`created_on` datetime NOT NULL DEFAULT '0000-00-00 00:00:00',
-	`created_by` int(11) NOT NULL DEFAULT '0',
-	`modified_on` datetime,
-	`modified_by` int(11) NOT NULL DEFAULT '0',
-	`locked_on` datetime,
-	`locked_by` int(11) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='zasilkovna';
 
