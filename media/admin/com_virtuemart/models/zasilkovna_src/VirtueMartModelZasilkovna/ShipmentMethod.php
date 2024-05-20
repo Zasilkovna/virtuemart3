@@ -286,7 +286,7 @@ class ShipmentMethod
      */
     public function getVendorGroups()
     {
-        return $this->getParams()->delivery_settings->vendor_groups ?: [];
+        return $this->getParams()->delivery_settings->vendor_groups ?? [];
     }
 
     /**
