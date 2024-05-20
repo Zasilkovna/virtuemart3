@@ -758,7 +758,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
 
 
-        if ($order_status_code = (string)$app->get('order_status_code')) {
+        if ($order_status_code = (string)$app->input->get('order_status_code')) {
             $where[] = ' o.order_status = "' . $db->escape($order_status_code) . '" ';
         }
 
