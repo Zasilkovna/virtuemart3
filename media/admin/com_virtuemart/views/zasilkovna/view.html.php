@@ -174,7 +174,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
     public function renderShipmentsList()
     {
         $app = JFactory::getApplication();
-        $selected_shipment = (int)$app->get('order_exported');
+        $selected_shipment = (int)$app->input->get('order_exported');
 
         $objList = array();
         $allObj = new stdClass;
