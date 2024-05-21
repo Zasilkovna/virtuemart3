@@ -1,6 +1,7 @@
 <?php
 
 use VirtueMartModelZasilkovna\Box\Renderer;
+use VirtueMartModelZasilkovna\Config\OptionKey;
 use VirtueMartModelZasilkovna\Order\Detail;
 
 defined('_JEXEC') || die('Restricted access');
@@ -90,8 +91,8 @@ ob_start();
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_USE_DEFAULT_WEIGHT'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::checkbox(VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_WEIGHT,
-                    $model->getFromPostOrConfig(VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_WEIGHT, $postData)); ?>
+                <?php echo VmHTML::checkbox(OptionKey::USE_DEFAULT_WEIGHT,
+                    $model->getFromPostOrConfig(OptionKey::USE_DEFAULT_WEIGHT, $postData)); ?>
             </td>
         </tr>
         <tr>
@@ -99,8 +100,8 @@ ob_start();
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::input(VirtueMartModelZasilkovna::OPTION_DEFAULT_WEIGHT,
-                    $model->getFromPostOrConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_WEIGHT, $postData)); ?> kg
+                <?php echo VmHTML::input(OptionKey::DEFAULT_WEIGHT,
+                    $model->getFromPostOrConfig(OptionKey::DEFAULT_WEIGHT, $postData)); ?> kg
             </td>
         </tr>
         <tr>
@@ -108,8 +109,8 @@ ob_start();
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_USE_DEFAULT_DIMENSIONS'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::checkbox(VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_DIMENSIONS,
-                    $model->getFromPostOrConfig(VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_DIMENSIONS, $postData)); ?>
+                <?php echo VmHTML::checkbox(OptionKey::USE_DEFAULT_DIMENSIONS,
+                    $model->getFromPostOrConfig(OptionKey::USE_DEFAULT_DIMENSIONS, $postData)); ?>
             </td>
         </tr>
         <tr>
@@ -117,8 +118,8 @@ ob_start();
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_LENGTH'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::input(VirtueMartModelZasilkovna::OPTION_DEFAULT_LENGTH,
-                    $model->getFromPostOrConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_LENGTH, $postData)); ?> mm
+                <?php echo VmHTML::input(OptionKey::DEFAULT_LENGTH,
+                    $model->getFromPostOrConfig(OptionKey::DEFAULT_LENGTH, $postData)); ?> mm
             </td>
         </tr>
         <tr>
@@ -126,8 +127,8 @@ ob_start();
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WIDTH'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::input(VirtueMartModelZasilkovna::OPTION_DEFAULT_WIDTH,
-                    $model->getFromPostOrConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_WIDTH, $postData)); ?> mm
+                <?php echo VmHTML::input(OptionKey::DEFAULT_WIDTH,
+                    $model->getFromPostOrConfig(OptionKey::DEFAULT_WIDTH, $postData)); ?> mm
             </td>
         </tr>
         <tr>
@@ -135,8 +136,8 @@ ob_start();
                 <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_HEIGHT'); ?>
             </th>
             <td class="pl-3">
-                <?php echo VmHTML::input(VirtueMartModelZasilkovna::OPTION_DEFAULT_HEIGHT,
-                    $model->getFromPostOrConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_HEIGHT, $postData)); ?> mm
+                <?php echo VmHTML::input(OptionKey::DEFAULT_HEIGHT,
+                    $model->getFromPostOrConfig(OptionKey::DEFAULT_HEIGHT, $postData)); ?> mm
             </td>
         </tr>
     </table>

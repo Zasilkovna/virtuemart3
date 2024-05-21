@@ -16,7 +16,9 @@
  * @version $Id: config.php 6188 2012-06-29 09:38:30Z Milbo $
  */
 
+use VirtueMartModelZasilkovna\Config;
 use VirtueMartModelZasilkovna\FlashMessage;
+use VirtueMartModelZasilkovna\Label;
 
 // Check to ensure this file is included in Joomla!
 defined('_JEXEC') or die('Restricted access');
@@ -25,8 +27,6 @@ if(!class_exists('VmController')) require(VMPATH_ADMIN . DS . 'helpers' . DS . '
 
 /** @var VirtueMartModelZasilkovna */
 VmModel::getModel('zasilkovna')->loadLanguage();
-
-use VirtueMartModelZasilkovna\Label;
 
 /**
  * Class VirtuemartControllerZasilkovna
@@ -84,50 +84,24 @@ class VirtuemartControllerZasilkovna extends VmController
         $currentData = $model->loadConfig();
 
         $app = JFactory::getApplication();
-        if (strlen($postData['zasilkovna_api_pass']) !== 32) {
-            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID'), FlashMessage::TYPE_ERROR);
+        $validator = new Config\Validator($app);
+
+        $validator->validateApiPassword($postData['zasilkovna_api_pass']);
+
+        $weight = str_replace([',', ' '], ['.', ''], $postData[Config\OptionKey::DEFAULT_WEIGHT]);
+        $validator->mandatoryWeightCheck($weight, $postData[Config\OptionKey::USE_DEFAULT_WEIGHT]);
+        if ($weight !== '' && $validator->validateWeight($weight)) {
+            $weight = number_format(round($weight, 3), 3, '.', '');
+            $postData[Config\OptionKey::DEFAULT_WEIGHT] = $weight;
         }
 
-        $weight = str_replace([',', ' '], ['.', ''], $postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_WEIGHT]);
-        if ($weight !== '') {
-            if ( ! is_numeric($weight) || $weight < 0.001) {
-                $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT_INVALID'), FlashMessage::TYPE_ERROR);
-            } else {
-                $weight = number_format(round($weight, 3), 3, '.', '');
-                $postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_WEIGHT] = $weight;
-            }
-        } elseif ($postData[VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_WEIGHT] === '1') {
-            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT_INVALID'), FlashMessage::TYPE_ERROR);
-        }
-
-        if (
-            $postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_LENGTH] !== '' &&
-            $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_LENGTH]) === false
-        ) {
-            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_LENGTH_INVALID'), FlashMessage::TYPE_ERROR);
-        }
-        if (
-            $postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_WIDTH] !== '' &&
-            $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_WIDTH]) === false
-        ) {
-            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WIDTH_INVALID'), FlashMessage::TYPE_ERROR);
-        }
-        if (
-            $postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_HEIGHT] !== '' &&
-            $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_HEIGHT]) === false
-        ) {
-            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_HEIGHT_INVALID'), FlashMessage::TYPE_ERROR);
-        }
-        if (
-            $postData[VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_DIMENSIONS] === '1' &&
-            (
-                $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_LENGTH]) === false ||
-                $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_WIDTH]) === false ||
-                $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_HEIGHT]) === false
-            )
-        ) {
-            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_ALL_DIMENSIONS'), FlashMessage::TYPE_ERROR);
-        }
+        $validator->mandatoryDimensionsCheck(
+            $postData[Config\OptionKey::DEFAULT_LENGTH],
+            $postData[Config\OptionKey::DEFAULT_WIDTH],
+            $postData[Config\OptionKey::DEFAULT_HEIGHT],
+            $postData[Config\OptionKey::USE_DEFAULT_DIMENSIONS]
+        );
+        $validator->validateDimensions($postData);
 
         $this->updateZasilkovnaOrders();
 
@@ -143,10 +117,6 @@ class VirtuemartControllerZasilkovna extends VmController
             $redir = $this->redirectPath;
         }
         $this->setRedirect($redir);
-    }
-
-    private function validateDimensionValue(string $value): bool {
-        return filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     }
 
     /**

@@ -24,13 +24,6 @@ class VirtueMartModelZasilkovna extends VmModel
 
     CONST PACKETA_WSDL = 'http://www.zasilkovna.cz/api/soap-php-bugfix.wsdl';
 
-    public const OPTION_USE_DEFAULT_WEIGHT = 'zasilkovna_use_default_weight';
-    public const OPTION_DEFAULT_WEIGHT = 'zasilkovna_default_weight';
-    public const OPTION_USE_DEFAULT_DIMENSIONS = 'zasilkovna_use_default_dimensions';
-    public const OPTION_DEFAULT_LENGTH = 'zasilkovna_default_length';
-    public const OPTION_DEFAULT_WIDTH = 'zasilkovna_default_width';
-    public const OPTION_DEFAULT_HEIGHT = 'zasilkovna_default_height';
-
     public $warnings = array();
     public $api_key;
 

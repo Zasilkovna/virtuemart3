@@ -342,9 +342,9 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $row['recipient_city'],
                 $row['recipient_zip'],
                 $row['carrier_point'],
+                $row['length'],
                 $row['width'],
                 $row['height'],
-                $row['depth'],
             );
 
             echo "," . implode(',', $order) . PHP_EOL;
@@ -516,10 +516,9 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $orderForExport['recipient_zip'] = $row['zip_code'];
             $orderForExport['carrier_point'] = $row['carrier_pickup_point'];
             $orderForExport['is_carrier'] = $row['is_carrier'];
-            // In the order that corresponds to the intended purpose - imagine the package as a chest of drawers.
-            $orderForExport['width'] = $row['length'];
+            $orderForExport['length'] = $row['length'];
+            $orderForExport['width'] = $row['width'];
             $orderForExport['height'] = $row['height'];
-            $orderForExport['depth'] = $row['width'];
             $orderForExport['zasilkovna_packet_id'] = $row['zasilkovna_packet_id'];
 
             $ordersForExport[] = $orderForExport;

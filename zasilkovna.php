@@ -1,5 +1,6 @@
 <?php
 
+use VirtueMartModelZasilkovna\Config\OptionKey;
 use VirtueMartModelZasilkovna\ShipmentMethod;
 use VirtueMartModelZasilkovna\Carrier\VendorGroups;
 
@@ -358,11 +359,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if (
             $carrier &&
             $carrier->requires_size &&
-            $this->model->getConfig(VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_DIMENSIONS)
+            $this->model->getConfig(OptionKey::USE_DEFAULT_DIMENSIONS)
         ) {
-            $values['length'] = $this->model->getConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_LENGTH);
-            $values['width'] = $this->model->getConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_WIDTH);
-            $values['height'] = $this->model->getConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_HEIGHT);
+            $values['length'] = $this->model->getConfig(OptionKey::DEFAULT_LENGTH);
+            $values['width'] = $this->model->getConfig(OptionKey::DEFAULT_WIDTH);
+            $values['height'] = $this->model->getConfig(OptionKey::DEFAULT_HEIGHT);
+        } else {
+            $values['length'] = '';
+            $values['width'] = '';
+            $values['height'] = '';
         }
         $this->storePSPluginInternalData($values);
 
@@ -375,8 +380,8 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return $vmOrderWeight;
         }
 
-        if ($this->model->getConfig(VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_WEIGHT)) {
-            return (float) $this->model->getConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_WEIGHT);
+        if ($this->model->getConfig(OptionKey::USE_DEFAULT_WEIGHT)) {
+            return (float) $this->model->getConfig(OptionKey::DEFAULT_WEIGHT);
         }
 
         return 0.0;
