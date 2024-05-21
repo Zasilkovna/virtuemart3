@@ -1,3 +1,5 @@
+2.0.0 - Added: possibility to set default package weight and dimensions
+
 1.4.0 - Added: manual trigger for carrier list update via Packeta API
       - Added: allowed the use of different types of pickup points separately
       - Added: carrier v4 import

@@ -308,13 +308,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $details = $billing;
         }
 
-        // external pickup point support
+        $carrier = null;
         if (empty($branch_carrier_id)) {
             $is_carrier = 0;
             $branch_carrier_pickup_point = ''; // VirtueMart is unable to handle null values
         } else {
+            // pickup point of external carrier
             $branch_id = $branch_carrier_id;
             $is_carrier = 1;
+            $carrier = $this->carrierRepository->getCarrierById($branch_carrier_id) ;
         }
 
         if ($zasMethod->isHdCarrier()) {
@@ -351,11 +353,33 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['exported'] = 0;
         $values['shipment_name'] = $method->shipment_name;
         $values['shipment_cost'] = $this->getCosts($cart, ShipmentMethod::fromRandom($method), "");
-        $values['weight'] = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
+        $values['weight'] = $this->getFinalOrderWeight($cart);
         $values['tax_id'] = $method->tax_id;
+        if (
+            $carrier &&
+            $carrier->requires_size &&
+            $this->model->getConfig(VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_DIMENSIONS)
+        ) {
+            $values['length'] = $this->model->getConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_LENGTH);
+            $values['width'] = $this->model->getConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_WIDTH);
+            $values['height'] = $this->model->getConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_HEIGHT);
+        }
         $this->storePSPluginInternalData($values);
 
         return true;
+    }
+
+    private function getFinalOrderWeight(VirtueMartCart $cart): float {
+        $vmOrderWeight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
+        if ($vmOrderWeight >= 0.001) {
+            return $vmOrderWeight;
+        }
+
+        if ($this->model->getConfig(VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_WEIGHT)) {
+            return (float) $this->model->getConfig(VirtueMartModelZasilkovna::OPTION_DEFAULT_WEIGHT);
+        }
+
+        return 0.0;
     }
 
     /**

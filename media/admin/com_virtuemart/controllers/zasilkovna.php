@@ -35,6 +35,7 @@ use VirtueMartModelZasilkovna\Label;
 class VirtuemartControllerZasilkovna extends VmController
 {
     const ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED = 'zasilkovna_limitations_removed_notice_dismissed';
+    public const SESSION_KEY_POST_DATA = 'packetery_post_data';
 
     /** @var \VirtueMartModelZasilkovna\Order\Detail */
     private $orderDetail;
@@ -76,26 +77,76 @@ class VirtuemartControllerZasilkovna extends VmController
     public function save($data = 0)
     {
         vRequest::vmCheckToken();
-        $data = vRequest::getPost();
-        $message = null;
+        $postData = vRequest::getPost();
 
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
         $currentData = $model->loadConfig();
 
-        if (strlen($data['zasilkovna_api_pass']) !== 32) {
-            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID'), FlashMessage::TYPE_ERROR);
+        $app = JFactory::getApplication();
+        if (strlen($postData['zasilkovna_api_pass']) !== 32) {
+            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID'), FlashMessage::TYPE_ERROR);
+        }
+
+        $weight = str_replace([',', ' '], ['.', ''], $postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_WEIGHT]);
+        if ($weight !== '') {
+            if ( ! is_numeric($weight) || $weight < 0.001) {
+                $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT_INVALID'), FlashMessage::TYPE_ERROR);
+            } else {
+                $weight = number_format(round($weight, 3), 3, '.', '');
+                $postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_WEIGHT] = $weight;
+            }
+        } elseif ($postData[VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_WEIGHT] === '1') {
+            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT_INVALID'), FlashMessage::TYPE_ERROR);
+        }
+
+        if (
+            $postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_LENGTH] !== '' &&
+            $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_LENGTH]) === false
+        ) {
+            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_LENGTH_INVALID'), FlashMessage::TYPE_ERROR);
+        }
+        if (
+            $postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_WIDTH] !== '' &&
+            $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_WIDTH]) === false
+        ) {
+            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WIDTH_INVALID'), FlashMessage::TYPE_ERROR);
+        }
+        if (
+            $postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_HEIGHT] !== '' &&
+            $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_HEIGHT]) === false
+        ) {
+            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_HEIGHT_INVALID'), FlashMessage::TYPE_ERROR);
+        }
+        if (
+            $postData[VirtueMartModelZasilkovna::OPTION_USE_DEFAULT_DIMENSIONS] === '1' &&
+            (
+                $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_LENGTH]) === false ||
+                $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_WIDTH]) === false ||
+                $this->validateDimensionValue($postData[VirtueMartModelZasilkovna::OPTION_DEFAULT_HEIGHT]) === false
+            )
+        ) {
+            $app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_ALL_DIMENSIONS'), FlashMessage::TYPE_ERROR);
+        }
+
+        $this->updateZasilkovnaOrders();
+
+        if (empty($app->getMessageQueue())) {
+            $model->updateConfig(array_replace_recursive($currentData, $postData));
         } else {
-            $model->updateConfig(array_replace_recursive($currentData, $data));
+            $session = $app->getSession();
+            $session->set(self::SESSION_KEY_POST_DATA, $postData);
         }
 
         $redir = 'index.php?option=com_virtuemart';
-        $app = JFactory::getApplication();
         if ($app->input->getString('task') === 'apply') {
             $redir = $this->redirectPath;
         }
-        $this->updateZasilkovnaOrders();
-        $this->setRedirectWithMessage($redir, $message);
+        $this->setRedirect($redir);
+    }
+
+    private function validateDimensionValue(string $value): bool {
+        return filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
     }
 
     /**

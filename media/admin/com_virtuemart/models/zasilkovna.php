@@ -16,13 +16,20 @@ if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugin
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.4.0';
+    const VERSION = '2.0.0';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
     const PRICE_DEFAULT = 100;
 
     CONST PACKETA_WSDL = 'http://www.zasilkovna.cz/api/soap-php-bugfix.wsdl';
+
+    public const OPTION_USE_DEFAULT_WEIGHT = 'zasilkovna_use_default_weight';
+    public const OPTION_DEFAULT_WEIGHT = 'zasilkovna_default_weight';
+    public const OPTION_USE_DEFAULT_DIMENSIONS = 'zasilkovna_use_default_dimensions';
+    public const OPTION_DEFAULT_LENGTH = 'zasilkovna_default_length';
+    public const OPTION_DEFAULT_WIDTH = 'zasilkovna_default_width';
+    public const OPTION_DEFAULT_HEIGHT = 'zasilkovna_default_height';
 
     public $warnings = array();
     public $api_key;
@@ -90,6 +97,13 @@ class VirtueMartModelZasilkovna extends VmModel
         return $conf;
     }
 
+    public function getFromPostOrConfig(string $key, ?array $postData, mixed $default = null): mixed {
+        if (isset($postData[$key]) && $postData[$key] !== '') {
+            return $postData[$key];
+        }
+
+        return $this->getConfig($key, $default);
+    }
 
     /**
      * Loads configuration from the database and returns it as an array

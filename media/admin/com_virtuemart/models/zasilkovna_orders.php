@@ -189,6 +189,14 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     'adultContent' => (int)$order['adult_content'] === 1,
                 );
 
+                if ($order['length'] && $order['width'] && $order['height']) {
+                    $attributes['size'] = [
+                        'length' => $order['length'],
+                        'width'  => $order['width'],
+                        'height' => $order['height'],
+                    ];
+                }
+
                 if (!empty($order['carrier_point'])) {
                     $attributes['carrierPickupPoint'] = $order['carrier_point'];
                 }
@@ -448,7 +456,9 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         plg.zasilkovna_packet_price order_total,oi.first_name,oi.last_name,
         oi_bt.email,IFNULL(oi.phone_1, oi_bt.phone_1) as phone_1,IFNULL(oi.phone_2, oi_bt.phone_2) as phone_2,plg.packet_cod,
        	plg.branch_id,plg.zasilkovna_packet_id, plg.carrier_pickup_point, plg.is_carrier, 
-        plg.address as address, plg.adult_content AS adult_content, plg.city, plg.zip_code, plg.branch_currency, plg.weight FROM #__virtuemart_orders o ";
+        plg.address as address, plg.adult_content AS adult_content, plg.city, plg.zip_code, plg.branch_currency, plg.weight,
+        `plg`.`length`, `plg`.`width`, `plg`.`height`
+        FROM #__virtuemart_orders o ";
         $q .= "INNER JOIN #__virtuemart_order_userinfos oi ON o.virtuemart_order_id=oi.virtuemart_order_id AND oi.address_type = IF(o.STsameAsBT = 1, 'BT', 'ST') ";
         $q .= "INNER JOIN #__virtuemart_order_userinfos oi_bt ON o.virtuemart_order_id=oi_bt.virtuemart_order_id AND oi_bt.address_type = 'BT' ";
         $q .= "INNER JOIN " . $this->zas_model->getDbTableName() . " plg ON plg.order_number=o.order_number ";
@@ -506,9 +516,10 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $orderForExport['recipient_zip'] = $row['zip_code'];
             $orderForExport['carrier_point'] = $row['carrier_pickup_point'];
             $orderForExport['is_carrier'] = $row['is_carrier'];
-            $orderForExport['width'] = "";
-            $orderForExport['height'] = "";
-            $orderForExport['depth'] = "";
+            // In the order that corresponds to the intended purpose - imagine the package as a chest of drawers.
+            $orderForExport['width'] = $row['length'];
+            $orderForExport['height'] = $row['height'];
+            $orderForExport['depth'] = $row['width'];
             $orderForExport['zasilkovna_packet_id'] = $row['zasilkovna_packet_id'];
 
             $ordersForExport[] = $orderForExport;
