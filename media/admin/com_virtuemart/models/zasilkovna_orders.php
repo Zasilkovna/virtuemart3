@@ -14,6 +14,7 @@ defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmModel')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmmodel.php');
 
+use VirtueMartModelZasilkovna\ConfigConstants;
 use VirtueMartModelZasilkovna\Label;
 
 /**
@@ -158,7 +159,13 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         exit;
     }
 
-    public function submitToZasilkovna($orders_id_arr) {
+    /**
+     * @param string[] $orders_id_arr
+     * @return array<string,array<string,mixed>>
+     * @throws Exception
+     */
+    public function submitToZasilkovna(array $orders_id_arr): array
+    {
 
         $db = JFactory::getDBO();
         $gw = new SoapClient(VirtueMartModelZasilkovna::PACKETA_WSDL);
@@ -185,9 +192,19 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     'value' => $order['value'],
                     'weight' => $order['weight'],
                     'currency' => $order['currency'],
-                    'eshop' => $sender_label = $this->zas_model->getConfig('zasilkovna_eshop_label'),
+                    'eshop' => $sender_label = $this->zas_model->getConfig(ConfigConstants::KEY_ESHOP_LABEL),
                     'adultContent' => (int)$order['adult_content'] === 1,
                 );
+
+                $dimensions = ['length', 'width', 'height'];
+                $size = [];
+                foreach ($dimensions as $dimension) {
+                        $size[$dimension] = $order[$dimension];
+                }
+
+                if ($order['length']) {
+                    $attributes['size'] = $size;
+                }
 
                 if (!empty($order['carrier_point'])) {
                     $attributes['carrierPickupPoint'] = $order['carrier_point'];
@@ -307,7 +324,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
 
         $exportedOrders = array();
-        $sender_label = $this->zas_model->getConfig('zasilkovna_eshop_label');
+        $sender_label = $this->zas_model->getConfig(ConfigConstants::KEY_ESHOP_LABEL);
 
         echo '"verze 5"'.PHP_EOL.PHP_EOL;
 
@@ -334,9 +351,9 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $row['recipient_city'],
                 $row['recipient_zip'],
                 $row['carrier_point'],
-                $row['width'],
-                $row['height'],
-                $row['depth'],
+                $row['width'] ?? '',
+                $row['height'] ?? '',
+                $row['length'] ?? '',
             );
 
             echo "," . implode(',', $order) . PHP_EOL;
@@ -430,11 +447,16 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
     }
 
-    protected function prepareForExport($orders_arr)
+    /**
+     * @param string[] $orders_arr
+     * @return array<array<string,mixed>>
+     * @throws Exception
+     */
+    protected function prepareForExport(array $orders_arr): array
     {
         if (!$orders_arr)
         {
-            return;
+            return [];
         }
 
         $db = JFactory::getDBO();
@@ -444,16 +466,28 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
 
         $ordersForINStatement = implode("','", $orderNumbers);
-        $q = "SELECT o.order_number,curr.currency_code_3 order_currency_name,
-        plg.zasilkovna_packet_price order_total,oi.first_name,oi.last_name,
-        oi_bt.email,IFNULL(oi.phone_1, oi_bt.phone_1) as phone_1,IFNULL(oi.phone_2, oi_bt.phone_2) as phone_2,plg.packet_cod,
-       	plg.branch_id,plg.zasilkovna_packet_id, plg.carrier_pickup_point, plg.is_carrier, 
-        plg.address as address, plg.adult_content AS adult_content, plg.city, plg.zip_code, plg.branch_currency, plg.weight FROM #__virtuemart_orders o ";
-        $q .= "INNER JOIN #__virtuemart_order_userinfos oi ON o.virtuemart_order_id=oi.virtuemart_order_id AND oi.address_type = IF(o.STsameAsBT = 1, 'BT', 'ST') ";
-        $q .= "INNER JOIN #__virtuemart_order_userinfos oi_bt ON o.virtuemart_order_id=oi_bt.virtuemart_order_id AND oi_bt.address_type = 'BT' ";
-        $q .= "INNER JOIN " . $this->zas_model->getDbTableName() . " plg ON plg.order_number=o.order_number ";
-        $q .= "LEFT JOIN #__virtuemart_currencies curr ON curr.virtuemart_currency_id=o.order_currency ";
-        $q .= " WHERE o.order_number IN ('" . $ordersForINStatement . "') GROUP BY o.order_number";
+
+        $q = sprintf(
+            "SELECT o.order_number, curr.currency_code_3 order_currency_name,
+                plg.zasilkovna_packet_price order_total, oi.first_name, oi.last_name,
+                oi_bt.email, IFNULL(oi.phone_1, oi_bt.phone_1) AS phone_1, IFNULL(oi.phone_2, oi_bt.phone_2) AS phone_2,
+                plg.packet_cod, plg.branch_id, plg.zasilkovna_packet_id, plg.carrier_pickup_point, plg.is_carrier,
+                plg.address AS address, plg.adult_content AS adult_content, plg.city, plg.zip_code, plg.branch_currency,
+                plg.weight, plg.width, plg.length, plg.height
+            FROM #__virtuemart_orders o
+            INNER JOIN #__virtuemart_order_userinfos oi 
+                ON o.virtuemart_order_id = oi.virtuemart_order_id AND oi.address_type = IF(o.STsameAsBT = 1, 'BT', 'ST')
+            INNER JOIN #__virtuemart_order_userinfos oi_bt 
+                ON o.virtuemart_order_id = oi_bt.virtuemart_order_id AND oi_bt.address_type = 'BT'
+            INNER JOIN %s plg ON plg.order_number = o.order_number
+            LEFT JOIN #__virtuemart_currencies curr ON curr.virtuemart_currency_id = o.order_currency
+            WHERE o.order_number IN ('%s') 
+            GROUP BY o.order_number
+            ",
+            $this->zas_model->getDbTableName(),
+            $ordersForINStatement
+        );
+
         $db->setQuery($q);
         $rows = $db->loadAssocList();
 
@@ -477,7 +511,6 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $street = $streetMatches[1];
             }
 
-
             $phone = "";
             foreach (array('phone_2', 'phone_1') as $field)
             {
@@ -488,8 +521,8 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 }
             }
 
-			$orderForExport['order_number'] = $row['order_number'];
-			$orderForExport['recipient_firstname'] = $row['first_name'];
+            $orderForExport['order_number'] = $row['order_number'];
+            $orderForExport['recipient_firstname'] = $row['first_name'];
             $orderForExport['recipient_lastname'] = $row['last_name'];
             $orderForExport['recipient_company'] = "";
             $orderForExport['recipient_email'] = $row['email'];
@@ -506,9 +539,9 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $orderForExport['recipient_zip'] = $row['zip_code'];
             $orderForExport['carrier_point'] = $row['carrier_pickup_point'];
             $orderForExport['is_carrier'] = $row['is_carrier'];
-            $orderForExport['width'] = "";
-            $orderForExport['height'] = "";
-            $orderForExport['depth'] = "";
+            $orderForExport['width'] = $row['width'];
+            $orderForExport['height'] = $row['height'];
+            $orderForExport['length'] = $row['length'];
             $orderForExport['zasilkovna_packet_id'] = $row['zasilkovna_packet_id'];
 
             $ordersForExport[] = $orderForExport;

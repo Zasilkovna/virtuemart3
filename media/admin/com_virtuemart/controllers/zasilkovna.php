@@ -70,24 +70,17 @@ class VirtuemartControllerZasilkovna extends VmController
 
     /**
      * Handle the save task.
-     * @param int $data
+     * @param mixed $data
      * @throws Exception
      */
-    public function save($data = 0)
+    public function save($data = 0): void
     {
         vRequest::vmCheckToken();
-        $data = vRequest::getPost();
-        $message = null;
-
-        /** @var VirtueMartModelZasilkovna $model */
-        $model = VmModel::getModel('zasilkovna');
-        $currentData = $model->loadConfig();
-
-        if (strlen($data['zasilkovna_api_pass']) !== 32) {
-            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID'), FlashMessage::TYPE_ERROR);
-        } else {
-            $model->updateConfig(array_replace_recursive($currentData, $data));
+        if ($data === 0) {
+            $data = vRequest::getPost();
         }
+
+        $message = $this->updateZasilkovnaConfig($data);
 
         $redir = 'index.php?option=com_virtuemart';
         $app = JFactory::getApplication();
@@ -294,5 +287,50 @@ class VirtuemartControllerZasilkovna extends VmController
     private function getExportOrders()
     {
         return isset($_POST['exportOrders']) && is_array($_POST['exportOrders']) ? $_POST['exportOrders'] : [];
+    }
+
+    /**
+     * @param array<string, mixed> $data
+     * @return FlashMessage
+     */
+    private function updateZasilkovnaConfig(array $data): FlashMessage
+    {
+        $configStorage = new VirtueMartModelZasilkovna\ConfigSessionStorage(JFactory::getSession(), 'packeteryConfig');
+
+        /** @var VirtueMartModelZasilkovna $model */
+        $model = VmModel::getModel('zasilkovna');
+        $currentData = $model->loadConfig();
+
+        $formValidator = new VirtueMartModelZasilkovna\ConfigurationValidator($data);
+        $formValidator->validate();
+
+        if (!$formValidator->isValid()) {
+            $configStorage->write($data);
+            $errors = $formValidator->getErrors();
+            $messages = [];
+
+            //$error is either error string translation key, or array where 1st element is sprintf template and others are sprintf arguments (all untranslated)
+            foreach ($errors as $formField => $error) {
+                if (!is_array($error)) {
+                    $messages[] = JText::_($error);
+                } else {
+                    $messages[] = sprintf(
+                        JText::_($error[0]),
+                        ...array_map(
+                            static function ($item) {
+                                return JText::_($item);
+                            },
+                            array_slice($error, 1))
+                    );
+                }
+            }
+
+            return  new FlashMessage(implode("<br>", $messages), FlashMessage::TYPE_ERROR);
+        }
+
+        $model->updateConfig(array_replace_recursive($currentData, $formValidator->normalize()));
+        $configStorage->flush();
+
+        return  new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_SAVED'), FlashMessage::TYPE_MESSAGE);
     }
 }

@@ -37,6 +37,14 @@ $zas_model->checkConfiguration();
  */
 class VirtuemartViewZasilkovna extends VmViewAdmin {
 
+    public VirtueMartModelZasilkovna $model;
+    public \VirtueMartModelZasilkovna\ConfigSessionStorage $configStorage;
+    public function __construct($config = array()) {
+        parent::__construct($config);
+        $this->model = VmModel::getModel();
+        $this->configStorage = new \VirtueMartModelZasilkovna\ConfigSessionStorage(JFactory::getSession(),'packeteryConfig');
+    }
+
     function display($tpl = NULL) {
 
 
@@ -47,10 +55,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
         $configModel = VmModel::getModel('config');
 
-        /** @var VirtueMartModelZasilkovna $model */
-        $model = VmModel::getModel();
-
-        if(!$model->getConfig(VirtuemartControllerZasilkovna::ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED, false)) {
+        if(!$this->model->getConfig(VirtuemartControllerZasilkovna::ZASILKOVNA_LIMITATIONS_REMOVED_NOTICE_DISMISSED, false)) {
             $this->showLimitationsRemovedNotice();
         }
 
@@ -64,8 +69,8 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $this->shipmentMethods = $shipments;
 
         $this->moduleVersion = VirtueMartModelZasilkovna::VERSION;
-        $this->errors = $model->errors;
-        $this->warnings = $model->warnings;
+        $this->errors = $this->model->errors;
+        $this->warnings = $this->model->warnings;
 
         $paymentModel = VmModel::getModel('paymentmethod');
         $payments = $paymentModel->getPayments();
@@ -153,8 +158,9 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $this->pagination = $ordersModel->getPagination();
 
         $this->shipmentSelect = $this->renderShipmentsList();
-        $model->raiseErrors($mainframe);
+        $this->model->raiseErrors($mainframe);
         parent::display($tpl);
+        $this->configStorage->flush();
     }
 
     public function renderOrderstatesList() {
@@ -217,5 +223,23 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         /** @var JApplicationCms $app */
         $app = JFactory::getApplication();
         $app->enqueueMessage($fullFlashMessage, \VirtueMartModelZasilkovna\FlashMessage::TYPE_NOTICE);
+    }
+
+    /**
+     * @param string $name
+     * @param mixed $default
+     * @return array|mixed|string
+     */
+    public function getFormValue(string $name, mixed $default = ''): mixed
+    {
+        static $sessionData = null;
+
+        if ($sessionData === null) {
+            $sessionData = $this->configStorage->read();
+        }
+
+        $fromSession = $sessionData[$name] ?? null;
+
+        return $fromSession ?? $this->model->getConfig($name, $default);
     }
 }

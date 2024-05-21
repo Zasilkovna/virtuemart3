@@ -25,6 +25,12 @@ class Order
     /* @var float $weight */
     private $weight;
 
+    private ?int $length;
+
+    private ?int $width;
+
+    private ?int $height;
+
     /* @var float $branch_id */
     private $branch_id;
 

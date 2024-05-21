@@ -1,6 +1,7 @@
 <?php
 
 use Joomla\CMS\Installer\Adapter\PluginAdapter;
+use VirtueMartModelZasilkovna\ConfigConstants;
 
 // No direct access to this file
 defined('_JEXEC') or die('Restricted access');
@@ -203,7 +204,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
             require_once VMPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.php';
         }
 
-        $this->createCronToken();
+        $this->createConfigurationDefaults();
         if ($route === 'update' && $this->fromVersion && version_compare($this->fromVersion, '1.2.0', '<')) {
             $this->migratePricingRules();
         }
@@ -592,17 +593,23 @@ class plgVmShipmentZasilkovnaInstallerScript {
     }
 
     /**
-     * Creates update carriers token.
+     * Creates update carriers token and other plugin configuration defaults.
      *
      * @return void
      */
-    private function createCronToken() {
+    private function createConfigurationDefaults(): void {
         /** @var \VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
         $config = $model->loadConfig();
 
         if (!isset($config['cron_token'])) {
             $config['cron_token'] = substr(sha1(rand()), 0, 16);
+        }
+
+        foreach (ConfigConstants::CONFIG_DEFAULTS as $key => $value) {
+            if (!array_key_exists($key, $config)) {
+                $config[$key] = $value;
+            }
         }
 
         $model->updateConfig($config);

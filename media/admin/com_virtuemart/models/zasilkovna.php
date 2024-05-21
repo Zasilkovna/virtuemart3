@@ -5,6 +5,8 @@
  * @link http://www.zasilkovna.cz
  */
 
+use VirtueMartModelZasilkovna\ConfigConstants;
+
 defined('_JEXEC') or die('Restricted access');
 
 if(!class_exists('VmModel')) require(VMPATH_ADMIN . DS . 'helpers' . DS . 'vmmodel.php');
@@ -16,7 +18,7 @@ if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugin
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.4.0';
+    const VERSION = '2.0.0';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
@@ -58,8 +60,8 @@ class VirtueMartModelZasilkovna extends VmModel
 
         $this->config = $this->loadConfig();
 
-        $this->api_pass = isset($this->config['zasilkovna_api_pass']) ? $this->config['zasilkovna_api_pass'] : '';
-        $this->api_key = isset($this->config['zasilkovna_api_pass']) ? substr($this->config['zasilkovna_api_pass'], 0, 16) : '';
+        $this->api_pass = $this->config[ConfigConstants::KEY_API_PASS] ?? '';
+        $this->api_key = isset($this->config[ConfigConstants::KEY_API_PASS]) ? substr($this->config[ConfigConstants::KEY_API_PASS], 0, 16) : '';
         $this->_media_url = JURI::root(true) . "/media/com_zasilkovna/media/";
         $this->_media_path = JPATH_SITE . DS . "media" . DS . "com_zasilkovna" . DS . "media" . DS;
 

@@ -1,5 +1,6 @@
 <?php
 
+use VirtueMartModelZasilkovna\ConfigConstants;
 use VirtueMartModelZasilkovna\ShipmentMethod;
 use VirtueMartModelZasilkovna\Carrier\VendorGroups;
 
@@ -49,8 +50,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     /** @var \VirtueMartModelZasilkovna\CheckoutModuleDetector */
     protected $checkoutModuleDetector;
 
-    /** @var \VirtueMartModelZasilkovna\ShipmentMethodStorage */
-    private $shipmentMethodStorage;
+    private \VirtueMartModelZasilkovna\SessionStorage $shipmentMethodStorage;
 
     /** @var \VirtueMartModelZasilkovna\ShipmentMethodValidator */
     protected $shipmentMethodValidator;
@@ -91,7 +91,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $this->model = VmModel::getModel('zasilkovna');
         $this->session = JFactory::getSession();
         $this->checkoutModuleDetector = new \VirtueMartModelZasilkovna\CheckoutModuleDetector();
-        $this->shipmentMethodStorage = new \VirtueMartModelZasilkovna\ShipmentMethodStorage($this->session);
+        $this->shipmentMethodStorage = new \VirtueMartModelZasilkovna\SessionStorage($this->session, 'packeteryShipmentMethods');
         $this->shipmentMethodValidator = new \VirtueMartModelZasilkovna\ShipmentMethodValidator();
         $this->orderDetail = new \VirtueMartModelZasilkovna\Order\Detail();
         $this->orderRepository = new \VirtueMartModelZasilkovna\Order\Repository();
@@ -235,22 +235,22 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @param string|int $methodId
      */
     public function clearPickedDeliveryPoint($methodId) {
-        $this->shipmentMethodStorage->clear($methodId, 'branch_id');
-        $this->shipmentMethodStorage->clear($methodId, 'branch_currency');
-        $this->shipmentMethodStorage->clear($methodId, 'branch_name_street');
-        $this->shipmentMethodStorage->clear($methodId, 'branch_country');
-        $this->shipmentMethodStorage->clear($methodId, 'branch_carrier_id');
-        $this->shipmentMethodStorage->clear($methodId, 'branch_carrier_pickup_point');
+        $this->shipmentMethodStorage->remove($methodId, 'branch_id');
+        $this->shipmentMethodStorage->remove($methodId, 'branch_currency');
+        $this->shipmentMethodStorage->remove($methodId, 'branch_name_street');
+        $this->shipmentMethodStorage->remove($methodId, 'branch_country');
+        $this->shipmentMethodStorage->remove($methodId, 'branch_carrier_id');
+        $this->shipmentMethodStorage->remove($methodId, 'branch_carrier_pickup_point');
     }
 
     /**
      * This event is fired after the order has been stored; it gets the shipment method-
      * specific data.
      *
-     * @return mixed Null when this method was not selected, otherwise true
+     * @return null|bool Null when this method was not selected, otherwise true
      * @author Valerie Isaksen
      */
-    function plgVmConfirmedOrder(VirtueMartCart $cart, $order) {
+    function plgVmConfirmedOrder(VirtueMartCart $cart, array $order): ?bool {
         if (!($method = $this->getVmPluginMethod($order['details']['BT']->virtuemart_shipmentmethod_id))) {
             return null; // Another method was selected, do nothing
         }
@@ -268,13 +268,18 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         // GET PARAMETERS FROM SESSION AND CLEAR
         $branch_id = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_id', 0);
-        $branch_name_street = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_name_street', '');
-        $branch_carrier_id = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_carrier_id');
-        $branch_carrier_pickup_point = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_carrier_pickup_point');
+        $branch_name_street = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id,
+            'branch_name_street',
+            '');
+        $branch_carrier_id = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id, 'branch_carrier_id',
+            null);
+        $branch_carrier_pickup_point = $this->shipmentMethodStorage->get($cart->virtuemart_shipmentmethod_id,
+            'branch_carrier_pickup_point',
+            null);
 
         $this->clearPickedDeliveryPoint($cart->virtuemart_shipmentmethod_id);
 
-        $codSettings = $this->model->getConfig('zasilkovna_payment_method_'.$cart->virtuemart_paymentmethod_id, 0);
+        $codSettings = $this->model->getConfig(ConfigConstants::KEY_PAYMENT_METHOD_PREFIX . $cart->virtuemart_paymentmethod_id, 0);
 
         $billing=$order['details']['BT'];
         $shipping=$order['details']['ST'];
@@ -315,6 +320,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         } else {
             $branch_id = $branch_carrier_id;
             $is_carrier = 1;
+            $carrier = $this->carrierRepository->getCarrierById($branch_id);
         }
 
         if ($zasMethod->isHdCarrier()) {
@@ -351,8 +357,29 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['exported'] = 0;
         $values['shipment_name'] = $method->shipment_name;
         $values['shipment_cost'] = $this->getCosts($cart, ShipmentMethod::fromRandom($method), "");
-        $values['weight'] = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
+        $weight = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
+
+        if (!$weight && $this->model->getConfig(ConfigConstants::KEY_USE_DEFAULT_WEIGHT) === true) {
+            $weight = (float)$this->model->getConfig(ConfigConstants::KEY_DEFAULT_WEIGHT);
+        }
+        $values['weight'] = $weight;
         $values['tax_id'] = $method->tax_id;
+
+        if ($is_carrier === 1
+            && $carrier
+            && $carrier->requires_size === 1
+            && $this->model->getConfig(ConfigConstants::KEY_USE_DEFAULT_DIMENSIONS) === true
+        ) {
+            $values['length'] = (int)$this->model->getConfig(ConfigConstants::KEY_DEFAULT_LENGTH);
+            $values['width'] = (int)$this->model->getConfig(ConfigConstants::KEY_DEFAULT_WIDTH);
+            $values['height'] = (int)$this->model->getConfig(ConfigConstants::KEY_DEFAULT_HEIGHT);
+        } else {
+            //empty string to force null in database
+            $values['length'] = '';
+            $values['width'] = '';
+            $values['height'] = '';
+        }
+
         $this->storePSPluginInternalData($values);
 
         return true;
@@ -697,7 +724,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      */
     public function hasPointSelected($methodId)
     {
-        $branchId = $this->shipmentMethodStorage->get($methodId, 'branch_id');
+        $branchId = $this->shipmentMethodStorage->get($methodId, 'branch_id', null);
         return !empty($branchId);
     }
 
@@ -824,7 +851,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                         'baseHtml' => $baseHtml,
                         'isCountrySelected' => !empty($address['virtuemart_country_id']),
                         'savedBranchNameStreet' =>
-                            (string)$this->shipmentMethodStorage->get($method->virtuemart_shipmentmethod_id, 'branch_name_street', ''),
+                            (string)$this->shipmentMethodStorage->get($method->virtuemart_shipmentmethod_id,
+                                'branch_name_street',
+                                ''),
                     ]
                 );
 
@@ -943,7 +972,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $countryCode = strtolower(ShopFunctions::getCountryByID($address['virtuemart_country_id'], 'country_2_code'));
-        $sessionCountry = $this->shipmentMethodStorage->get($virtuemartShipmentMethodId, 'branch_country');
+        $sessionCountry = $this->shipmentMethodStorage->get($virtuemartShipmentMethodId, 'branch_country', null);
         if ($sessionCountry && $countryCode !== $sessionCountry) {
             $this->clearPickedDeliveryPoint($virtuemartShipmentMethodId);
             $cart->virtuemart_shipmentmethod_id = null; // makes selected shipping method disappear
