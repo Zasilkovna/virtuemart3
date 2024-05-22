@@ -543,12 +543,16 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 
     /**
      * Validates phone number and returns NULL if not valid
-     * @param $value
+     * @param string|null $value
      * @return string|null
      */
     private function normalizePhone($value)
     {
-        $value = str_replace(' ', '', trim($value ?? ''));
+        if (is_null($value) || $value === '') {
+            return null;
+        }
+
+        $value = str_replace(' ', '', trim($value));
 
         // only + and numbers are allowed
         if (preg_match('/^\+?\d+$/', $value) !== 1)
