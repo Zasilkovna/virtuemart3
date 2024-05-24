@@ -105,9 +105,13 @@ class VirtuemartControllerZasilkovna extends VmController
 
         $this->updateZasilkovnaOrders();
 
-        if (empty($app->getMessageQueue())) {
+        if ($validator->isValid() === true) {
             $model->updateConfig(array_replace_recursive($currentData, $postData));
         } else {
+            foreach ($validator->getErrors() as $errorKey) {
+                $this->app->enqueueMessage(JText::_($errorKey), FlashMessage::TYPE_ERROR);
+            }
+
             $session = $app->getSession();
             $session->set(self::SESSION_KEY_POST_DATA, $postData);
         }

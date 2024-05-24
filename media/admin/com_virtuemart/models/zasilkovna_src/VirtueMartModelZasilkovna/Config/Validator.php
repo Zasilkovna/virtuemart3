@@ -2,26 +2,19 @@
 
 namespace VirtueMartModelZasilkovna\Config;
 
-use Joomla\CMS\Application\CMSApplicationInterface;
-use JText;
-use VirtueMartModelZasilkovna\FlashMessage;
-
 class Validator {
-    private CMSApplicationInterface $app;
 
-    public function __construct(CMSApplicationInterface $app) {
-        $this->app = $app;
-    }
+    private array $errors = [];
 
     public function validateApiPassword(string $password): void {
         if (strlen($password) !== 32) {
-            $this->app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID'), FlashMessage::TYPE_ERROR);
+            $this->errors[] = 'PLG_VMSHIPMENT_PACKETERY_API_PASS_INVALID';
         }
     }
 
     public function validateWeight(string $weight): bool {
-        if (!is_numeric($weight) || $weight < 0.001) {
-            $this->app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT_INVALID'), FlashMessage::TYPE_ERROR);
+        if (is_numeric($weight) === false || $weight < 0.001) {
+            $this->errors[] = 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT_INVALID';
 
             return false;
         }
@@ -31,7 +24,7 @@ class Validator {
 
     public function mandatoryWeightCheck(string $weight, string $useWeight): void {
         if ($weight === '' && $useWeight === '1') {
-            $this->app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT_INVALID'), FlashMessage::TYPE_ERROR);
+            $this->errors[] = 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_WEIGHT_INVALID';
         }
     }
 
@@ -43,7 +36,7 @@ class Validator {
         ];
         foreach ($dimensionsValidationConfig as $postKey => $errorKey) {
             if ($postData[$postKey] !== '' && $this->validateDimensionValue($postData[$postKey]) === false) {
-                $this->app->enqueueMessage(JText::_($errorKey), FlashMessage::TYPE_ERROR);
+                $this->errors[] = $errorKey;
             }
         }
     }
@@ -52,17 +45,25 @@ class Validator {
         if (
             $useDimensions === '1' &&
             (
-                !$this->validateDimensionValue($length) ||
-                !$this->validateDimensionValue($width) ||
-                !$this->validateDimensionValue($height)
+                $this->validateDimensionValue($length) === false ||
+                $this->validateDimensionValue($width) === false ||
+                $this->validateDimensionValue($height) === false
             )
         ) {
-            $this->app->enqueueMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ENTER_ALL_DIMENSIONS'), FlashMessage::TYPE_ERROR);
+            $this->errors[] = 'PLG_VMSHIPMENT_PACKETERY_ENTER_ALL_DIMENSIONS';
         }
     }
 
     private function validateDimensionValue(string $value): bool {
         return filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+    }
+
+    public function getErrors(): array {
+        return $this->errors;
+    }
+
+    public function isValid(): bool {
+        return ($this->errors === []);
     }
 
 }
