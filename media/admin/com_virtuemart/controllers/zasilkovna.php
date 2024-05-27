@@ -84,7 +84,7 @@ class VirtuemartControllerZasilkovna extends VmController
         $currentData = $model->loadConfig();
 
         $app = JFactory::getApplication();
-        $validator = new Config\Validator($app);
+        $validator = new Config\Validator();
 
         $validator->validateApiPassword($postData['zasilkovna_api_pass']);
 
