@@ -113,33 +113,26 @@ ob_start();
                     $model->getFromPostOrConfig(OptionKey::USE_DEFAULT_DIMENSIONS, $postData)); ?>
             </td>
         </tr>
-        <tr>
-            <th>
-                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_LENGTH'); ?>
-            </th>
-            <td class="pl-3">
-                <?php echo VmHTML::input(OptionKey::DEFAULT_LENGTH,
-                    $model->getFromPostOrConfig(OptionKey::DEFAULT_LENGTH, $postData)); ?> mm
-            </td>
-        </tr>
-        <tr>
-            <th>
-                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_WIDTH'); ?>
-            </th>
-            <td class="pl-3">
-                <?php echo VmHTML::input(OptionKey::DEFAULT_WIDTH,
-                    $model->getFromPostOrConfig(OptionKey::DEFAULT_WIDTH, $postData)); ?> mm
-            </td>
-        </tr>
-        <tr>
-            <th>
-                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DEFAULT_HEIGHT'); ?>
-            </th>
-            <td class="pl-3">
-                <?php echo VmHTML::input(OptionKey::DEFAULT_HEIGHT,
-                    $model->getFromPostOrConfig(OptionKey::DEFAULT_HEIGHT, $postData)); ?> mm
-            </td>
-        </tr>
+        <?php
+        $dimensionsConfig = [
+            OptionKey::DEFAULT_LENGTH => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_LENGTH',
+            OptionKey::DEFAULT_WIDTH  => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_WIDTH',
+            OptionKey::DEFAULT_HEIGHT => 'PLG_VMSHIPMENT_PACKETERY_DEFAULT_HEIGHT',
+        ];
+        foreach ($dimensionsConfig as $inputName => $labelKey) {
+            ?>
+            <tr>
+                <th>
+                    <?php echo JText::_($labelKey); ?>
+                </th>
+                <td class="pl-3">
+                    <?php echo VmHTML::input($inputName,
+                        $model->getFromPostOrConfig($inputName, $postData)); ?> mm
+                </td>
+            </tr>
+            <?php
+        }
+        ?>
     </table>
 <?php
 $dimensionsContent = ob_get_clean();
