@@ -9,3 +9,34 @@
 .control-group.hidden {
     display: none;
 }
+
+.block-with-rows {
+    display: flex;
+    flex-direction: column;
+    white-space: nowrap;
+}
+
+.reset-min-width {
+    min-width: inherit !important;
+}
+
+.controls fieldset#params_delivery_settings__shipping_type {
+    min-width: inherit !important;
+}
+
+.radio div.form-check {
+    padding-left: 0 !important;
+}
+
+.packeta_shipping_type input[type="radio"] {
+    display: inline-block !important;
+    float: left !important;
+}
+
+.packeta_shipping_type label {
+    display: inline-block !important;
+    clear: left !important;
+    float: none !important;
+    min-width: inherit !important;
+    width: 80% !important;
+}
