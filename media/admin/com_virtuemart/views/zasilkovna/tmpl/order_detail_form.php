@@ -51,6 +51,27 @@ $token = \JHtml::_('form.token');
                         </td>
                     </tr>
                     <tr>
+                        <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_LENGTH'); ?></th>
+                        <td>
+                            <input type="number" step="1" min="0" name="length" value="<?php echo htmlentities($order->getLength()); ?>">
+                            <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_UNIT_MM'); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_WIDTH'); ?></th>
+                        <td>
+                            <input type="number" step="1" min="0" name="width" value="<?php echo htmlentities($order->getWidth()); ?>">
+                            <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_UNIT_MM'); ?>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_HEIGHT'); ?></th>
+                        <td>
+                            <input type="number" step="1" min="0" name="height" value="<?php echo htmlentities($order->getHeight()); ?>">
+                            <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_UNIT_MM'); ?>
+                        </td>
+                    </tr>
+                    <tr>
                         <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT'); ?></th>
                         <td><input type="checkbox" name="adult_content" <?php echo $adultContentChecked; ?>></td>
                     </tr>
