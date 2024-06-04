@@ -192,9 +192,14 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $dimensions = ['length', 'width', 'height'];
                 $size = [];
                 foreach ($dimensions as $dimension) {
-                    $size[$dimension] = $order[$dimension] ?: 0;
+                    if (is_null($order[$dimension])) {
+                        continue;
+                    }
+                    $size[$dimension] = $order[$dimension];
                 }
-                $attributes['size'] = $size;
+                if (count($size) > 0) {
+                    $attributes['size'] = $size;
+                }
 
                 if (!empty($order['carrier_point'])) {
                     $attributes['carrierPickupPoint'] = $order['carrier_point'];
