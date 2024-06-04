@@ -1,5 +1,8 @@
 <?php
 
+use Joomla\CMS\Toolbar\Button\LinkButton;
+use Joomla\CMS\Toolbar\Button\SeparatorButton;
+use Joomla\CMS\Toolbar\Button\StandardButton;
 use VirtueMartModelZasilkovna\ShipmentMethod;
 use VirtueMartModelZasilkovna\Carrier\VendorGroups;
 
@@ -982,6 +985,26 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css')
             ));
 
+        $toolbar = JToolbar::getInstance('toolbar');
+        $submitPacketButton = new LinkButton('packetaSubmitPacket', 'Send to Packeta', [
+            'icon' => 'icon-envelope',
+            'class' => 'btn btn-small',
+            'url' => 'index.php?option=com_virtuemart&view=zasilkovna&task=submitPacket&virtuemart_order_id=' . $virtuemart_order_id,
+        ]);
+
+        $submitPacketButton->setParent($toolbar);
+
+        $separator = new SeparatorButton('separator');
+        $separator->setParent($toolbar);
+
+        $items = $toolbar->getItems();
+        // posledni button je button "Napoveda"
+        $lastButton = array_pop($items);
+        $items[] = $separator;
+        $items[] = $submitPacketButton;
+        $items[] = $lastButton;
+        $toolbar->setItems($items);
+
         $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
 
         return $this->orderDetail->renderToString($order);
@@ -1206,6 +1229,30 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         );
 
         return $this->renderer->renderToString();
+    }
+
+    public function plgVmOnUpdateOrderPayment(&$order, $old_order_status)
+    {
+        //  order_status_code = order_status_name
+        //  P = COM_VIRTUEMART_ORDER_STATUS_PENDING
+        //  U = COM_VIRTUEMART_ORDER_STATUS_CONFIRMED_BY_SHOPPER
+        //  C = COM_VIRTUEMART_ORDER_STATUS_CONFIRMED
+        //  X = COM_VIRTUEMART_ORDER_STATUS_CANCELLED
+        //  R = COM_VIRTUEMART_ORDER_STATUS_REFUNDED
+        //  S = COM_VIRTUEMART_ORDER_STATUS_SHIPPED
+        //  F = COM_VIRTUEMART_ORDER_STATUS_COMPLETED
+        //  D = COM_VIRTUEMART_ORDER_STATUS_DENIED
+
+        //neni na zasilkovnu - nedelej nic
+        if (!($this->selectedThisByMethodId($order->virtuemart_shipmentmethod_id))) {
+            return null;
+        }
+
+        $statuses = sprintf('Old status: %s New status: %s', $old_order_status, $order->order_status);
+
+        $app = JFactory::getApplication();
+        $app->enqueueMessage('<strong>Packeta reports</strong><br> Order status changed:<br>' . $statuses, 'info');
+
     }
 
 }
