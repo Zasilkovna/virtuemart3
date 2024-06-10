@@ -1254,4 +1254,38 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $items[] = $lastButton;
         $toolbar->setItems($items);
     }
+    /**
+     * @param TableOrders &$order
+     * @param string $old_order_status
+     * @return void|null
+     * @throws Exception
+     */
+    public function plgVmOnUpdateOrderPayment(&$order, $old_order_status)
+    {
+        $app = JFactory::getApplication();
+
+        // shipping method isn't Packeta or request is not from backend
+        if (!($this->selectedThisByMethodId($order->virtuemart_shipmentmethod_id)) || !$app->isClient('administrator')) {
+            return null;
+        }
+
+        if ($this->shouldAutosubmit($order->virtuemart_paymentmethod_id, $order->order_status)) {
+            /** @var VirtueMartModelZasilkovna_orders $zasOrdersModel */
+            $zasOrdersModel = VmModel::getModel('zasilkovna_orders');
+            $zasOrdersModel->submitToZasilkovna([$order->order_number]);
+        }
+    }
+
+    /**
+     * @param int $vmPaymentMethodId
+     * @param string $vmOrderStatusCode
+     * @return bool
+     */
+    private function shouldAutosubmit($vmPaymentMethodId, $vmOrderStatusCode)
+    {
+        $autosubmitOrderStatuses = $this->model->getConfig('zasilkovna_autosubmission_order_statuses', []);
+
+        return (array_key_exists($vmPaymentMethodId, $autosubmitOrderStatuses) && $autosubmitOrderStatuses[$vmPaymentMethodId] === $vmOrderStatusCode);
+    }
+
 }

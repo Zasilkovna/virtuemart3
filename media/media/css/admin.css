@@ -127,3 +127,7 @@ a#toolbar-packetaPrintLabel:focus > span {
 #packeteryPrintLabelModal .chosen-container .chosen-results li:first-child {
     margin-top: 24px;
 }
+
+.autosubmit_order_status_select {
+    min-width: 200px;
+}

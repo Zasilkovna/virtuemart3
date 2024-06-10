@@ -85,7 +85,12 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
 
         $orderStatusModel = VmModel::getModel('orderstatus');
         $orderStates = $orderStatusModel->getOrderStatusList();
+        
+        $orderStatusOptions[] = JHtml::_('select.option', null, JText::_('PLG_VMSHIPMENT_PACKETERY_SELECT_ORDER_STATUS'));
 
+        foreach($orderStates as $orderState) {
+            $orderStatusOptions[] = JHtml::_('select.option', $orderState->order_status_code, JTEXT::_($orderState->order_status_name));
+        }
 
         $this->SetViewTitle('ORDER');
 
@@ -131,6 +136,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $orderslist = $ordersModel->getOrdersListByShipment($shipping_method_selectec_id);
 
         $this->orderstatuses = $orderStates;
+        $this->orderStatusOptions = $orderStatusOptions;
 
         /*
          * UpdateStatus removed from the toolbar; don't understand how this was intented to work but
