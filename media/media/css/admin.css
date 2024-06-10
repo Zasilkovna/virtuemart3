@@ -79,3 +79,7 @@ fieldset {
     max-width: 400px;
     width: 400px;
 }
+
+.autosubmit_order_status_select {
+    min-width: 200px;
+}
