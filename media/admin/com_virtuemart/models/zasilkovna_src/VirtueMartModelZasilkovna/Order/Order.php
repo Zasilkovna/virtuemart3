@@ -25,6 +25,15 @@ class Order
     /* @var float $weight */
     private $weight;
 
+    /* @var int $width */
+    private $width;
+
+    /* @var int $length */
+    private $length;
+
+    /* @var int $height */
+    private $height;
+
     /* @var float $branch_id */
     private $branch_id;
 
@@ -360,5 +369,29 @@ class Order
     public function isHomeDelivery()
     {
         return ($this->getIsCarrier() && $this->getCarrierPickupPoint() === '');
+    }
+
+    /**
+     * @return int
+     */
+    public function getWidth()
+    {
+        return $this->width;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLength()
+    {
+        return $this->length;
+    }
+
+    /**
+     * @return int
+     */
+    public function getHeight()
+    {
+        return $this->height;
     }
 }
