@@ -357,44 +357,52 @@ class VirtueMartModelZasilkovna extends VmModel
 
     /**
      * @param int|null $shipmentMethodId
+     * @param bool $isPickupPoints
      * @return array
      */
-    public function getAvailableHdCarriersByShipmentId($shipmentMethodId)
+    public function getAvailableCarriersByShipmentId($shipmentMethodId, $isPickupPoints)
+    {
+        if (!$shipmentMethodId) {
+            return [];
+        }
+
+        $carriers = $this->carrierRepository->getActiveCarriersForPublishedCountries($isPickupPoints);
+
+        return $this->filterCarriersByShipmentMethod($carriers, $shipmentMethodId);
+    }
+
+    /**
+     * Filters given carriers by countries allowed by the shipment method
+     *
+     * @param array $carriers
+     * @param int $shipmentMethodId
+     * @return array
+     */
+    public function filterCarriersByShipmentMethod($carriers, $shipmentMethodId)
     {
         if (!$shipmentMethodId) {
             return [];
         }
 
         $method = $this->getPacketeryShipmentMethod($shipmentMethodId);
-        $hdCarriers = $this->carrierRepository->getActiveHdCarriersForPublishedCountries();
         $countries = $method->getAllowedCountries();
         $blockingCountries = $method->getBlockingCountries();
 
         if (empty($countries)) {
-            $hdCarriers = array_filter($hdCarriers,
-                static function ($hdCarrier) use ($blockingCountries) {
+            $filteredCarriers = array_filter($carriers,
+                static function ($carrier) use ($blockingCountries) {
                     // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
-                    return !in_array($hdCarrier['vm_country'], $blockingCountries, false);
+                    return !in_array($carrier['vm_country'], $blockingCountries, false);
                 });
         } else {
             $allowedCountries = array_diff($countries, $blockingCountries);
-            $hdCarriers = array_filter($hdCarriers,
-                static function ($hdCarrier) use ($allowedCountries) {
+            $filteredCarriers = array_filter($carriers,
+                static function ($carrier) use ($allowedCountries) {
                     // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
-                    return in_array($hdCarrier['vm_country'], $allowedCountries, false);
+                    return in_array($carrier['vm_country'], $allowedCountries, false);
                 });
         }
 
-        return $hdCarriers;
-    }
-
-    /**
-     * @return string
-     */
-    public function getLang2Code()
-    {
-        $language = JFactory::getLanguage();
-
-        return $language ? substr($language->getTag(), 0, 2) : 'en';
+        return $filteredCarriers;
     }
 }

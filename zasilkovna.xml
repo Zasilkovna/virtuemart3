@@ -38,22 +38,31 @@
                                required="true"
                                label="PLG_VMSHIPMENT_PACKETERY_CONFIG_SHIPPING_TYPE"
                                description="PLG_VMSHIPMENT_PACKETERY_CONFIG_SHIPPING_TYPE_DESCRIPTION"
-                               class="reset-min-width packeta_shipping_type">
+                               class="reset-min-width packeta_shipping_type"
+                        >
                             <option value="pickuppoints">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS</option>
                             <option value="hdcarriers">PLG_VMSHIPMENT_PACKETERY_CONFIG_TO_HD</option>
                         </field>
                         <field name="hd_carrier"
-                               type="vmzasilkovnahdcarriers"
+                               type="vmzasilkovnacarriers"
+                               pickup_points="0"
                                label="PLG_VMSHIPMENT_PACKETERY_CONFIG_CARRIER"
                                validate="carrier"
                                showon="shipping_type:hdcarriers"/>
                         <field name="vendor_groups" type="checkboxes" default="" multiple="multiple"
                                label="PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUPS"
-                               showon="shipping_type:pickuppoints"
+                               showon="shipping_type:pickuppoints[AND]showvendors:1"
                                class="reset-min-width">
                             <option value="zpoint">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ZPOINT</option>
                             <option value="zbox">PLG_VMSHIPMENT_PACKETERY_CONFIG_PICKUP_POINTS_GROUP_ZBOX</option>
                         </field>
+                        <field name="pp_carrier"
+                               type="vmzasilkovnacarriers"
+                               pickup_points="1"
+                               label="PLG_VMSHIPMENT_PACKETERY_CONFIG_CARRIER"
+                               validate="carrier"
+                               showon="shipping_type:pickuppoints"/>
+                        <field name="showvendors" type="vmzasilkovnashowvendors" label=""/>
                     </form>
                 </field>
                 <field name="maxWeight" type="number" step="0.001" label="PLG_VMSHIPMENT_PACKETERY_CONFIG_MAX_WEIGHT"
