@@ -795,9 +795,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 continue;
             }
 
-            if ($isHdCarrier) {
-                $hdCarrier = $this->carrierRepository->getCarrierById($zasMethod->getHdCarrierId());
-                if (!$hdCarrier || (int)$hdCarrier->deleted === 1 || ($countryCode !== '' && $hdCarrier->country !== $countryCode)) {
+            $carrierId = $isHdCarrier ? $zasMethod->getHdCarrierId() : $zasMethod->getPPCarrierId();
+
+            if ($carrierId) {
+                $carrier = $this->carrierRepository->getCarrierById($carrierId);
+                if (!$carrier || (int)$carrier->deleted === 1 || ($countryCode !== '' && $carrier->country !== $countryCode)) {
                     continue;
                 }
             }
@@ -843,7 +845,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         if ($shouldIncludeTailBlock) {
-            $tailBlockHtml = $this->getTailBlockHtml($activeCheckout, $countryCode, $langCode);
+            $tailBlockHtml = $this->getTailBlockHtml($activeCheckout, $countryCode, $langCode, $carrierId);
             $html[] = $tailBlockHtml;
         }
 
@@ -1132,8 +1134,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         }
 
         $method = ShipmentMethod::fromRandom($data);
-        if ($method->getShippingType() === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS) {
+        $shippingType = $method->getShippingType();
+        if ($shippingType === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS) {
             $method->resetHdCarrier();
+        } else {
+            $method->resetPPCarrier();
+            $method->resetVendorGroups();
         }
 
         $report = $this->shipmentMethodValidator->validate($method);
@@ -1163,6 +1169,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     {
         $document = JFactory::getDocument();
         $document->addStyleSheet(JUri::root() . 'media/com_zasilkovna/media/css/shipping-method.css?v=' . filemtime(PACKETERY_MEDIA_DIR . '/css/shipping-method.css'));
+        $document->addScript(JUri::root() . 'media/com_zasilkovna/media/js/shipping-method.js?v=' . filemtime(PACKETERY_MEDIA_DIR . '/js/shipping-method.js'));
 
         return $this->declarePluginParams('shipment', $data);
     }
@@ -1182,10 +1189,15 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @param \VirtueMartModelZasilkovna\CheckoutModules\AbstractResolver $activeCheckout
      * @param string $country2code
      * @param string $langCode
+     * @param int|null $carrierId
      * @return string
      */
-    public function getTailBlockHtml(\VirtueMartModelZasilkovna\CheckoutModules\AbstractResolver $activeCheckout, $country2code, $langCode)
-    {
+    public function getTailBlockHtml(
+        \VirtueMartModelZasilkovna\CheckoutModules\AbstractResolver $activeCheckout,
+        $country2code,
+        $langCode,
+        $carrierId
+    ) {
         $this->renderer->setTemplate($activeCheckout->getTailBlock());
 
         $tailBlockJsPath = null;
@@ -1198,7 +1210,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             );
         }
 
-        $this->renderer->setVariables(
+        $templateVariables =
             [
                 'savePickupPointUrl' => $this->createSignalUrl('saveSelectedPoint'),
                 'apiKey' => $this->model->api_key,
@@ -1208,8 +1220,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
                 'widgetJsUrl' => $this->model->_media_url . 'js/widget.js?v=' . filemtime($this->model->_media_path . 'js/widget.js'),
                 'errorPickupPointNotSelected' => \JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPMENT_NOT_SELECTED'),
                 'tailBlockJsPath' => $tailBlockJsPath,
-            ]
-        );
+            ];
+        
+        if ($carrierId) {
+            $templateVariables['carriers'] = $carrierId;
+        }
+        $this->renderer->setVariables($templateVariables);
 
         return $this->renderer->renderToString();
     }

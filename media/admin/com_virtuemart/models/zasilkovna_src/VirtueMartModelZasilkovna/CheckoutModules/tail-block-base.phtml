@@ -7,6 +7,9 @@
         packetery.apiKey = <?php echo json_encode($apiKey); ?>;
         packetery.country = <?php echo json_encode($country); ?>;
         packetery.language = <?php echo json_encode($language); ?>;
+    <?php if (isset($carriers)) { ?>
+        packetery.carriers = <?php echo json_encode($carriers); ?>;
+    <?php } ?>
         packetery.version = <?php echo json_encode($version); ?>;
 
         return packetery;

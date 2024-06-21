@@ -54,7 +54,11 @@ class ShipmentMethodValidator
 
         $this->validateCountryWeightRulesAndCountries($report, $shipmentMethod);
 
-        $this->validateHdCarrier($report, $shipmentMethod);
+        if ($shipmentMethod->getShippingType() === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS) {
+            $this->validatePPDeliverySettings($report, $shipmentMethod);
+        } else {
+            $this->validateHdCarrier($report, $shipmentMethod);
+        }
 
         return $report;
     }
@@ -165,7 +169,7 @@ class ShipmentMethodValidator
                 $carrier = $this->carrierRepository->getCarrierById($hdCarrierId);
                 if ($carrier === null || (int)$carrier->deleted === 1) {
                     $report->addError(
-                        'HD_CARRIER_NOT_EXISTS',
+                        'CARRIER_NOT_EXISTS',
                         $carrier->name ? [$carrier->name] : ['ID: ' . $hdCarrierId]
                     );
 
@@ -196,4 +200,49 @@ class ShipmentMethodValidator
             }
         }
     }
+
+    public function validatePPDeliverySettings(ShipmentValidationReport $report, ShipmentMethod $shipmentMethod)
+    {
+
+        $ppCarrierId = $shipmentMethod->getPpCarrierId();
+        $vendorGroups = $shipmentMethod->getVendorGroups();
+
+        $setCountriesCodes = $shipmentMethod->getSetCountriesCodes(true);
+
+        // if ppCarrierId is set, $vendorGroups must be empty and the other way around
+        if (($ppCarrierId !== null && !empty($vendorGroups))
+            || ($ppCarrierId === null && empty($vendorGroups))) {
+            $report->addError(ShipmentValidationReport::ERROR_CODE_CHOOSE_EITHER_PP_CARRIER_OR_VENDORS);
+
+            return;
+        }
+
+        if ($ppCarrierId !== null) {
+            $carrier = $this->carrierRepository->getCarrierById($ppCarrierId);
+            if ($carrier === null || (int)$carrier->deleted === 1) {
+                $report->addError(
+                    'CARRIER_NOT_EXISTS',
+                    $carrier->name ? [$carrier->name] : ['ID: ' . $ppCarrierId]
+                );
+
+                return;
+            }
+
+            $vmCarrierCountry = \VirtueMartModelCountry::getCountryByCode(strtoupper($carrier->country));
+
+            if (!$vmCarrierCountry->published) {
+                $report->addError(ShipmentValidationReport::ERROR_CODE_PP_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
+            }
+            $carrierVmCountryId = $vmCarrierCountry->virtuemart_country_id;
+            if (!in_array($carrierVmCountryId, $setCountriesCodes, true)) {
+                $report->addError(ShipmentValidationReport::ERROR_CODE_PP_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
+            }
+
+        } elseif (!$shipmentMethod->needsVendors()) {
+            $report->addError(ShipmentValidationReport::ERROR_CODE_CHOSEN_COUNTRIES_ARE_NOT_INTERNAL);
+        }
+    }
+
+
+
 }
