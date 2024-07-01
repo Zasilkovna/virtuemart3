@@ -36,7 +36,8 @@ class Repository
 
     /**
      * @param int $virtuemart_order_id
-     * @return \VirtueMartModelZasilkovna\Order\Order
+     * @return \VirtueMartModelZasilkovna\Order\Order|null
+     * @throws \InvalidArgumentException
      */
     public function getOrderByVmOrderId($virtuemart_order_id)
     {

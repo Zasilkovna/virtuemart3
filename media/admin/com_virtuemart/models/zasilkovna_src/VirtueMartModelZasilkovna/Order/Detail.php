@@ -4,6 +4,7 @@ namespace VirtueMartModelZasilkovna\Order;
 
 use JFactory;
 use JUri;
+use VirtueMartModelZasilkovna\Label\Format;
 
 /**
  * Class Detail
@@ -39,20 +40,25 @@ class Detail
         $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_extended_detail.php');
         $detailsHtml = $this->renderer->renderToString();
 
-        $formHtml = '';
-        if (!$order->hasPacketId()) {
-            $document = JFactory::getDocument();
+        $detailFormHtml = '';
+        $printLabelFormHtml = '';
+
+        if ($order->hasPacketId()) {
+            $printLabelFormHtml = $this->renderPrintLabelForm($order);
+        } else {
+            $this->renderer->setVariables(['order' => $order]);
+            $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_detail_form.php');
+            $detailFormHtml = $this->renderer->renderToString();
+        }
+        $document = JFactory::getDocument();
             $document->addScript(
                 sprintf('%smedia/com_zasilkovna/media/js/order-detail.js?v=%s',
                     JUri::root(),
                     filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/order-detail.js')
                 )
             );
-            $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_detail_form.php');
-            $formHtml = $this->renderer->renderToString();
-        }
 
-        return $detailsHtml . $formHtml;
+        return $detailsHtml . $detailFormHtml . $printLabelFormHtml;
     }
 
     /**
@@ -99,5 +105,52 @@ class Detail
         }
 
         return $html;
+    }
+    
+    /**
+     * @param Order|null $order
+     * @return string
+     */
+    public function renderPrintLabelForm(Order $order = null)
+    {
+        if (!$order) {
+            return '';
+        }
+
+        $this->renderer->setVariables([
+            'order' => $order,
+            'defaultLabelFormat' => $this->getDefaultLabelFormat(),
+            'labelFormatType' => $this->getLabelFormatType($order),
+        ]);
+
+        $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_print_label_form.php');
+
+        return $this->renderer->renderToString();
+    }
+
+    /**
+     * @return string
+     */
+    private function getDefaultLabelFormat()
+    {
+        return \VmModel::getModel('zasilkovna')->getConfig('zasilkovna_last_label_format',
+            \VirtueMartModelZasilkovna\Label\Format::DEFAULT_LABEL_FORMAT);
+    }
+
+    /**
+     * @return string
+     */
+    private function getLabelFormatType(Order $order)
+    {
+        $type = Format::TYPE_INTERNAL;
+        if ($order->getIsCarrier()) {
+            $carrierRepository = new \VirtueMartModelZasilkovna\Carrier\Repository();
+            $carrier = $carrierRepository->getCarrierById($order->getBranchId());
+            if ($carrier && $carrier->has_carrier_direct_label) {
+                $type = Format::TYPE_CARRIER;
+            }
+        }
+
+        return $type;
     }
 }
