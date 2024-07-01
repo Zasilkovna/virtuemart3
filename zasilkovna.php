@@ -1,5 +1,7 @@
 <?php
 
+use Joomla\CMS\Toolbar\Button\LinkButton;
+use Joomla\CMS\Toolbar\Button\SeparatorButton;
 use VirtueMartModelZasilkovna\ShipmentMethod;
 use VirtueMartModelZasilkovna\Carrier\VendorGroups;
 
@@ -984,6 +986,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
 
+        if ($order) {
+         $this->addPacketaToolbarButtons($order);
+        }
+
         return $this->orderDetail->renderToString($order);
     }
 
@@ -1208,4 +1214,44 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return $this->renderer->renderToString();
     }
 
+    private function addPacketaToolbarButtons(\VirtueMartModelZasilkovna\Order\Order $order)
+    {
+        $toolbar = JToolbar::getInstance('toolbar');
+
+        if ($order->hasPacketId()) {
+            $button = new LinkButton(
+                'packetaPrintLabel',
+                JText::_('PLG_VMSHIPMENT_PACKETERY_PRINT_LABEL'),
+                [
+                    'icon' => 'icon-printer',
+                    'class' => 'btn btn-small',
+                    'url' => '#',
+                ]
+            );
+
+        } else {
+            $button = new LinkButton(
+                'packetaSubmitPacket',
+                JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_TO_PACKETA'),
+                [
+                    'icon' => 'icon-envelope',
+                    'class' => 'btn btn-small',
+                    'url' => 'index.php?option=com_virtuemart&view=zasilkovna&task=submitPacket&virtuemart_order_id=' . $order->getVirtuemartOrderId(),
+                ]
+            );
+        }
+
+        $button->setParent($toolbar);
+
+        $separator = new SeparatorButton('separator');
+        $separator->setParent($toolbar);
+
+        $items = $toolbar->getItems();
+        // last button is Help
+        $lastButton = array_pop($items);
+        $items[] = $separator;
+        $items[] = $button;
+        $items[] = $lastButton;
+        $toolbar->setItems($items);
+    }
 }
