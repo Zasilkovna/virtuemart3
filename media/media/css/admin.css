@@ -79,3 +79,51 @@ fieldset {
     max-width: 400px;
     width: 400px;
 }
+
+a#toolbar-packetaSubmitPacket:hover, a#toolbar-packetaPrintLabel:hover {
+    text-decoration: none;
+}
+
+a#toolbar-packetaPrintLabel:focus > span {
+    color:#ffffffe6;
+}
+
+#packeteryPrintLabelModal {
+    z-index: 1001;
+    position: absolute;
+    display: none;
+    left: 0;
+    top: 0;
+    background-color: #ffffff;
+    padding: 4px;
+    margin: 0px;
+    box-shadow: 0 5px 12px rgba(0,0,0,.15);
+}
+
+#packeteryPrintLabelModal .form-container fieldset {
+    margin: 10px;
+    border:1px solid #cccccc;
+    box-sizing: border-box;
+}
+
+#packeteryPrintLabelModal div.uk-card-body {
+    margin: 0;
+    padding: 10px;
+}
+
+#packeteryPrintLabelModal table td.key{
+    width: 120px;
+}
+
+#packeteryPrintLabelModal .chosen-container .chosen-results {
+    overflow-x: initial;
+    overflow-y: clip;
+}
+
+#packeteryPrintLabelModal .chosen-container .active-result {
+    white-space: nowrap;
+}
+
+#packeteryPrintLabelModal .chosen-container .chosen-results li:first-child {
+    margin-top:24px;
+}

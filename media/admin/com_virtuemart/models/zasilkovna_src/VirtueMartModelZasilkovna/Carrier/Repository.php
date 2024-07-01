@@ -114,7 +114,8 @@ class Repository
                    vzc.name, 
                    vzc.country, 
                    vzc.deleted,
-                   vc.virtuemart_country_id AS vm_country
+                   vc.virtuemart_country_id AS vm_country,
+                   vzc.has_carrier_direct_label
                 FROM #__virtuemart_zasilkovna_carriers vzc
                 LEFT JOIN #__virtuemart_countries vc 
                     ON UCASE(vzc.country) = vc.country_2_code
