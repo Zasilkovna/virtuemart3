@@ -813,18 +813,20 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
                 $this->renderer->setTemplate($activeCheckout->getTemplate());
 
+                $widgetVendors = (!$isHdCarrier && $carrierId)
+                    ? [self::createWidgetVendor($countryCode, null, $carrierId)]
+                    : self::createWidgetVendorsParam(
+                        $zasMethod,
+                        $countryCode,
+                        $this->carrierRepository->getAllActiveCarrierIds(true, $countryCode)
+                        );
+
                 $this->renderer->setVariables(
                     [
                         'selectPoint' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_SELECT_POINT'),
                         'selectedPoint' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_SELECTED_POINT'),
                         'enterAddress' => \JText::_('PLG_VMSHIPMENT_PACKETERY_WIDGET_ENTER_ADDRESS'),
-                        'widgetVendors' => json_encode(
-                            self::createWidgetVendorsParam(
-                                $zasMethod,
-                                $countryCode,
-                                $this->carrierRepository->getAllActiveCarrierIds(true, $countryCode)
-                            )
-                        ),
+                        'widgetVendors' => json_encode($widgetVendors),
                         'baseHtml' => $baseHtml,
                         'isCountrySelected' => !empty($address['virtuemart_country_id']),
                         'savedBranchNameStreet' =>

@@ -61,8 +61,9 @@
                                pickup_points="1"
                                label="PLG_VMSHIPMENT_PACKETERY_CONFIG_CARRIER"
                                validate="carrier"
-                               showon="shipping_type:pickuppoints"/>
+                               showon="shipping_type:pickuppoints[AND]showcarriers:1"/>
                         <field name="showvendors" type="vmzasilkovnashowvendors" label=""/>
+                        <field name="showcarriers" type="vmzasilkovnashowcarriers" label=""/>
                     </form>
                 </field>
                 <field name="maxWeight" type="number" step="0.001" label="PLG_VMSHIPMENT_PACKETERY_CONFIG_MAX_WEIGHT"
