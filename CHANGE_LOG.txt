@@ -8,6 +8,7 @@
       - Updated: deprecated methods replaced
       - Added: allowed editing of packet dimensions in order detail
       - Updated: position of tracking link in order detail
+      - Added: submit packet and print label from order detail
 
 1.3.1 - Fixed: SQL input escaping added in places where SQL is constructed
       - Updated: Schema migration simplified by using GenericTableUpdater
