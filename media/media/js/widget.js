@@ -34,12 +34,8 @@ jQuery(function() {
 
 		var widgetOptions = {
 			appIdentity: packetery.version,
-			country: packetery.country,
 			language: packetery.language
 		};
-		if (packetery.carriers) {
-			widgetOptions.carriers = packetery.carriers;
-		}
 
 		var widgetVendors = getSelectedPacketeryBox().data('packetery-widget-vendors');
 		if (widgetVendors.length > 0) {
