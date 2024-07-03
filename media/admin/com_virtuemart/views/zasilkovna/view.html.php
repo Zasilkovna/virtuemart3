@@ -87,7 +87,6 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $orderStates = $orderStatusModel->getOrderStatusList();
         
         $orderStatusOptions[] = JHtml::_('select.option', null, JText::_('PLG_VMSHIPMENT_PACKETERY_SELECT_ORDER_STATUS'));
-
         foreach($orderStates as $orderState) {
             $orderStatusOptions[] = JHtml::_('select.option', $orderState->order_status_code, JTEXT::_($orderState->order_status_name));
         }

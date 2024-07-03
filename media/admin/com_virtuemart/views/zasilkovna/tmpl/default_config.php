@@ -97,7 +97,7 @@ ob_start();
                         'value',
                         'text',
                         $model->getConfig('zasilkovna_autosubmission_order_statuses/' . $paymentMethod->virtuemart_paymentmethod_id, '')
-                        );
+                    );
                     ?>
                 </td>
             </tr>
@@ -106,7 +106,6 @@ ob_start();
 
 <?php
 $autoSubmitContent = ob_get_clean();
-ob_start();
 
 $renderer->setVariables([
     'title' => JText::_('PLG_VMSHIPMENT_PACKETERY_SETTINGS'),
@@ -124,7 +123,7 @@ echo $renderer->renderToString();
 
 $renderer->setVariables([
     'title' => JText::_('PLG_VMSHIPMENT_PACKETERY_AUTOSUBMIT_TITLE'),
-    'icon' => 'cog',
+    'icon' => 'forward',
     'content' => $autoSubmitContent,
 ]);
 
