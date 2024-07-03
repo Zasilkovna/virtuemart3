@@ -16,8 +16,11 @@ class Format
     const CARRIER_A6_ON_A4 = 'carrier A6 on A4';
     const CARRIER_A6_ON_A6 = 'carrier A6 on A6';
     const DEFAULT_LABEL_FORMAT = 'A6_on_A4';
+    const DEFAULT_CARRIER_LABEL_FORMAT = 'carriers_A6_on_A4';
     const TYPE_INTERNAL = 'internal';
     const TYPE_CARRIER = 'carrier';
+    const LAST_LABEL_FORMAT = 'zasilkovna_last_label_format';
+    const LAST_CARRIER_LABEL_FORMAT = 'zasilkovna_last_carrier_label_format';
 
     const LABEL_FORMAT_OPTIONS = [
         self::A7_ON_A4 => ['value' =>  'A7_on_A4', 'label' => 'PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A7_ON_A4', 'type' => self::TYPE_INTERNAL],

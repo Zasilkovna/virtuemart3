@@ -143,15 +143,18 @@ class VirtuemartControllerZasilkovna extends VmController
             $fromOrderDetail = true;
         }
 
+        $isCarrierLabel = strpos($postData['print_type'], 'carriers_') === 0;
+
         if (!empty($postData['print_type'])) {
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
         $config = $model->loadConfig();
-        $config['zasilkovna_last_label_format'] = $postData['print_type'];
+        $configKey = $isCarrierLabel ? Label\Format::LAST_CARRIER_LABEL_FORMAT : Label\Format::LAST_LABEL_FORMAT;
+        $config[$configKey] = $postData['print_type'];
         $model->updateConfig($config);
         }
 
-        if (strpos($postData['print_type'], 'carriers_') === 0) {
+        if ($isCarrierLabel) {
             $format = str_replace(['carriers_', '_'], ['', ' '], $postData['print_type']);
             $result = $this->zasOrdersModel->printCarrierLabels(
                 $packetIds,
@@ -352,7 +355,7 @@ class VirtuemartControllerZasilkovna extends VmController
         $vmOrderId = isset($getParams['virtuemart_order_id']) ? (int) $getParams['virtuemart_order_id'] : null;
 
         if (!$vmOrderId) {
-            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_INVALID_ORDER_ID'), FlashMessage::TYPE_ERROR);
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_INVALID_ORDER_ID'), FlashMessage::TYPE_WARNING);
             $this->setRedirectWithMessage($this->redirectPath, $message);
             return;
         }
@@ -363,7 +366,7 @@ class VirtuemartControllerZasilkovna extends VmController
         } catch (\InvalidArgumentException $e) {
             $message = new FlashMessage(
                 sprintf(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_NOT_FOUND'), $getParams['virtuemart_order_id']),
-                FlashMessage::TYPE_ERROR
+                FlashMessage::TYPE_WARNING
             );
             $this->setRedirectWithMessage($this->redirectPath, $message);
             return;
@@ -375,7 +378,7 @@ class VirtuemartControllerZasilkovna extends VmController
 
         if (!empty($failedOrders)) {
             $messageText = JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_SUBMIT_FAILED') . '<br>' . $failedOrders[0]['message'];
-            $message = new FlashMessage($messageText, FlashMessage::TYPE_ERROR);
+            $message = new FlashMessage($messageText, FlashMessage::TYPE_WARNING);
         } else {
             $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_SUBMIT_SUCCESS'), FlashMessage::TYPE_MESSAGE);
         }

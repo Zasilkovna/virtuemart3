@@ -117,10 +117,12 @@ class Detail
             return '';
         }
 
+        $labelFormatType = $this->getLabelFormatType($order);
+
         $this->renderer->setVariables([
             'order' => $order,
-            'defaultLabelFormat' => $this->getDefaultLabelFormat(),
-            'labelFormatType' => $this->getLabelFormatType($order),
+            'defaultLabelFormat' => $this->getDefaultLabelFormat($labelFormatType),
+            'labelFormatType' => $labelFormatType,
         ]);
 
         $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_print_label_form.php');
@@ -129,12 +131,23 @@ class Detail
     }
 
     /**
+     * @param string $labelType
      * @return string
      */
-    private function getDefaultLabelFormat()
+    private function getDefaultLabelFormat($labelType)
     {
-        return \VmModel::getModel('zasilkovna')->getConfig('zasilkovna_last_label_format',
-            \VirtueMartModelZasilkovna\Label\Format::DEFAULT_LABEL_FORMAT);
+        /** @var \VirtueMartModelZasilkovna $model */
+        $model = \VmModel::getModel('zasilkovna');
+
+        $configKey = ($labelType === Format::TYPE_CARRIER)
+            ? Format::LAST_CARRIER_LABEL_FORMAT
+            : Format::LAST_LABEL_FORMAT;
+
+        $defaultValue = ($labelType === Format::TYPE_CARRIER)
+            ? Format::DEFAULT_CARRIER_LABEL_FORMAT
+            : Format::DEFAULT_LABEL_FORMAT;
+
+        return $model->getConfig($configKey, $defaultValue);
     }
 
     /**
