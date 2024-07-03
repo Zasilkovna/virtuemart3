@@ -483,8 +483,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             INNER JOIN %s plg ON plg.order_number = o.order_number
             LEFT JOIN #__virtuemart_currencies curr ON curr.virtuemart_currency_id = o.order_currency
             WHERE o.order_number IN ('%s') 
-            GROUP BY o.order_number
-            ",
+            GROUP BY o.order_number",
             $this->zas_model->getDbTableName(),
             $ordersForINStatement
         );
