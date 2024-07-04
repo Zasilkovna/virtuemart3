@@ -146,12 +146,12 @@ class VirtuemartControllerZasilkovna extends VmController
         $isCarrierLabel = strpos($postData['print_type'], 'carriers_') === 0;
 
         if (!empty($postData['print_type'])) {
-        /** @var VirtueMartModelZasilkovna $model */
-        $model = VmModel::getModel('zasilkovna');
-        $config = $model->loadConfig();
-        $configKey = $isCarrierLabel ? Label\Format::LAST_CARRIER_LABEL_FORMAT : Label\Format::LAST_LABEL_FORMAT;
-        $config[$configKey] = $postData['print_type'];
-        $model->updateConfig($config);
+            /** @var VirtueMartModelZasilkovna $model */
+            $model = VmModel::getModel('zasilkovna');
+            $config = $model->loadConfig();
+            $configKey = $isCarrierLabel ? Label\Format::LAST_CARRIER_LABEL_FORMAT : Label\Format::LAST_LABEL_FORMAT;
+            $config[$configKey] = $postData['print_type'];
+            $model->updateConfig($config);
         }
 
         if ($isCarrierLabel) {
@@ -347,6 +347,9 @@ class VirtuemartControllerZasilkovna extends VmController
         return parent::display($cachable, $urlparams);
     }
 
+    /**
+     * called by URL like administrator/index.php?option=com_virtuemart&view=zasilkovna&task=submitPacket&virtuemart_order_id=123
+     */
     public function submitPacket()
     {
         $getParams = vRequest::getGet() ;

@@ -85,7 +85,7 @@ a#toolbar-packetaSubmitPacket:hover, a#toolbar-packetaPrintLabel:hover {
 }
 
 a#toolbar-packetaPrintLabel:focus > span {
-    color:#ffffffe6;
+    color: #ffffffe6;
 }
 
 #packeteryPrintLabelModal {
@@ -97,12 +97,12 @@ a#toolbar-packetaPrintLabel:focus > span {
     background-color: #ffffff;
     padding: 4px;
     margin: 0px;
-    box-shadow: 0 5px 12px rgba(0,0,0,.15);
+    box-shadow: 0 5px 12px rgba(0, 0, 0, .15);
 }
 
 #packeteryPrintLabelModal .form-container fieldset {
     margin: 10px;
-    border:1px solid #cccccc;
+    border: 1px solid #cccccc;
     box-sizing: border-box;
 }
 
@@ -111,7 +111,7 @@ a#toolbar-packetaPrintLabel:focus > span {
     padding: 10px;
 }
 
-#packeteryPrintLabelModal table td.key{
+#packeteryPrintLabelModal table td.key {
     width: 120px;
 }
 
@@ -125,5 +125,5 @@ a#toolbar-packetaPrintLabel:focus > span {
 }
 
 #packeteryPrintLabelModal .chosen-container .chosen-results li:first-child {
-    margin-top:24px;
+    margin-top: 24px;
 }

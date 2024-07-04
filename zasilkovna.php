@@ -987,7 +987,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
 
         if ($order) {
-         $this->addPacketaToolbarButtons($order);
+            $this->addPacketaToolbarButtons($order);
         }
 
         return $this->orderDetail->renderToString($order);

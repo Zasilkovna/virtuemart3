@@ -1,4 +1,8 @@
-<?php defined('_JEXEC') or die('Restricted access'); ?>
+<?php
+
+use VirtueMartModelZasilkovna\Label\Format;
+
+defined('_JEXEC') or die('Restricted access'); ?>
 
 <form action="index.php?option=com_virtuemart&view=zasilkovna&task=export" method="post" name="adminForm" id="adminForm">
     <div id="header">
@@ -156,7 +160,7 @@
     <h3><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT') ?></h3>
     <p>
         <label for="print_type"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_TYPE') ?>: </label>
-        <?php echo \VirtueMartModelZasilkovna\Label\Format::getLabelFormatSelectHtml(\VirtueMartModelZasilkovna\Label\Format::DEFAULT_LABEL_FORMAT); ?>
+        <?php echo Format::getLabelFormatSelectHtml(Format::DEFAULT_LABEL_FORMAT); ?>
         <br>
         <label for="label_first_page_skip"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_OFFSET') ?>: </label>
         <input type="text" id="label_first_page_skip" style="width: 30px; font-size: 9px; " name="label_first_page_skip" value="0">
