@@ -41,39 +41,39 @@ $exportedYesNo = $order->isExported() ? 'PLG_VMSHIPMENT_PACKETERY_YES' : 'PLG_VM
             <td><?php echo htmlentities($order->getZasilkovnaPacketPrice()); ?></td>
         </tr>
         <?php
-            if ($order->getLength()) {
-         ?>
-        <tr>
-            <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_LENGTH'); ?></th>
-            <td>
-                <?php echo htmlentities($order->getLength()); ?>
-                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_UNIT_MM'); ?>
-            </td>
-        </tr>
-        <?php
-            }
-            if ($order->getWidth()) {
-         ?>
-        <tr>
-            <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_WIDTH'); ?></th>
-            <td>
-                <?php echo htmlentities($order->getWidth()); ?>
-                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_UNIT_MM'); ?>
-            </td>
-        </tr>
-        <?php
-            }
-            if ($order->getHeight()) {
-         ?>
-        <tr>
-            <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_HEIGHT'); ?></th>
-            <td>
-                <?php echo htmlentities($order->getHeight()); ?>
-                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_UNIT_MM'); ?>
-            </td>
-        </tr>
-        <?php
-            }
+        if ($order->getLength()) {
+            ?>
+            <tr>
+                <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_LENGTH'); ?></th>
+                <td>
+                    <?php echo htmlentities($order->getLength()); ?>
+                    <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_UNIT_MM'); ?>
+                </td>
+            </tr>
+            <?php
+        }
+        if ($order->getWidth()) {
+            ?>
+            <tr>
+                <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_WIDTH'); ?></th>
+                <td>
+                    <?php echo htmlentities($order->getWidth()); ?>
+                    <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_UNIT_MM'); ?>
+                </td>
+            </tr>
+            <?php
+        }
+        if ($order->getHeight()) {
+            ?>
+            <tr>
+                <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_HEIGHT'); ?></th>
+                <td>
+                    <?php echo htmlentities($order->getHeight()); ?>
+                    <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_UNIT_MM'); ?>
+                </td>
+            </tr>
+            <?php
+        }
         ?>
         <tr>
             <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_ADULT_CONTENT'); ?></th>
