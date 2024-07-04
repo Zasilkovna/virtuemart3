@@ -35,7 +35,7 @@ class Detail
         $this->renderer->setVariables([
             'order' => $order,
             'trackingLinkHtml' => $this->getTrackingLinkHtml($order),
-            ]);
+        ]);
         $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_extended_detail.php');
         $detailsHtml = $this->renderer->renderToString();
 
