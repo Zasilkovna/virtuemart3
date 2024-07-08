@@ -359,18 +359,18 @@ class ShipmentMethod
             // If no countries are specifically allowed, all published countries are allowed
             // except for the blocking countries.
             $setCountries = array_filter($publishedCountries,
-                    static function ($country) use ($blockingCountries) {
-                        return !in_array($country->virtuemart_country_id, $blockingCountries, true);
-                        }
-                    );
+                static function ($country) use ($blockingCountries) {
+                    return !in_array($country->virtuemart_country_id, $blockingCountries, true);
+                }
+            );
         } else {
             // If there are allowed countries, only these are set, except for the blocking countries.
             $setCountriesVmIds = array_diff($allowedCountries, $blockingCountries);
             $setCountries = array_filter($publishedCountries,
-                    static function ($country) use ($setCountriesVmIds) {
-                        return in_array($country->virtuemart_country_id, $setCountriesVmIds, true);
-                        }
-                    );
+                static function ($country) use ($setCountriesVmIds) {
+                    return in_array($country->virtuemart_country_id, $setCountriesVmIds, true);
+                }
+            );
         }
 
         return array_values($setCountries);
@@ -380,7 +380,7 @@ class ShipmentMethod
      * @param bool $returnVmCountryIds
      * @return string[]|int[]
      */
-    public function getSetCountriesCodes($returnVmCountryIds = false)
+    public function getSetCountriesCodes($returnVmCountryIds)
     {
         $setCountries = $this->getSetCountries();
         $setCountriesCodes = [];

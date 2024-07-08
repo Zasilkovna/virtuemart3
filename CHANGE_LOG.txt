@@ -10,7 +10,7 @@
       - Updated: position of tracking link in order detail
       - Added: possibility to submit packet and print label from order detail
       - Added: Configurable auto-submit of the packets data after change of order status
-      - Added: Choose external pick-up point carrier
+      - Added: possibility to choose external pick-up point carrier
 
 1.3.1 - Fixed: SQL input escaping added in places where SQL is constructed
       - Updated: Schema migration simplified by using GenericTableUpdater

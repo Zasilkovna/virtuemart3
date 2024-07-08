@@ -11,11 +11,9 @@ class JFormFieldVmZasilkovnaCarriers extends JFormFieldList
 
     /**
      * Element name
-     *
-     * @access    protected
-     * @var        string
+     * @var string
      */
-    var $type = 'vmZasilkovnaCarriers';
+    protected  $type = 'vmZasilkovnaCarriers';
 
     /**
      * Controls if should display HD or PP carriers

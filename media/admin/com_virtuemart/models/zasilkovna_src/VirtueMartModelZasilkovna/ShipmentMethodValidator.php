@@ -166,22 +166,10 @@ class ShipmentMethodValidator
             if ($hdCarrierId === null) {
                 $report->addError('NO_HD_CARRIER_SELECTED');
             } else {
-                $carrier = $this->carrierRepository->getCarrierById($hdCarrierId);
-                if ($carrier === null || (int)$carrier->deleted === 1) {
-                    $report->addError(
-                        'CARRIER_NOT_EXISTS',
-                        $carrier->name ? [$carrier->name] : ['ID: ' . $hdCarrierId]
-                    );
-
+                $carrierVmCountryId = $this->getValidatedCarrierCountryVmId($report, $hdCarrierId);
+                if ($carrierVmCountryId === null) {
                     return;
                 }
-
-                $vmCarrierCountry = \VirtueMartModelCountry::getCountryByCode(strtoupper($carrier->country));
-
-                if (!$vmCarrierCountry->published) {
-                    $report->addError(ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
-                }
-                $carrierVmCountryId = $vmCarrierCountry->virtuemart_country_id;
 
                 // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
                 if (!empty($allowedCountries) && !in_array($carrierVmCountryId, $allowedCountries, false)) {
@@ -203,7 +191,6 @@ class ShipmentMethodValidator
 
     public function validatePPDeliverySettings(ShipmentValidationReport $report, ShipmentMethod $shipmentMethod)
     {
-
         $ppCarrierId = $shipmentMethod->getPpCarrierId();
         $vendorGroups = $shipmentMethod->getVendorGroups();
 
@@ -218,22 +205,11 @@ class ShipmentMethodValidator
         }
 
         if ($ppCarrierId !== null) {
-            $carrier = $this->carrierRepository->getCarrierById($ppCarrierId);
-            if ($carrier === null || (int)$carrier->deleted === 1) {
-                $report->addError(
-                    'CARRIER_NOT_EXISTS',
-                    $carrier->name ? [$carrier->name] : ['ID: ' . $ppCarrierId]
-                );
-
+            $carrierVmCountryId = $this->getValidatedCarrierCountryVmId($report, $ppCarrierId);
+            if ($carrierVmCountryId === null) {
                 return;
             }
 
-            $vmCarrierCountry = \VirtueMartModelCountry::getCountryByCode(strtoupper($carrier->country));
-
-            if (!$vmCarrierCountry->published) {
-                $report->addError(ShipmentValidationReport::ERROR_CODE_PP_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
-            }
-            $carrierVmCountryId = $vmCarrierCountry->virtuemart_country_id;
             if (!in_array($carrierVmCountryId, $setCountriesCodes, true)) {
                 $report->addError(ShipmentValidationReport::ERROR_CODE_PP_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
             }
@@ -243,6 +219,35 @@ class ShipmentMethodValidator
         }
     }
 
+    /**
+     * @param ShipmentValidationReport $report
+     * @param int $carrierId
+     * @return int|null
+     */
+    private function getValidatedCarrierCountryVmId(ShipmentValidationReport $report, $carrierId)
+    {
+        $carrier = $this->carrierRepository->getCarrierById($carrierId);
+        if ($carrier === null || (int)$carrier->deleted === 1) {
+            $report->addError(
+                'CARRIER_NOT_EXISTS',
+                $carrier->name ? [$carrier->name] : ['ID: ' . $carrierId]
+            );
 
+            return null;
+        }
+
+        $vmCarrierCountry = \VirtueMartModelCountry::getCountryByCode(strtoupper($carrier->country));
+        if (!$vmCarrierCountry->published) {
+            $report->addError(
+                ((int)$carrier->is_pickup_points === 1)
+                    ? ShipmentValidationReport::ERROR_CODE_PP_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES
+                    : ShipmentValidationReport::ERROR_CODE_HD_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES
+            );
+
+            return null;
+        }
+
+        return (int)$vmCarrierCountry->virtuemart_country_id;
+    }
 
 }
