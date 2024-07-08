@@ -32,22 +32,15 @@ class Detail
             return '';
         }
 
-        $this->renderer->setVariables(['order' => $order]);
-
+        $this->renderer->setVariables([
+            'order' => $order,
+            'trackingLinkHtml' => $this->getTrackingLinkHtml($order),
+        ]);
         $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_extended_detail.php');
         $detailsHtml = $this->renderer->renderToString();
 
-        $trackingHtml = '';
         $formHtml = '';
-
-        if ($order->hasPacketId()) {
-            $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_tracking_link.php');
-            $this->renderer->setVariables([
-                'order' => $order,
-                'trackingUrl' => sprintf(\plgVmShipmentZasilkovna::TRACKING_URL, $order->getZasilkovnaPacketId()),
-            ]);
-            $trackingHtml = $this->renderer->renderToString();
-        } else {
+        if (!$order->hasPacketId()) {
             $document = JFactory::getDocument();
             $document->addScript(
                 sprintf('%smedia/com_zasilkovna/media/js/order-detail.js?v=%s',
@@ -59,7 +52,7 @@ class Detail
             $formHtml = $this->renderer->renderToString();
         }
 
-        return $detailsHtml . $trackingHtml . $formHtml;
+        return $detailsHtml . $formHtml;
     }
 
     /**
@@ -89,4 +82,22 @@ class Detail
         return $validationReport;
     }
 
+    /**
+     * @param Order $order
+     * @return string
+     */
+    private function getTrackingLinkHtml(Order $order)
+    {
+        $html = '';
+        if ($order->hasPacketId()) {
+            $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_tracking_link.php');
+            $this->renderer->setVariables([
+                'order' => $order,
+                'trackingUrl' => sprintf(\plgVmShipmentZasilkovna::TRACKING_URL, $order->getZasilkovnaPacketId()),
+            ]);
+            $html = $this->renderer->renderToString();
+        }
+
+        return $html;
+    }
 }

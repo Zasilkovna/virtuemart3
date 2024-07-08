@@ -2,6 +2,7 @@
 /**
  * Template variables
  * @var \VirtueMartModelZasilkovna\Order\Order $order
+ * @var string $trackingLinkHtml
  */
 
 defined('_JEXEC') or die;
@@ -10,6 +11,7 @@ $exportedYesNo = $order->isExported() ? 'PLG_VMSHIPMENT_PACKETERY_YES' : 'PLG_VM
 
 ?>
     <table>
+        <?php echo $trackingLinkHtml; ?>
         <tr>
             <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPPING_NAME'); ?></th>
             <td><?php echo htmlentities($order->getShipmentName()); ?></td>

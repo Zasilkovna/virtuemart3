@@ -7,11 +7,9 @@
 
 defined('_JEXEC') or die;
 ?>
-<table>
     <tr>
-        <td class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_TRACKING_NUMBER') ?></td>
+        <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_TRACKING_NUMBER') ?></th>
         <td>
             <a href="<?php echo htmlentities($trackingUrl); ?>" target="_blank"><?php echo htmlentities($order->getZasilkovnaPacketId()); ?></a>
         </td>
     </tr>
-</table>
