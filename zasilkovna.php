@@ -1258,7 +1258,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      * @param TableOrders &$data
      * @param string $old_order_status
      * @param mixed $inputOrder
-     * @return void|null
+     * @return void
      * @throws Exception
      */
     public function plgVmOnUpdateOrderPayment(&$data, $old_order_status, $inputOrder)
@@ -1267,7 +1267,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         // shipping method isn't Packeta or request is not from backend
         if (!($this->selectedThisByMethodId($data->virtuemart_shipmentmethod_id)) || !$app->isClient('administrator')) {
-            return null;
+            return;
         }
 
         if ($this->shouldAutosubmit($data->virtuemart_paymentmethod_id, $data->order_status)) {
