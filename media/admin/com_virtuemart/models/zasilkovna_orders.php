@@ -473,23 +473,23 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 
         $q = sprintf(
             "SELECT o.order_number, curr.currency_code_3 order_currency_name,
-                plg.zasilkovna_packet_price order_total, 
-                IFNULL(ui.email, ui_bt.email) as email,
-                IFNULL(ui.first_name, ui_bt.first_name) as first_name,
-                IFNULL(ui.last_name, ui_bt.last_name) as last_name,
-                IFNULL(ui.phone_1, ui_bt.phone_1) as phone_1,
-                IFNULL(ui.phone_2, ui_bt.phone_2) as phone_2,
-                IFNULL(ui.address_1, ui_bt.address_1) as address_1,
-                IFNULL(ui.address_2, ui_bt.address_2) as address_2,
-                IFNULL(ui.city, ui_bt.city) as city,
-                IFNULL(ui.zip, ui_bt.zip) as zip,
+                plg.zasilkovna_packet_price AS order_total, 
+                IFNULL(ui.email, ui_bt.email) AS email,
+                IFNULL(ui.first_name, ui_bt.first_name) AS first_name,
+                IFNULL(ui.last_name, ui_bt.last_name) AS last_name,
+                IFNULL(ui.phone_1, ui_bt.phone_1) AS phone_1,
+                IFNULL(ui.phone_2, ui_bt.phone_2) AS phone_2,
+                IFNULL(ui.address_1, ui_bt.address_1) AS address_1,
+                IFNULL(ui.address_2, ui_bt.address_2) AS address_2,
+                IFNULL(ui.city, ui_bt.city) AS city,
+                IFNULL(ui.zip, ui_bt.zip) AS zip,
                 plg.packet_cod, plg.branch_id, plg.zasilkovna_packet_id, plg.carrier_pickup_point, plg.is_carrier,
                 plg.adult_content AS adult_content,  plg.branch_currency,
                 plg.weight, plg.width, plg.length, plg.height
             FROM #__virtuemart_orders o
-            INNER JOIN #__virtuemart_order_userinfos ui 
+            LEFT JOIN #__virtuemart_order_userinfos ui 
                 ON o.virtuemart_order_id = ui.virtuemart_order_id AND ui.address_type = 'ST'
-            INNER JOIN #__virtuemart_order_userinfos ui_bt 
+            LEFT JOIN #__virtuemart_order_userinfos ui_bt 
                 ON o.virtuemart_order_id = ui_bt.virtuemart_order_id AND ui_bt.address_type = 'BT'
             INNER JOIN %s plg ON plg.order_number = o.order_number
             LEFT JOIN #__virtuemart_currencies curr ON curr.virtuemart_currency_id = o.order_currency
