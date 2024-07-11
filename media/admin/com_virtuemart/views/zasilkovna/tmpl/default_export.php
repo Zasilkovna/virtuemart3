@@ -1,5 +1,6 @@
 <?php
 
+use VirtueMartModelZasilkovna\Order\AddressProvider;
 use VirtueMartModelZasilkovna\Label\Format;
 
 defined('_JEXEC') or die('Restricted access'); ?>
@@ -51,6 +52,7 @@ defined('_JEXEC') or die('Restricted access'); ?>
         <?php
         if (count($this->orderslist) > 0) {
             foreach($this->orderslist as $key => $order) {
+                $address = AddressProvider::fromUserInfo($order);
                 $existBranchOrCarrier = !empty($order->branch_id);
                 $disabled = "";
                 $submitted = false;
@@ -98,16 +100,11 @@ defined('_JEXEC') or die('Restricted access'); ?>
                     <!-- receiver name, email -->
                     <td>
                         <?php
-                        echo htmlentities($order->order_name);
+                        echo htmlentities($address->getFullName());
                         ?>
                         <br>
                         <?php
-                        if ($order->email) {
-                            $email = $order->email;
-                        } else {
-                            $email = $order->billing_email;
-                        }
-                        echo htmlentities($email);
+                        echo htmlentities($address->getEmail());
                         ?>
                     </td>
                     <!-- packet price -->
