@@ -14,6 +14,12 @@ class AddressProvider
     private $address;
 
     /** @var string|null */
+    private $street;
+
+    /** @var string|null */
+    private $houseNumber;
+
+    /** @var string|null */
     private $city;
 
     /** @var string|null */
@@ -26,6 +32,8 @@ class AddressProvider
     private $email;
 
     /**
+     * Private constructor to force usage of factory methods
+     *
      * @param string|null $firstName
      * @param string|null $lastName
      * @param string|null $address
@@ -34,7 +42,7 @@ class AddressProvider
      * @param string|null $phone
      * @param string|null $email
      */
-    public function __construct($firstName, $lastName, $address, $city, $zip, $phone, $email)
+    private function __construct($firstName, $lastName, $address, $city, $zip, $phone, $email)
     {
         $this->firstName = $firstName;
         $this->lastName = $lastName;
@@ -43,6 +51,10 @@ class AddressProvider
         $this->zip = $zip;
         $this->phone = $phone;
         $this->email = $email;
+
+        $extracted = self::extractStreetAndHouseNumber($address);
+        $this->street = $extracted['street'];
+        $this->houseNumber = $extracted['houseNumber'];
     }
 
     /**
@@ -103,6 +115,22 @@ class AddressProvider
     public function getAddress()
     {
         return $this->address;
+    }
+
+    /**
+     * @return string
+     */
+    public function getStreet()
+    {
+        return $this->street;
+    }
+
+    /**
+     * @return string
+     */
+    public function getHouseNumber()
+    {
+        return (string)$this->houseNumber;
     }
 
     /**

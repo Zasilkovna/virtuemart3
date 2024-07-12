@@ -506,25 +506,22 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $ordersForExport = array();
         foreach($rows as $key => $row) {
             $orderForExport = array();
-
             $address = AddressProvider::fromUserInfoArray($row);
-            $phone = $address->getNormalizedPhone();
-            list($street, $houseNumber) = array_values(AddressProvider::extractStreetAndHouseNumber($address->getAddress()));
 
             $orderForExport['order_number'] = $row['order_number'];
             $orderForExport['recipient_firstname'] = $address->getFirstName();
             $orderForExport['recipient_lastname'] = $address->getLastName();
             $orderForExport['recipient_company'] = "";
             $orderForExport['recipient_email'] = $address->getEmail();
-            $orderForExport['recipient_phone'] = $phone;
+            $orderForExport['recipient_phone'] = $address->getNormalizedPhone();
             $orderForExport['packet_cod'] = $row['packet_cod'];
             $orderForExport['currency'] = $row["order_currency_name"];
             $orderForExport['value'] = $row['order_total'];
             $orderForExport['weight'] = $row['weight'];
             $orderForExport['point_id'] = $row['branch_id'];
             $orderForExport['adult_content'] = $row['adult_content'];
-            $orderForExport['recipient_street'] = $street;
-            $orderForExport['recipient_house_number'] = $houseNumber;
+            $orderForExport['recipient_street'] = $address->getStreet();
+            $orderForExport['recipient_house_number'] = $address->getHouseNumber();
             $orderForExport['recipient_city'] = $address->getCity();
             $orderForExport['recipient_zip'] = $address->getZip();
             $orderForExport['carrier_point'] = $row['carrier_pickup_point'];
