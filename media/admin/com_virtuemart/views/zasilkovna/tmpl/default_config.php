@@ -80,8 +80,33 @@ $codContent = ob_get_clean();
 
 ob_start();
 ?>
+    <table class="admintable">
+        <?php foreach ($this->paymentMethods as $paymentMethod) {
+            $selectHtmlName = sprintf('zasilkovna_autosubmission_order_statuses[%d]', $paymentMethod->virtuemart_paymentmethod_id);
+            ?>
+            <tr>
+                <th>
+                    <?php echo $paymentMethod->payment_name; ?>
+                </th>
+                <td class="pl-3">
+                    <?php echo JHtml::_(
+                        'select.genericlist',
+                        $this->orderStatusOptions,
+                        $selectHtmlName,
+                        'class="autosubmit_order_status_select"',
+                        'value',
+                        'text',
+                        $model->getConfig('zasilkovna_autosubmission_order_statuses/' . $paymentMethod->virtuemart_paymentmethod_id, '')
+                    );
+                    ?>
+                </td>
+            </tr>
+        <?php } ?>
+    </table>
 
 <?php
+$autoSubmitContent = ob_get_clean();
+
 $renderer->setVariables([
     'title' => JText::_('PLG_VMSHIPMENT_PACKETERY_SETTINGS'),
     'icon' => 'cog',
@@ -94,4 +119,12 @@ $renderer->setVariables([
     'icon' => 'tag',
     'content' => $codContent,
 ]);
+echo $renderer->renderToString();
+
+$renderer->setVariables([
+    'title' => JText::_('PLG_VMSHIPMENT_PACKETERY_AUTOSUBMIT_TITLE'),
+    'icon' => 'forward',
+    'content' => $autoSubmitContent,
+]);
+
 echo $renderer->renderToString();
