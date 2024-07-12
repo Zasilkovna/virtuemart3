@@ -133,7 +133,28 @@ class VirtuemartControllerZasilkovna extends VmController
             $packetIds = $postData['printLabels'];
         }
 
-        if (strpos($postData['print_type'], 'carriers_') === 0) {
+        $fromOrderDetail = false;
+        if (!empty($postData['virtuemart_order_id'])) {
+            $redirectPathToDetail = sprintf(
+                '%sindex.php?option=com_virtuemart&view=orders&task=edit&virtuemart_order_id=%s',
+                JUri::base(false),
+                $postData['virtuemart_order_id']
+            );
+            $fromOrderDetail = true;
+        }
+
+        $isCarrierLabel = strpos($postData['print_type'], 'carriers_') === 0;
+
+        if (!empty($postData['print_type'])) {
+            /** @var VirtueMartModelZasilkovna $model */
+            $model = VmModel::getModel('zasilkovna');
+            $config = $model->loadConfig();
+            $configKey = $isCarrierLabel ? Label\Format::LAST_CARRIER_LABEL_FORMAT : Label\Format::LAST_LABEL_FORMAT;
+            $config[$configKey] = $postData['print_type'];
+            $model->updateConfig($config);
+        }
+
+        if ($isCarrierLabel) {
             $format = str_replace(['carriers_', '_'], ['', ' '], $postData['print_type']);
             $result = $this->zasOrdersModel->printCarrierLabels(
                 $packetIds,
@@ -154,7 +175,7 @@ class VirtuemartControllerZasilkovna extends VmController
             $app->enqueueMessage($error, 'warning');
         }
 
-        $this->setRedirect($this->redirectPath);
+        $this->setRedirect($fromOrderDetail ? $redirectPathToDetail : $this->redirectPath);
     }
 
     /**
@@ -324,5 +345,52 @@ class VirtuemartControllerZasilkovna extends VmController
         }
 
         return parent::display($cachable, $urlparams);
+    }
+
+    /**
+     * called by URL like administrator/index.php?option=com_virtuemart&view=zasilkovna&task=submitPacket&virtuemart_order_id=123
+     */
+    public function submitPacket()
+    {
+        $getParams = vRequest::getGet() ;
+        $orderRepository = new VirtueMartModelZasilkovna\Order\Repository();
+
+        $vmOrderId = isset($getParams['virtuemart_order_id']) ? (int) $getParams['virtuemart_order_id'] : null;
+
+        if (!$vmOrderId) {
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_INVALID_ORDER_ID'), FlashMessage::TYPE_WARNING);
+            $this->setRedirectWithMessage($this->redirectPath, $message);
+            return;
+        }
+         
+        try {
+            /** @var VirtueMartModelZasilkovna\Order\Order $order */
+            $order =  $orderRepository->getOrderByVmOrderId($vmOrderId);
+        } catch (\InvalidArgumentException $e) {
+            $message = new FlashMessage(
+                sprintf(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_NOT_FOUND'), $getParams['virtuemart_order_id']),
+                FlashMessage::TYPE_WARNING
+            );
+            $this->setRedirectWithMessage($this->redirectPath, $message);
+            return;
+        }
+
+        $result = $this->zasOrdersModel->submitToZasilkovna([$order->getOrderNumber()]);
+
+        $failedOrders = $result['failed'];
+
+        if (!empty($failedOrders)) {
+            $messageText = JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_SUBMIT_FAILED') . '<br>' . $failedOrders[0]['message'];
+            $message = new FlashMessage($messageText, FlashMessage::TYPE_WARNING);
+        } else {
+            $message = new FlashMessage(JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_SUBMIT_SUCCESS'), FlashMessage::TYPE_MESSAGE);
+        }
+        $redirectPath = sprintf(
+            '%sindex.php?option=com_virtuemart&view=orders&task=edit&virtuemart_order_id=%s',
+            JUri::base(false),
+            $vmOrderId
+        );
+
+        $this->setRedirectWithMessage($redirectPath, $message);
     }
 }

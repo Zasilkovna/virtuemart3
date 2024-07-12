@@ -101,12 +101,16 @@ class Order
     private $tax_id;
 
     /**
-     * @param array $orderData
+     * @param array|null $orderData
      *
+     * @throws \InvalidArgumentException
      * @return self
      */
-    public static function fromArray(array $orderData)
+    public static function fromArray($orderData)
     {
+        if ($orderData === null) {
+            throw new \InvalidArgumentException('Order data is required');
+        }
         $order = new self();
         foreach ($orderData as $property => $value) {
             $order->$property = $value;

@@ -1,4 +1,8 @@
-<?php defined('_JEXEC') or die('Restricted access'); ?>
+<?php
+
+use VirtueMartModelZasilkovna\Label\Format;
+
+defined('_JEXEC') or die('Restricted access'); ?>
 
 <form action="index.php?option=com_virtuemart&view=zasilkovna&task=export" method="post" name="adminForm" id="adminForm">
     <div id="header">
@@ -153,20 +157,10 @@
         </tr>
         </tfoot>
     </table>
-
     <h3><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT') ?></h3>
     <p>
         <label for="print_type"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_TYPE') ?>: </label>
-        <select name="print_type" id="print_type" style="font-size: 10px; " onchange="document.cookie = 'print_type_sel=' + this.value + '; expires=' + (new Date(2014, 2, 3)).toUTCString() + '; path=/';">
-            <option value="A7_on_A4" selected><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A7_ON_A4'); ?></option>
-            <option value="A6_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A6_ON_A4'); ?></option>
-            <option value="A6_on_A6"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A6_ON_A6'); ?></option>
-            <option value="A7_on_A7"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A7_ON_A7'); ?></option>
-            <option value="A8_on_A8"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_A8_ON_A8'); ?></option>
-            <option value="105x35mm_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_105X35MM_ON_A4'); ?></option>
-            <option value="carriers_A6_on_A4"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_LABELS_PRINT_A6_ON_A4'); ?></option>
-            <option value="carriers_A6_on_A6"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_LABELS_PRINT_A6_ON_A6'); ?></option>
-        </select>
+        <?php echo Format::getLabelFormatSelectHtml(Format::DEFAULT_LABEL_FORMAT); ?>
         <br>
         <label for="label_first_page_skip"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_OFFSET') ?>: </label>
         <input type="text" id="label_first_page_skip" style="width: 30px; font-size: 9px; " name="label_first_page_skip" value="0">
