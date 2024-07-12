@@ -77,26 +77,27 @@ class Repository
     }
 
     /**
-     * Gets all active HD carriers for published countries.
+     * Gets all active carriers for published countries.
      *
+     * @param bool $isPickupPoints
      * @return array
      */
-    public function getActiveHdCarriersForPublishedCountries()
+    public function getActiveCarriersForPublishedCountries($isPickupPoints)
     {
         $db = \JFactory::getDBO();
-        $db->setQuery("
-            SELECT vzc.id,
-                   vzc.name,
-                   vzc.country,
-                   vc.virtuemart_country_id AS vm_country
-            FROM #__virtuemart_zasilkovna_carriers vzc
-            LEFT JOIN #__virtuemart_countries vc 
-                ON UCASE(vzc.country) = vc.country_2_code
-            WHERE vzc.deleted = 0 
-                AND vzc.is_pickup_points = 0
-                AND vc.published = 1
-            ORDER BY vzc.country
-            ");
+            $db->setQuery(sprintf("
+                SELECT vzc.id,
+                       vzc.name,
+                       vzc.country,
+                       vc.virtuemart_country_id AS vm_country
+                FROM #__virtuemart_zasilkovna_carriers vzc
+                LEFT JOIN #__virtuemart_countries vc
+                    ON UCASE(vzc.country) = vc.country_2_code
+                WHERE vzc.deleted = 0
+                    AND vzc.is_pickup_points = %d
+                    AND vc.published = 1
+                ORDER BY vzc.country
+            ", $isPickupPoints ? 1 : 0));
 
         return $db->loadAssocList();
     }
@@ -116,6 +117,7 @@ class Repository
                    vzc.deleted,
                    vc.virtuemart_country_id AS vm_country,
                    vzc.has_carrier_direct_label
+                   vzc.is_pickup_points,
                 FROM #__virtuemart_zasilkovna_carriers vzc
                 LEFT JOIN #__virtuemart_countries vc 
                     ON UCASE(vzc.country) = vc.country_2_code

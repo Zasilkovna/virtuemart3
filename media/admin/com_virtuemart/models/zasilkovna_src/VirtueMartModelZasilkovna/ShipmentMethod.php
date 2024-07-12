@@ -2,6 +2,8 @@
 
 namespace VirtueMartModelZasilkovna;
 
+use VirtueMartModelZasilkovna\Carrier\VendorGroups;
+
 class ShipmentMethod
 {
     /** @var \stdClass */
@@ -102,19 +104,23 @@ class ShipmentMethod
     }
 
     /**
-     * @return array
+     * Returns array of VM country IDs
+     *
+     * @return int[]
      */
     public function getAllowedCountries()
     {
-        return $this->method->countries ?: [];
+        return array_map('intval', $this->method->countries ?: []);
     }
 
     /**
-     * @return array
+     * Returns array of VM country IDs
+     *
+     * @return int[]
      */
     public function getBlockingCountries()
     {
-        return $this->method->blocking_countries ?: [];
+        return array_map('intval', $this->method->blocking_countries ?: []);
     }
 
     /**
@@ -311,5 +317,107 @@ class ShipmentMethod
     public function isHdCarrier()
     {
         return $this->getShippingType() === self::SHIPPING_TYPE_HDCARRIERS;
+    }
+
+    /**
+     * @return int|null
+     */
+    public function getPPCarrierId()
+    {
+        return $this->getParams()->delivery_settings->pp_carrier ? (int) $this->getParams()->delivery_settings->pp_carrier : null;
+    }
+
+    /**
+     * @return int|null
+     * @throws \Exception
+     */
+    public static function getShipmentMethodIdFromGet()
+    {
+        $shipmentMethodId = null;
+        $input = \JFactory::getApplication()->input;
+
+        $shipmentIdArray = $input->get('cid', null, 'array');
+        if ($shipmentIdArray && count($shipmentIdArray) === 1) {
+            $shipmentMethodId = (int) $shipmentIdArray[0];
+        }
+
+        return $shipmentMethodId;
+    }
+
+    /**
+     *  Returns array of countries that are allowed for the shipment method.
+     *
+     * @return array
+     */
+    public function getSetCountries()
+    {
+        $allowedCountries = array_map('intval', $this->getAllowedCountries());
+        $blockingCountries = array_map('intval',$this->getBlockingCountries());
+        $publishedCountries = \VmModel::getModel('country')->getCountries(true, false);
+
+        if (empty($allowedCountries)) {
+            // If no countries are specifically allowed, all published countries are allowed
+            // except for the blocking countries.
+            $setCountries = array_filter($publishedCountries,
+                static function ($country) use ($blockingCountries) {
+                    return !in_array($country->virtuemart_country_id, $blockingCountries, true);
+                }
+            );
+        } else {
+            // If there are allowed countries, only these are set, except for the blocking countries.
+            $setCountriesVmIds = array_diff($allowedCountries, $blockingCountries);
+            $setCountries = array_filter($publishedCountries,
+                static function ($country) use ($setCountriesVmIds) {
+                    return in_array($country->virtuemart_country_id, $setCountriesVmIds, true);
+                }
+            );
+        }
+
+        return array_values($setCountries);
+    }
+
+    /**
+     * @param bool $returnVmCountryIds
+     * @return string[]|int[]
+     */
+    public function getSetCountriesCodes($returnVmCountryIds)
+    {
+        $setCountries = $this->getSetCountries();
+        $setCountriesCodes = [];
+
+        foreach ($setCountries as $country) {
+            if ($returnVmCountryIds) {
+                $setCountriesCodes[] = $country->virtuemart_country_id;
+            } else {
+                $setCountriesCodes[] = strtolower($country->country_2_code);
+            }
+        }
+
+        return $setCountriesCodes;
+    }
+
+    /**
+     * @return bool
+     */
+    public function needsVendors()
+    {
+        $setCountryCodes = $this->getSetCountriesCodes(false);
+        foreach (VendorGroups::COUNTRIES_WITH_GROUPS as $internalCountryCode) {
+            if (in_array($internalCountryCode, $setCountryCodes, true)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    public function resetPPCarrier()
+    {
+        $this->method->delivery_settings->pp_carrier = null;
+    }
+
+    public function resetVendorGroups()
+    {
+        $this->method->delivery_settings->vendor_groups = [];
     }
 }

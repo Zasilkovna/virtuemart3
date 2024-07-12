@@ -34,7 +34,6 @@ jQuery(function() {
 
 		var widgetOptions = {
 			appIdentity: packetery.version,
-			country: packetery.country,
 			language: packetery.language
 		};
 
