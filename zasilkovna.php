@@ -33,6 +33,7 @@ if(!class_exists('VirtueMartModelVendor')) {
 
 require_once VMPATH_ADMIN . '/fields/vmzasilkovnacountries.php';
 require_once VMPATH_ADMIN . '/fields/vmzasilkovnahdcarriers.php';
+require_once JPATH_ADMINISTRATOR . '/components/com_virtuemart/models/zasilkovna_src/JToolbarButtonPacketaPrintLabel.php';
 
 class plgVmShipmentZasilkovna extends vmPSPlugin
 {
@@ -991,7 +992,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $order = $this->orderRepository->getOrderByVmOrderId($virtuemart_order_id);
 
         if ($order) {
-            $this->addPacketaToolbarButtons($order);
+            // if Joomla version is 3 or lower, we must use old toolbar buttons
+            if (self::isJoomla3()) {
+                $this->addPacketaToolbarButtonsJm3($order);
+            } else {
+                $this->addPacketaToolbarButtons($order);
+            }
         }
 
         return $this->orderDetail->renderToString($order);
@@ -1272,6 +1278,38 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $items[] = $lastButton;
         $toolbar->setItems($items);
     }
+
+    private function addPacketaToolbarButtonsJm3(\VirtueMartModelZasilkovna\Order\Order $order)
+    {
+        $toolbar = JToolbar::getInstance('toolbar');
+        $path = JPATH_ADMINISTRATOR . '/components/com_virtuemart/models/zasilkovna_src/';
+        $toolbar->addButtonPath($path);
+
+        $reflectionClass = new ReflectionClass($toolbar);
+        $barProperty = $reflectionClass->getProperty('_bar');
+        $barProperty->setAccessible(true);
+        $bar = $barProperty->getValue($toolbar); // Get the current _bar array
+        $lastButton = array_pop($bar); // lastButton is Help button
+        $barProperty->setValue($toolbar, $bar);
+
+        $toolbar->appendButton('Separator', 'separator');
+        if ($order->hasPacketId()) {
+            $packetaButton = new JToolbarButtonPacketaPrintLabel('packetaPrintLabel');
+            $toolbar->appendButton('PacketaPrintLabel', $packetaButton);
+        } else {
+            JToolbarHelper::link(
+                'index.php?option=com_virtuemart&view=zasilkovna&task=submitPacket&virtuemart_order_id=' . $order->getVirtuemartOrderId(),
+                JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_TO_PACKETA'),
+                'envelope'
+            );
+        }
+        $toolbar->appendButton('Separator', 'separator');
+
+        $bar = $barProperty->getValue($toolbar);
+        $bar[] = $lastButton; // Add the Help button back
+        $barProperty->setValue($toolbar, $bar);
+    }
+
     /**
      * @param TableOrders &$data
      * @param string $old_order_status
@@ -1307,4 +1345,11 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         return (array_key_exists($vmPaymentMethodId, $autosubmitOrderStatuses) && $autosubmitOrderStatuses[$vmPaymentMethodId] === $vmOrderStatusCode);
     }
 
+    /**
+     * @return bool
+     */
+    public static function isJoomla3()
+    {
+        return version_compare(JVERSION, '4.0.0', 'lt');
+    }
 }

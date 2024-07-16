@@ -123,6 +123,7 @@ class Detail
             'order' => $order,
             'defaultLabelFormat' => $this->getDefaultLabelFormat($labelFormatType),
             'labelFormatType' => $labelFormatType,
+            'jm3class' => \plgVmShipmentZasilkovna::isJoomla3() ? 'jm3' : '',
         ]);
 
         $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_print_label_form.php');

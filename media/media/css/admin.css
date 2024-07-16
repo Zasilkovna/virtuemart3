@@ -131,3 +131,26 @@ a#toolbar-packetaPrintLabel:focus > span {
 .autosubmit_order_status_select {
     min-width: 200px;
 }
+
+#packeteryPrintLabelModal.jm3 {
+    margin-top: -80px;
+}
+
+#packeteryPrintLabelModal.jm3 .uk-card-title {
+    font-weight: 600;
+}
+
+#packeteryPrintLabelModal.jm3 .uk-table td.key {
+    min-width: 80px;
+    width: 80px;
+}
+
+.jm3 #print_type_chzn,
+.jm3 #print_type_chzn .chzn-drop,
+.jm3 #print_type_chzn .chzn-drop .chzn-search input {
+    width: 100%!important;
+}
+
+.jm3 .uk-card-footer .uk-inline {
+    text-align: center;
+}

@@ -5,13 +5,14 @@
  * @var \VirtueMartModelZasilkovna\Order\Order $order
  * @var string $defaultLabelFormat
  * @var string $labelFormatType
+ * @var string $jm3class
  */
 
 defined('_JEXEC') or die;
 
 $token = \JHtml::_('form.token');
 ?>
-<div id="packeteryPrintLabelModal">
+<div id="packeteryPrintLabelModal" class="<?php echo $jm3class; ?>">
     <form action="index.php?option=com_virtuemart&view=zasilkovna&task=printLabels" method="post" id="packeteryPrintLabelForm">
         <div class="form-container">
             <input type="hidden" name="virtuemart_order_id" value="<?php echo htmlentities($order->getVirtuemartOrderId()); ?>">
@@ -51,14 +52,14 @@ $token = \JHtml::_('form.token');
                         <div class="uk-inline">
                             <a href="#" title="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PRINT'); ?>"
                                onclick="submitPrintLabel(event);"
-                               class="uk-button uk-button-small uk-button-primary md-bg-white">
-                                <span class="uk-icon" uk-icon="icon: printer; ratio: 1"></span>
+                               class="uk-button uk-button-small uk-button-primary md-bg-white btn btn-small">
+                                <span class="uk-icon icon-nofloat icon-print" uk-icon="icon: printer; ratio: 1"></span>
                                 &nbsp;<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PRINT'); ?>
                             </a>
                             <a href="#" title="<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CANCEL'); ?>"
                                onclick="cancelPacketeryPrintLabel(event);"
-                               class="uk-button uk-button-small uk-button-default md-bg-white">
-                                <span class="icon-nofloat vmicon vmicon-16-remove"></span>
+                               class="btn btn-small uk-button uk-button-small uk-button-default md-bg-white ">
+                                <span class="icon-nofloat vmicon-16-remove"></span>
                                 &nbsp;<?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CANCEL'); ?>
                             </a>
                         </div>
