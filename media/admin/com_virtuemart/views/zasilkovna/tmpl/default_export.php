@@ -165,7 +165,6 @@ defined('_JEXEC') or die('Restricted access'); ?>
         <label for="label_first_page_skip"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_LABELS_PRINT_OFFSET') ?>: </label>
         <input type="text" id="label_first_page_skip" style="width: 30px; font-size: 9px; " name="label_first_page_skip" value="0">
         <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_FIELDS') ?>
-        (<a href="http://www.zasilkovna.cz/print-help/" target="_blank"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_HELP') ?></a>)
     </p>
 
     <!-- Hidden Fields -->
