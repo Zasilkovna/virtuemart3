@@ -57,7 +57,7 @@ defined('_JEXEC') or die('Restricted access'); ?>
                 }
                 $disabledForNotSubmitted = (!$submitted) ? 'disabled' : ' ';
                 $disabledExport = (!$existBranchOrCarrier ? 'disabled' : '');
-                $checkBox = '<input type="checkbox" id="cbExport" name="exportOrders[]" value="' . htmlentities($order->order_number) . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . ($order->exported || !$existBranchOrCarrier ? '' : 'checked') . ' ' .$disabledExport . ' >';
+                $checkBox = '<input type="checkbox" class="js-cbExport" name="exportOrders[]" value="' . htmlentities($order->order_number) . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . ($order->exported || !$existBranchOrCarrier ? '' : 'checked') . ' ' .$disabledExport . ' >';
                 $class = ($existBranchOrCarrier ? "row" . $key % 2 : "error");
                 if (!$existBranchOrCarrier) {
                     $warningMesage = JText::_('PLG_VMSHIPMENT_PACKETERY_MISSING_BRANCH_ORDER');
@@ -88,7 +88,7 @@ defined('_JEXEC') or die('Restricted access'); ?>
                     if($order->zasilkovna_packet_id && $order->printed_label == 0) {
                         $checked = " checked ";
                     }
-                    $checkBox = '<input type="checkbox" id="cbPrint" name="printLabels[]" value="' . htmlentities($order->zasilkovna_packet_id) . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . $checked . ' ' . $disabledForNotSubmitted . '>';
+                    $checkBox = '<input type="checkbox" class="js-cbPrint" name="printLabels[]" value="' . htmlentities($order->zasilkovna_packet_id) . '" onclick="Joomla.isChecked(this.checked);" title="Checkbox for row ' . ($key + 1) . '" ' . $checked . ' ' . $disabledForNotSubmitted . '>';
                     ?>
                     <td><?php echo $checkBox; ?></td>
 
@@ -172,23 +172,6 @@ defined('_JEXEC') or die('Restricted access'); ?>
 </form>
 
 <script type="text/javascript">
-
-    function zasilkovnaCheckAll(mainCb) {
-        var id = jQuery(mainCb).attr('id');
-        jQuery('input#' + id).each(function(index) {
-            if (this == mainCb)return;
-            console.log(this);
-            console.log(mainCb);
-            if (jQuery(this).attr('disabled')) return;
-            if (jQuery(mainCb).attr('checked')) {
-                jQuery(this).attr('checked', true);
-            } else {
-                jQuery(this).attr('checked', false);
-            }
-        });
-
-    }
-
     jQuery('.show_comment').click(function() {
         jQuery(this).prev('.element-hidden').show();
         return false

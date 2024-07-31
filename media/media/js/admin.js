@@ -3,15 +3,11 @@
  * @param mainCb
  */
 function zasilkovnaCheckAll(mainCb) {
-	var id = jQuery(mainCb).attr('id');
-	jQuery('input#' + id).each(function(index) {
-		if (this == mainCb)return;
-		if (jQuery(this).attr('disabled')) return;
-		if (jQuery(mainCb).attr('checked')) {
-			jQuery(this).attr('checked', true);
-		} else {
-			jQuery(this).attr('checked', false);
-		}
+	var className = 'js-' + jQuery(mainCb).attr('id');
+	var isChecked = jQuery(mainCb).is(':checked');
+	jQuery('input.' + className).each(function () {
+		if (jQuery(this).prop('disabled')) return;
+		jQuery(this).prop('checked', isChecked);
 	});
 }
 
