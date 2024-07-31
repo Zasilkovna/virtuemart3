@@ -1,10 +1,10 @@
 /**
  *
- * @param mainCb
+ * @param controlCheckbox
  */
-function zasilkovnaCheckAll(mainCb) {
-	var className = 'js-' + jQuery(mainCb).attr('id');
-	var isChecked = jQuery(mainCb).is(':checked');
+function zasilkovnaCheckAll(controlCheckbox) {
+	var className = 'js-' + jQuery(controlCheckbox).attr('id');
+	var isChecked = jQuery(controlCheckbox).is(':checked');
 	jQuery('input.' + className).each(function () {
 		if (jQuery(this).prop('disabled')) return;
 		jQuery(this).prop('checked', isChecked);
