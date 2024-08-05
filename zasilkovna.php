@@ -354,6 +354,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['shipment_name'] = $method->shipment_name;
         $values['shipment_cost'] = $this->getCosts($cart, ShipmentMethod::fromRandom($method), "");
         $values['weight'] = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
+        foreach ( ['width', 'height', 'length'] as $dimension ) {
+            $values[$dimension] = ''; //use empty string to force Vm to store null
+        }
         $values['tax_id'] = $method->tax_id;
         $this->storePSPluginInternalData($values);
 
