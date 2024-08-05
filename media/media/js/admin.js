@@ -1,17 +1,13 @@
 /**
  *
- * @param mainCb
+ * @param controlCheckbox
  */
-function zasilkovnaCheckAll(mainCb) {
-	var id = jQuery(mainCb).attr('id');
-	jQuery('input#' + id).each(function(index) {
-		if (this == mainCb)return;
-		if (jQuery(this).attr('disabled')) return;
-		if (jQuery(mainCb).attr('checked')) {
-			jQuery(this).attr('checked', true);
-		} else {
-			jQuery(this).attr('checked', false);
-		}
+function zasilkovnaCheckAll(controlCheckbox) {
+	var className = 'js-' + jQuery(controlCheckbox).attr('id');
+	var isChecked = jQuery(controlCheckbox).is(':checked');
+	jQuery('input.' + className).each(function () {
+		if (jQuery(this).prop('disabled')) return;
+		jQuery(this).prop('checked', isChecked);
 	});
 }
 

@@ -262,9 +262,10 @@ class VirtueMartModelZasilkovna extends VmModel
      */
     public function updateCarriers()
     {
+        $language = JFactory::getLanguage();
+        $language2code = $language ? substr($language->getTag(), 0, 2) : 'en';
         try {
-            $carriers = $this->carrierDownloader->run($this->getLang2Code());
-
+            $carriers = $this->carrierDownloader->run($language2code);
         } catch (\VirtueMartModelZasilkovna\Carrier\DownloadException $e) {
             $this->errors[] = $e->getMessage();
 
