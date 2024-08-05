@@ -1135,6 +1135,21 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return; // method must be saved to show plugin specific configuration
         }
 
+        $xmlFile = JPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.xml';
+        $xml = simplexml_load_string(file_get_contents($xmlFile));
+        $formXml = $xml->xpath('//vmconfig');
+        $formString = $formXml[0]->asXML();
+        $form = JForm::getInstance('zasilkovnaForm', $formString);
+
+        $formData = $data;
+        if (!$form->validate($formData)) {
+            // Get validation errors
+            $errors = $form->getErrors();
+            foreach ($errors as $error) {
+                JFactory::getApplication()->enqueueMessage($error->getMessage(), 'error');
+            }
+        }
+
         $method = ShipmentMethod::fromRandom($data);
         $shippingType = $method->getShippingType();
         if ($shippingType === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS) {
