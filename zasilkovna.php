@@ -39,6 +39,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     const DEFAULT_WEIGHT_UNIT = 'KG';
     const TEMPLATES_DIR = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart' . DS . 'views' . DS . 'zasilkovna' . DS . 'tmpl';
     const TRACKING_URL = 'https://tracking.packeta.com/?id=%s';
+    const ZASILKOVNA_OLD_RECREATE_KEY_VALUE = 'zasilkovna_old_recreate_key_value';
 
     public static $_this = false;
 
@@ -646,7 +647,16 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      *
      */
     function plgVmOnStoreInstallShipmentPluginTable($jplugin_id) {
-        return $this->onStoreInstallPluginTable($jplugin_id);
+        $return = $this->onStoreInstallPluginTable($jplugin_id);
+
+        $oldRecreateIndexes = VmConfig::get(self::ZASILKOVNA_OLD_RECREATE_KEY_VALUE, -1);
+        if ($oldRecreateIndexes !== -1) {
+            VmConfig::set('reCreaKey', $oldRecreateIndexes);
+        }
+
+        VmConfig::set(self::ZASILKOVNA_OLD_RECREATE_KEY_VALUE, -1);
+
+        return $return;
     }
 
     /**
@@ -1175,6 +1185,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         } else {
             $resortedClone = $method->getResortedClone();
             $data = $resortedClone->toArray();
+            // save old value of setting for recreation of indexes
+            VmConfig::set(self::ZASILKOVNA_OLD_RECREATE_KEY_VALUE, VmConfig::get('reCreaKey', 1));
+            //turn off recreation of indexes
+            VmConfig::set('reCreaKey', 0);
         }
     }
 
