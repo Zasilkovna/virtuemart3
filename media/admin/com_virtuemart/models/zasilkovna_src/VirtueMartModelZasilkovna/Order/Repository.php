@@ -95,6 +95,9 @@ class Repository
     }
 
     /**
+     * Method replaces originally used vmPSPlugin::storePSPluginInternalData, which
+     * in VM3 stored 0 instead of nulls for dimensions
+     *
      * @param array<string, mixed> $values
      * @return void
      */

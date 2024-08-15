@@ -1145,11 +1145,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return; // method must be saved to show plugin specific configuration
         }
 
-        $xmlFile = JPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.xml';
-        $xml = simplexml_load_string(file_get_contents($xmlFile));
-        $formXml = $xml->xpath('//vmconfig');
-        $formString = $formXml[0]->asXML();
-        $form = JForm::getInstance('zasilkovnaForm', $formString);
+        $form = $this->getForm(JPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.xml', '//vmconfig');
 
         $formData = $data;
         if (!$form->validate($formData)) {
@@ -1334,6 +1330,20 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $autosubmitOrderStatuses = $this->model->getConfig('zasilkovna_autosubmission_order_statuses', []);
 
         return (array_key_exists($vmPaymentMethodId, $autosubmitOrderStatuses) && $autosubmitOrderStatuses[$vmPaymentMethodId] === $vmOrderStatusCode);
+    }
+
+    /**
+     * @param string $path
+     * @param string $xpath
+     * @return \Joomla\CMS\Form\Form
+     */
+    private function getForm($path, $xpath)
+    {
+        $xml = simplexml_load_string(file_get_contents($path));
+        $formXml = $xml->xpath($xpath);
+        $formString = $formXml[0]->asXML();
+
+        return JForm::getInstance('zasilkovnaForm', $formString);
     }
 
 }
