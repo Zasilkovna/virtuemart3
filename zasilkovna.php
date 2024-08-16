@@ -1145,7 +1145,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return; // method must be saved to show plugin specific configuration
         }
 
-        $form = $this->getForm(JPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.xml', '//vmconfig');
+        $form = $this->getShippingMethodForm();
 
         $formData = $data;
         if (!$form->validate($formData)) {
@@ -1333,12 +1333,12 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     }
 
     /**
-     * @param string $path
-     * @param string $xpath
      * @return \Joomla\CMS\Form\Form
      */
-    private function getForm($path, $xpath)
+    private function getShippingMethodForm()
     {
+        $path = JPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.xml';
+        $xpath = '//vmconfig';
         $xml = simplexml_load_string(file_get_contents($path));
         $formXml = $xml->xpath($xpath);
         $formString = $formXml[0]->asXML();
