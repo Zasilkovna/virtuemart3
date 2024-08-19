@@ -39,6 +39,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     const DEFAULT_WEIGHT_UNIT = 'KG';
     const TEMPLATES_DIR = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart' . DS . 'views' . DS . 'zasilkovna' . DS . 'tmpl';
     const TRACKING_URL = 'https://tracking.packeta.com/?id=%s';
+    const ZASILKOVNA_OLD_RECREATE_KEY_VALUE = 'zasilkovna_old_recreate_key_value';
 
     public static $_this = false;
 
@@ -355,7 +356,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['shipment_cost'] = $this->getCosts($cart, ShipmentMethod::fromRandom($method), "");
         $values['weight'] = $this->getOrderWeight($cart, self::DEFAULT_WEIGHT_UNIT);
         $values['tax_id'] = $method->tax_id;
-        $this->storePSPluginInternalData($values);
+        $this->orderRepository->insertOrder($values);
 
         return true;
     }
@@ -646,7 +647,16 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
      *
      */
     function plgVmOnStoreInstallShipmentPluginTable($jplugin_id) {
-        return $this->onStoreInstallPluginTable($jplugin_id);
+        $return = $this->onStoreInstallPluginTable($jplugin_id);
+
+        $oldRecreateIndexes = VmConfig::get(self::ZASILKOVNA_OLD_RECREATE_KEY_VALUE, -1);
+        if ($oldRecreateIndexes !== -1) {
+            VmConfig::set('reCreaKey', $oldRecreateIndexes);
+        }
+
+        VmConfig::set(self::ZASILKOVNA_OLD_RECREATE_KEY_VALUE, -1);
+
+        return $return;
     }
 
     /**
@@ -1135,6 +1145,17 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             return; // method must be saved to show plugin specific configuration
         }
 
+        $form = $this->getShippingMethodForm();
+
+        $formData = $data;
+        if (!$form->validate($formData)) {
+            // Get validation errors
+            $errors = $form->getErrors();
+            foreach ($errors as $error) {
+                JFactory::getApplication()->enqueueMessage($error->getMessage(), 'error');
+            }
+        }
+
         $method = ShipmentMethod::fromRandom($data);
         $shippingType = $method->getShippingType();
         if ($shippingType === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS) {
@@ -1160,6 +1181,10 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         } else {
             $resortedClone = $method->getResortedClone();
             $data = $resortedClone->toArray();
+            // save old value of setting for recreation of indexes
+            VmConfig::set(self::ZASILKOVNA_OLD_RECREATE_KEY_VALUE, VmConfig::get('reCreaKey', 1));
+            //turn off recreation of indexes
+            VmConfig::set('reCreaKey', 0);
         }
     }
 
@@ -1305,6 +1330,20 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $autosubmitOrderStatuses = $this->model->getConfig('zasilkovna_autosubmission_order_statuses', []);
 
         return (array_key_exists($vmPaymentMethodId, $autosubmitOrderStatuses) && $autosubmitOrderStatuses[$vmPaymentMethodId] === $vmOrderStatusCode);
+    }
+
+    /**
+     * @return \Joomla\CMS\Form\Form
+     */
+    private function getShippingMethodForm()
+    {
+        $path = JPATH_ROOT . '/plugins/vmshipment/zasilkovna/zasilkovna.xml';
+        $xpath = '//vmconfig';
+        $xml = simplexml_load_string(file_get_contents($path));
+        $formXml = $xml->xpath($xpath);
+        $formString = $formXml[0]->asXML();
+
+        return JForm::getInstance('zasilkovnaForm', $formString);
     }
 
 }

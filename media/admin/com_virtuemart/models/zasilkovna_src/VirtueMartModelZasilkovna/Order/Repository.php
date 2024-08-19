@@ -93,4 +93,25 @@ class Repository
 
         return $this->db->loadColumn() ?: [];
     }
+
+    /**
+     * Method replaces originally used vmPSPlugin::storePSPluginInternalData, which
+     * in VM3 stored 0 instead of nulls for dimensions
+     *
+     * @param array<string, mixed> $values
+     * @return void
+     */
+    public function insertOrder($values)
+    {
+        foreach($values as $key => $value) {
+            $values[$key] = $this->db->quote($value);
+        }
+
+        $query = $this->db->getQuery(true);
+        $query->insert(self::PACKETERY_ORDER_TABLE_NAME);
+        $query->columns(array_keys($values));
+        $query->values(implode(',', $values));
+        $this->db->setQuery($query);
+        $this->db->execute();
+    }
 }
