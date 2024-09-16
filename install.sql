@@ -31,6 +31,7 @@ CREATE TABLE IF NOT EXISTS `#__virtuemart_shipment_plg_zasilkovna` (
 	`shipment_cost` decimal(10,2),
 	`shipment_package_fee` decimal(10,2),
 	`tax_id` smallint(1),
+	PRIMARY KEY (`id`),
 	INDEX (virtuemart_order_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COMMENT='zasilkovna';
 
