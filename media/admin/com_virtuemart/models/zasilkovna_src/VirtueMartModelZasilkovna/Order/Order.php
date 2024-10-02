@@ -100,6 +100,24 @@ class Order
     /* @var int $tax_id */
     private $tax_id;
 
+    /* @var \DateTime $created_on */
+    private $created_on;
+
+    /* @var int $created_by */
+    private $created_by;
+
+    /* @var \DateTime $locked_on */
+    private $modified_on;
+
+    /* @var int $locked_by */
+    private $modified_by;
+
+    /* @var \DateTime $locked_on */
+    private $locked_on;
+
+    /* @var int $locked_by */
+    private $locked_by;
+
     /**
      * @param array|null $orderData
      *
@@ -349,6 +367,54 @@ class Order
     public function getTaxId()
     {
         return $this->tax_id;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getCreatedOn()
+    {
+        return $this->created_on;
+    }
+
+    /**
+     * @return int
+     */
+    public function getCreatedBy()
+    {
+        return $this->created_by;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getModifiedOn()
+    {
+        return $this->modified_on;
+    }
+
+    /**
+     * @return int
+     */
+    public function getModifiedBy()
+    {
+        return $this->modified_by;
+    }
+
+    /**
+     * @return \DateTime
+     */
+    public function getLockedOn()
+    {
+        return $this->locked_on;
+    }
+
+    /**
+     * @return int
+     */
+    public function getLockedBy()
+    {
+        return $this->locked_by;
     }
 
     /**
