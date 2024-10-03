@@ -179,23 +179,29 @@ class plgVmShipmentZasilkovnaInstallerScript {
             }
 
             $db = JFactory::getDBO();
-            $q = sprintf("INSERT INTO #__virtuemart_adminmenuentries SET
-                `module_id` = 5,
-                `parent_id` = 0,
-                `name` = '%s',
-                `link` = '',
-                `depends` = '',
-                `icon_class` = 'vmicon vmicon-16-lorry',
-                `uikit_icon` = 'shipment',
-                `ordering` = 1,
-                `published` = 1,
-                `tooltip` = '',
-                `view` = 'zasilkovna',
-                `task` = '';",
-                self::VM_MENU_ENTRY);
-
+            $q = sprintf("SELECT COUNT(*) FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_MENU_ENTRY);
             $db->setQuery($q);
-            $db->execute();
+            $packetaEntryExists = (int) $db->loadResult();
+
+            if ($packetaEntryExists === 0) {
+                $q = sprintf("INSERT INTO #__virtuemart_adminmenuentries SET
+                    `module_id` = 5,
+                    `parent_id` = 0,
+                    `name` = '%s',
+                    `link` = '',
+                    `depends` = '',
+                    `icon_class` = 'vmicon vmicon-16-lorry',
+                    `uikit_icon` = 'shipment',
+                    `ordering` = 1,
+                    `published` = 1,
+                    `tooltip` = '',
+                    `view` = 'zasilkovna',
+                    `task` = '';",
+                    self::VM_MENU_ENTRY);
+
+                $db->setQuery($q);
+                $db->execute();
+            }
 
         }
 
