@@ -178,12 +178,13 @@ class plgVmShipmentZasilkovnaInstallerScript {
                 }
             }
 
+            // Checking if the VM item menu already includes Packeta.
             $db = JFactory::getDBO();
             $q = sprintf("SELECT COUNT(*) FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_MENU_ENTRY);
             $db->setQuery($q);
-            $packetaEntryExists = (int) $db->loadResult();
+            $packetaEntryExists = $db->loadResult();
 
-            if ($packetaEntryExists === 0) {
+            if ($packetaEntryExists !== null && (int) $packetaEntryExists === 0) {
                 $q = sprintf("INSERT INTO #__virtuemart_adminmenuentries SET
                     `module_id` = 5,
                     `parent_id` = 0,
@@ -238,7 +239,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
             return;
         }
 
-        // Checking if the item menu already includes Packeta.
+        // Checking if the Joomla item menu already includes Packeta.
         $query = $db->getQuery(true)
             ->select('COUNT(*)')
             ->from($db->quoteName('#__menu'))
@@ -246,9 +247,9 @@ class plgVmShipmentZasilkovnaInstallerScript {
             ->where($db->quoteName('client_id') . ' = 1');
 
         $db->setQuery($query);
-        $packetaMenuItemExists = (int) $db->loadResult();
+        $packetaMenuItemExists = $db->loadResult();
 
-        if ($packetaMenuItemExists === 0) {
+        if ($packetaMenuItemExists !== null && (int) $packetaMenuItemExists === 0) {
             $data = [];
 
             $data['menutype'] = 'main';
