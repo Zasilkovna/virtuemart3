@@ -238,41 +238,53 @@ class plgVmShipmentZasilkovnaInstallerScript {
             return;
         }
 
-        $data = [];
+        // Checking if the item menu already includes Packeta.
+        $query = $db->getQuery(true)
+            ->select('COUNT(*)')
+            ->from($db->quoteName('#__menu'))
+            ->where($db->quoteName('alias') . ' = ' . $db->quote(self::PLUGIN_ALIAS))
+            ->where($db->quoteName('client_id') . ' = 1');
 
-        $data['menutype'] = 'main';
-        $data['title'] = self::VM_MENU_ENTRY;
-        $data['alias'] = self::PLUGIN_ALIAS;
-        $data['path'] = 'com-zasilkovna';
-        $data['link'] = 'index.php?option=com_virtuemart&view=zasilkovna';
-        $data['img'] = '';
-        $data['params'] = '{}';
-        $data['note'] = '';
-        $data['type'] = 'component';
-        $data['published'] = 1;
-        $data['parent_id'] = $parentId;
-        $data['level'] = 2;
-        $data['component_id'] = $virtueMartExtensionId;
-        $data['checked_out'] = 0;
-        $data['checked_out_time'] = '0000-00-00 00:00:00';
-        $data['browserNav'] = 0;
-        $data['access'] = 1;
-        $data['template_style_id'] = 0;
-        $data['home'] = 0;
-        $data['language'] = '*';
-        $data['client_id'] = 1;
+        $db->setQuery($query);
+        $packetaMenuItemExists = (int) $db->loadResult();
 
-        $menuModel = JModelLegacy::getInstance('Item', 'MenusModel', []);
-        $data['id'] = $this->getJoomlaMenuItem($data['menutype'], $data['alias'], $data['component_id'],
-            $data['client_id']);
-        $menuModel->setState('item.id', $data['id']);
-        $data['menuordering'] = $data['id'];
-        $menuModel->save($data);
+        if ($packetaMenuItemExists === 0) {
+            $data = [];
 
-        $data['id'] = $this->getJoomlaMenuItem($data['menutype'], $data['alias'], $data['component_id'], 0);
-        if ($data['id'] > 0) {
+            $data['menutype'] = 'main';
+            $data['title'] = self::VM_MENU_ENTRY;
+            $data['alias'] = self::PLUGIN_ALIAS;
+            $data['path'] = 'com-zasilkovna';
+            $data['link'] = 'index.php?option=com_virtuemart&view=zasilkovna';
+            $data['img'] = '';
+            $data['params'] = '{}';
+            $data['note'] = '';
+            $data['type'] = 'component';
+            $data['published'] = 1;
+            $data['parent_id'] = $parentId;
+            $data['level'] = 2;
+            $data['component_id'] = $virtueMartExtensionId;
+            $data['checked_out'] = 0;
+            $data['checked_out_time'] = '0000-00-00 00:00:00';
+            $data['browserNav'] = 0;
+            $data['access'] = 1;
+            $data['template_style_id'] = 0;
+            $data['home'] = 0;
+            $data['language'] = '*';
+            $data['client_id'] = 1;
+
+            $menuModel = JModelLegacy::getInstance('Item', 'MenusModel', []);
+            $data['id'] = $this->getJoomlaMenuItem($data['menutype'], $data['alias'], $data['component_id'],
+                $data['client_id']);
             $menuModel->setState('item.id', $data['id']);
+            $data['menuordering'] = $data['id'];
             $menuModel->save($data);
+
+            $data['id'] = $this->getJoomlaMenuItem($data['menutype'], $data['alias'], $data['component_id'], 0);
+            if ($data['id'] > 0) {
+                $menuModel->setState('item.id', $data['id']);
+                $menuModel->save($data);
+            }
         }
     }
 
