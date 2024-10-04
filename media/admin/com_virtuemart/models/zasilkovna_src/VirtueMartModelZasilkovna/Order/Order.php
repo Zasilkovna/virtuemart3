@@ -100,24 +100,6 @@ class Order
     /* @var int $tax_id */
     private $tax_id;
 
-    /* @var string $created_on */
-    private $created_on;
-
-    /* @var int $created_by */
-    private $created_by;
-
-    /* @var string $locked_on */
-    private $modified_on;
-
-    /* @var int $locked_by */
-    private $modified_by;
-
-    /* @var string $locked_on */
-    private $locked_on;
-
-    /* @var int $locked_by */
-    private $locked_by;
-
     /**
      * @param array|null $orderData
      *
@@ -130,7 +112,11 @@ class Order
             throw new \InvalidArgumentException('Order data is required');
         }
         $order = new self();
+        $unusedDefaultVMProperties = ['created_on', 'created_by', 'modified_on', 'modified_by', 'locked_on', 'locked_by'];
         foreach ($orderData as $property => $value) {
+            if (in_array($property, $unusedDefaultVMProperties, true)) {
+                continue;
+            }
             $order->$property = $value;
         }
 
