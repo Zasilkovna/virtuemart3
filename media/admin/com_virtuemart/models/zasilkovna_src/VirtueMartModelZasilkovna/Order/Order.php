@@ -112,7 +112,11 @@ class Order
             throw new \InvalidArgumentException('Order data is required');
         }
         $order = new self();
+        $unusedDefaultVMProperties = ['created_on', 'created_by', 'modified_on', 'modified_by', 'locked_on', 'locked_by'];
         foreach ($orderData as $property => $value) {
+            if (in_array($property, $unusedDefaultVMProperties, true)) {
+                continue;
+            }
             $order->$property = $value;
         }
 
