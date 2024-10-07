@@ -65,6 +65,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
 
     private $migratingPricingRules = false;
     const VM_MENU_ENTRY = 'Packeta';
+    const VM_OG_MENU_ENTRY = 'ZASILKOVNA';
     const PLUGIN_ALIAS = 'com-zasilkovna';
 
     /**
@@ -178,8 +179,14 @@ class plgVmShipmentZasilkovnaInstallerScript {
                 }
             }
 
-            // Checking if the VM item menu already includes Packeta.
             $db = JFactory::getDBO();
+
+            // Removes the outdated menu entry if still exists.
+            $q = sprintf("DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_OG_MENU_ENTRY);
+            $db->setQuery($q);
+            $db->execute();
+            
+            // Checking if the VM item menu already includes Packeta.
             $q = sprintf("SELECT COUNT(*) FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_MENU_ENTRY);
             $db->setQuery($q);
             $packetaEntryExists = $db->loadResult();
