@@ -65,7 +65,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
 
     private $migratingPricingRules = false;
     const VM_MENU_ENTRY = 'Packeta';
-    const VM_OG_MENU_ENTRY = 'ZASILKOVNA';
+    const VM_MENU_ENTRY_VIEW = 'zasilkovna';
     const PLUGIN_ALIAS = 'com-zasilkovna';
 
     /**
@@ -181,32 +181,32 @@ class plgVmShipmentZasilkovnaInstallerScript {
 
             $db = JFactory::getDBO();
 
-            // Removes the outdated menu entry if still exists.
-            $q = sprintf("DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_OG_MENU_ENTRY);
-            $db->setQuery($q);
-            $db->execute();
-            
             // Checking if the VM item menu already includes Packeta.
-            $q = sprintf("SELECT COUNT(*) FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_MENU_ENTRY);
+            $q = sprintf("SELECT `name`,`icon_class` FROM #__virtuemart_adminmenuentries WHERE `view` = '%s';", self::VM_MENU_ENTRY_VIEW);
             $db->setQuery($q);
-            $packetaEntryExists = $db->loadResult();
+            $oldMenuEntry = $db->loadAssoc();
 
-            if ($packetaEntryExists !== null && (int) $packetaEntryExists === 0) {
+            $iconClass = 'vmicon vmicon-16-lorry';
+            if (empty($oldMenuEntry)) {
                 $q = sprintf("INSERT INTO #__virtuemart_adminmenuentries SET
                     `module_id` = 5,
                     `parent_id` = 0,
                     `name` = '%s',
                     `link` = '',
                     `depends` = '',
-                    `icon_class` = 'vmicon vmicon-16-lorry',
+                    `icon_class` = '%s',
                     `uikit_icon` = 'shipment',
                     `ordering` = 1,
                     `published` = 1,
                     `tooltip` = '',
-                    `view` = 'zasilkovna',
+                    `view` = '%s',
                     `task` = '';",
-                    self::VM_MENU_ENTRY);
+                    self::VM_MENU_ENTRY, $iconClass, self::VM_MENU_ENTRY_VIEW);
 
+                $db->setQuery($q);
+                $db->execute();
+            } elseif ($oldMenuEntry['icon_class'] !== $iconClass) {
+                $q = sprintf("UPDATE #__virtuemart_adminmenuentries SET `icon_class` = '%s' WHERE `view` = '%s';", $iconClass, self::VM_MENU_ENTRY_VIEW);
                 $db->setQuery($q);
                 $db->execute();
             }
@@ -255,44 +255,45 @@ class plgVmShipmentZasilkovnaInstallerScript {
 
         $db->setQuery($query);
         $packetaMenuItemExists = $db->loadResult();
+        if ((int) $packetaMenuItemExists !== 0) {
+            return;
+        }
 
-        if ($packetaMenuItemExists !== null && (int) $packetaMenuItemExists === 0) {
-            $data = [];
+        $data = [];
 
-            $data['menutype'] = 'main';
-            $data['title'] = self::VM_MENU_ENTRY;
-            $data['alias'] = self::PLUGIN_ALIAS;
-            $data['path'] = 'com-zasilkovna';
-            $data['link'] = 'index.php?option=com_virtuemart&view=zasilkovna';
-            $data['img'] = '';
-            $data['params'] = '{}';
-            $data['note'] = '';
-            $data['type'] = 'component';
-            $data['published'] = 1;
-            $data['parent_id'] = $parentId;
-            $data['level'] = 2;
-            $data['component_id'] = $virtueMartExtensionId;
-            $data['checked_out'] = 0;
-            $data['checked_out_time'] = '0000-00-00 00:00:00';
-            $data['browserNav'] = 0;
-            $data['access'] = 1;
-            $data['template_style_id'] = 0;
-            $data['home'] = 0;
-            $data['language'] = '*';
-            $data['client_id'] = 1;
+        $data['menutype'] = 'main';
+        $data['title'] = self::VM_MENU_ENTRY;
+        $data['alias'] = self::PLUGIN_ALIAS;
+        $data['path'] = 'com-zasilkovna';
+        $data['link'] = 'index.php?option=com_virtuemart&view=zasilkovna';
+        $data['img'] = '';
+        $data['params'] = '{}';
+        $data['note'] = '';
+        $data['type'] = 'component';
+        $data['published'] = 1;
+        $data['parent_id'] = $parentId;
+        $data['level'] = 2;
+        $data['component_id'] = $virtueMartExtensionId;
+        $data['checked_out'] = 0;
+        $data['checked_out_time'] = '0000-00-00 00:00:00';
+        $data['browserNav'] = 0;
+        $data['access'] = 1;
+        $data['template_style_id'] = 0;
+        $data['home'] = 0;
+        $data['language'] = '*';
+        $data['client_id'] = 1;
 
-            $menuModel = JModelLegacy::getInstance('Item', 'MenusModel', []);
-            $data['id'] = $this->getJoomlaMenuItem($data['menutype'], $data['alias'], $data['component_id'],
-                $data['client_id']);
+        $menuModel = JModelLegacy::getInstance('Item', 'MenusModel', []);
+        $data['id'] = $this->getJoomlaMenuItem($data['menutype'], $data['alias'], $data['component_id'],
+            $data['client_id']);
+        $menuModel->setState('item.id', $data['id']);
+        $data['menuordering'] = $data['id'];
+        $menuModel->save($data);
+
+        $data['id'] = $this->getJoomlaMenuItem($data['menutype'], $data['alias'], $data['component_id'], 0);
+        if ($data['id'] > 0) {
             $menuModel->setState('item.id', $data['id']);
-            $data['menuordering'] = $data['id'];
             $menuModel->save($data);
-
-            $data['id'] = $this->getJoomlaMenuItem($data['menutype'], $data['alias'], $data['component_id'], 0);
-            if ($data['id'] > 0) {
-                $menuModel->setState('item.id', $data['id']);
-                $menuModel->save($data);
-            }
         }
     }
 
@@ -640,7 +641,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
     private function removeBackendMenuEntries()
     {
         $db = JFactory::getDbo();
-        $q = sprintf("DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_MENU_ENTRY);
+        $q = sprintf("DELETE FROM #__virtuemart_adminmenuentries WHERE `view` = '%s';", self::VM_MENU_ENTRY_VIEW);
         $db->setQuery($q);
         $db->execute();
 
