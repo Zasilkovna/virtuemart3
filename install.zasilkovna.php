@@ -65,6 +65,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
 
     private $migratingPricingRules = false;
     const VM_MENU_ENTRY = 'Packeta';
+    const VM_MENU_ENTRY_VIEW = 'zasilkovna';
     const PLUGIN_ALIAS = 'com-zasilkovna';
 
     /**
@@ -179,23 +180,36 @@ class plgVmShipmentZasilkovnaInstallerScript {
             }
 
             $db = JFactory::getDBO();
-            $q = sprintf("INSERT INTO #__virtuemart_adminmenuentries SET
-                `module_id` = 5,
-                `parent_id` = 0,
-                `name` = '%s',
-                `link` = '',
-                `depends` = '',
-                `icon_class` = 'vmicon vmicon-16-lorry',
-                `uikit_icon` = 'shipment',
-                `ordering` = 1,
-                `published` = 1,
-                `tooltip` = '',
-                `view` = 'zasilkovna',
-                `task` = '';",
-                self::VM_MENU_ENTRY);
 
+            // Checking if the VM item menu already includes Packeta.
+            $q = sprintf("SELECT `name`,`icon_class` FROM #__virtuemart_adminmenuentries WHERE `view` = '%s';", self::VM_MENU_ENTRY_VIEW);
             $db->setQuery($q);
-            $db->execute();
+            $oldMenuEntry = $db->loadAssoc();
+
+            $iconClass = 'vmicon vmicon-16-lorry';
+            if (empty($oldMenuEntry)) {
+                $q = sprintf("INSERT INTO #__virtuemart_adminmenuentries SET
+                    `module_id` = 5,
+                    `parent_id` = 0,
+                    `name` = '%s',
+                    `link` = '',
+                    `depends` = '',
+                    `icon_class` = '%s',
+                    `uikit_icon` = 'shipment',
+                    `ordering` = 1,
+                    `published` = 1,
+                    `tooltip` = '',
+                    `view` = '%s',
+                    `task` = '';",
+                    self::VM_MENU_ENTRY, $iconClass, self::VM_MENU_ENTRY_VIEW);
+
+                $db->setQuery($q);
+                $db->execute();
+            } elseif ($oldMenuEntry['icon_class'] !== $iconClass) {
+                $q = sprintf("UPDATE #__virtuemart_adminmenuentries SET `icon_class` = '%s' WHERE `view` = '%s';", $iconClass, self::VM_MENU_ENTRY_VIEW);
+                $db->setQuery($q);
+                $db->execute();
+            }
 
         }
 
@@ -229,6 +243,19 @@ class plgVmShipmentZasilkovnaInstallerScript {
 
         $parentId = $this->getJoomlaMenuItem('main', 'com-virtuemart', $virtueMartExtensionId, 1);
         if ($parentId === 0) {
+            return;
+        }
+
+        // Checking if the Joomla item menu already includes Packeta.
+        $query = $db->getQuery(true)
+            ->select('COUNT(*)')
+            ->from($db->quoteName('#__menu'))
+            ->where($db->quoteName('alias') . ' = ' . $db->quote(self::PLUGIN_ALIAS))
+            ->where($db->quoteName('client_id') . ' = 1');
+
+        $db->setQuery($query);
+        $packetaMenuItemExists = $db->loadResult();
+        if ((int) $packetaMenuItemExists !== 0) {
             return;
         }
 
@@ -614,7 +641,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
     private function removeBackendMenuEntries()
     {
         $db = JFactory::getDbo();
-        $q = sprintf("DELETE FROM #__virtuemart_adminmenuentries WHERE `name` = '%s';", self::VM_MENU_ENTRY);
+        $q = sprintf("DELETE FROM #__virtuemart_adminmenuentries WHERE `view` = '%s';", self::VM_MENU_ENTRY_VIEW);
         $db->setQuery($q);
         $db->execute();
 
