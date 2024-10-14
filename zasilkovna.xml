@@ -81,8 +81,8 @@
                        description="PLG_VMSHIPMENT_PACKETERY_CONFIG_FREE_SHIPPING_LABEL" default=""
                        validate="minvalue"/>
 
-                <field name="tax_id" type="vmtaxes" scope="com_virtuemart" label="VMSHIPMENT_WEIGHT_COUNTRIES_TAX"
-                       description="VMSHIPMENT_WEIGHT_COUNTRIES_TAX_DESC" default="0"/>
+                <field name="tax_id" type="vmtaxes" scope="com_virtuemart" label="PLG_VMSHIPMENT_WEIGHT_COUNTRIES_TAX"
+                       description="PLG_VMSHIPMENT_WEIGHT_COUNTRIES_TAX_DESC" default="0"/>
 
                 <field
                         name="globalWeightRules"
