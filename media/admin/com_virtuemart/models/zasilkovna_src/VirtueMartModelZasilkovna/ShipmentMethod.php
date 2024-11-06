@@ -366,7 +366,7 @@ class ShipmentMethod
                 }
             );
         } else {
-            // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
+            // If there are allowed countries, only these are set, except for the blocking countries.
             $setCountriesVmIds = array_diff($allowedCountries, $blockingCountries);
             $setCountries = array_filter($publishedCountries,
                 static function ($country) use ($setCountriesVmIds) {
