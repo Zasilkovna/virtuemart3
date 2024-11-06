@@ -353,22 +353,25 @@ class ShipmentMethod
     {
         $allowedCountries = array_map('intval', $this->getAllowedCountries());
         $blockingCountries = array_map('intval',$this->getBlockingCountries());
-        $publishedCountries = \VmModel::getModel('country')->getCountries(true, false);
+        // The second parameter sets a limit on how many countries are retrieved from the DB.
+        $publishedCountries = \VmModel::getModel('country')->getCountries(true, true);
 
         if (empty($allowedCountries)) {
             // If no countries are specifically allowed, all published countries are allowed
             // except for the blocking countries.
             $setCountries = array_filter($publishedCountries,
                 static function ($country) use ($blockingCountries) {
-                    return !in_array($country->virtuemart_country_id, $blockingCountries, true);
+                    // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
+                    return !in_array($country->virtuemart_country_id, $blockingCountries, false);
                 }
             );
         } else {
-            // If there are allowed countries, only these are set, except for the blocking countries.
+            // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
             $setCountriesVmIds = array_diff($allowedCountries, $blockingCountries);
             $setCountries = array_filter($publishedCountries,
                 static function ($country) use ($setCountriesVmIds) {
-                    return in_array($country->virtuemart_country_id, $setCountriesVmIds, true);
+                    // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
+                    return in_array($country->virtuemart_country_id, $setCountriesVmIds, false);
                 }
             );
         }
@@ -403,7 +406,7 @@ class ShipmentMethod
     {
         $setCountryCodes = $this->getSetCountriesCodes(false);
         foreach (VendorGroups::COUNTRIES_WITH_GROUPS as $internalCountryCode) {
-            if (in_array($internalCountryCode, $setCountryCodes, true)) {
+            if (in_array($internalCountryCode, $setCountryCodes, false)) {
                 return true;
             }
         }
