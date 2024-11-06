@@ -406,6 +406,7 @@ class ShipmentMethod
     {
         $setCountryCodes = $this->getSetCountriesCodes(false);
         foreach (VendorGroups::COUNTRIES_WITH_GROUPS as $internalCountryCode) {
+            // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
             if (in_array($internalCountryCode, $setCountryCodes, false)) {
                 return true;
             }
