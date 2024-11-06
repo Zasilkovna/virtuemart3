@@ -353,7 +353,7 @@ class ShipmentMethod
     {
         $allowedCountries = array_map('intval', $this->getAllowedCountries());
         $blockingCountries = array_map('intval',$this->getBlockingCountries());
-        // The second parameter sets a limit on how many countries are retrieved from the DB.
+        // Setting the second parameter to true ensures that more than 30 items can be returned.
         $publishedCountries = \VmModel::getModel('country')->getCountries(true, true);
 
         if (empty($allowedCountries)) {
