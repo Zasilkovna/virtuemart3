@@ -353,7 +353,7 @@ class ShipmentMethod
     {
         $allowedCountries = array_map('intval', $this->getAllowedCountries());
         $blockingCountries = array_map('intval',$this->getBlockingCountries());
-        // Setting the second parameter to true ensures that more than 30 items can be returned.
+        // Setting the second parameter to true removes the default limit of items fetched from the DB, which may vary across VirtueMart versions.
         $publishedCountries = \VmModel::getModel('country')->getCountries(true, true);
 
         if (empty($allowedCountries)) {
