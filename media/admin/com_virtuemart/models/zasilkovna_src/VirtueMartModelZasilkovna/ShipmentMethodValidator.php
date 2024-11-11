@@ -210,7 +210,8 @@ class ShipmentMethodValidator
                 return;
             }
 
-            if (!in_array($carrierVmCountryId, $setCountriesCodes, true)) {
+            // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from db
+            if (!in_array($carrierVmCountryId, $setCountriesCodes, false)) {
                 $report->addError(ShipmentValidationReport::ERROR_CODE_PP_CARRIER_IS_OUT_OF_ALLOWED_COUNTRIES);
             }
 

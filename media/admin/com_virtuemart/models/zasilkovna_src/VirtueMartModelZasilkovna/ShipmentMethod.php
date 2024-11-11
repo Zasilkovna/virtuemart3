@@ -353,14 +353,16 @@ class ShipmentMethod
     {
         $allowedCountries = array_map('intval', $this->getAllowedCountries());
         $blockingCountries = array_map('intval',$this->getBlockingCountries());
-        $publishedCountries = \VmModel::getModel('country')->getCountries(true, false);
+        // Setting the second parameter to true removes the default limit of items fetched from the DB, which may vary across VirtueMart versions.
+        $publishedCountries = \VmModel::getModel('country')->getCountries(true, true);
 
         if (empty($allowedCountries)) {
             // If no countries are specifically allowed, all published countries are allowed
             // except for the blocking countries.
             $setCountries = array_filter($publishedCountries,
                 static function ($country) use ($blockingCountries) {
-                    return !in_array($country->virtuemart_country_id, $blockingCountries, true);
+                    // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
+                    return !in_array($country->virtuemart_country_id, $blockingCountries, false);
                 }
             );
         } else {
@@ -368,7 +370,8 @@ class ShipmentMethod
             $setCountriesVmIds = array_diff($allowedCountries, $blockingCountries);
             $setCountries = array_filter($publishedCountries,
                 static function ($country) use ($setCountriesVmIds) {
-                    return in_array($country->virtuemart_country_id, $setCountriesVmIds, true);
+                    // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
+                    return in_array($country->virtuemart_country_id, $setCountriesVmIds, false);
                 }
             );
         }
@@ -403,7 +406,8 @@ class ShipmentMethod
     {
         $setCountryCodes = $this->getSetCountriesCodes(false);
         foreach (VendorGroups::COUNTRIES_WITH_GROUPS as $internalCountryCode) {
-            if (in_array($internalCountryCode, $setCountryCodes, true)) {
+            // intentional type unsafe comparison, handles both string (PHP < 8.1) and int (PHP >= 8.1) returned from DB
+            if (in_array($internalCountryCode, $setCountryCodes, false)) {
                 return true;
             }
         }
