@@ -108,19 +108,44 @@ defined('_JEXEC') or die('Restricted access'); ?>
                         ?>
                     </td>
                     <!-- packet price -->
-                    <td class="uk-text-nowrap">
-                        <?php echo '<input size="8" type="input" name="orders[' . $key . '][zasilkovna_packet_price]" value="' . htmlentities($order->zasilkovna_packet_price) . '"' . $disabled . '> ' . htmlentities($order->branch_currency); ?>
+                    <td class="with-input">
+                        <div>
+                            <input
+                                type="text"
+                                name="orders[<?php echo $key; ?>][zasilkovna_packet_price]"
+                                value="<?php echo htmlentities($order->zasilkovna_packet_price); ?>"
+                                <?php echo $disabled; ?>
+                            >
+                            <span>
+                                <?php echo htmlentities($order->branch_currency); ?>
+                            </span>
+                        </div>
                     </td>
                     <!-- is cod -->
-                    <td>
-                        <?php
-                        $cod = $order->packet_cod;
-                        echo '<input size="8" type="input" name="orders[' . $key . '][packet_cod]" value="' . htmlentities($cod) . '"' . $disabled . '> ';
-                        ?>
+                    <td class="with-input">
+                        <div>
+                            <input
+                                size="8"
+                                type="number"
+                                name="orders[<?php echo $key; ?>][packet_cod]"
+                                value="<?php echo htmlentities($order->packet_cod); ?>"
+                                <?php echo $disabled; ?>
+                            >
+                        </div>
                     </td>
                     <!-- weight-->
-                    <td class="uk-text-nowrap">
-                        <?php echo '<input class="packetery-editable-input" size="8" type="number" step="0.0001" name="orders[' . $key . '][weight]" value="' . (is_numeric($order->weight) ? (float)$order->weight : '') . '"' . $disabled . '>&nbsp;kg'; ?>
+                    <td class="with-input">
+                        <div>
+                            <input
+                                size="8"
+                                type="number"
+                                step="0.0001"
+                                name="orders[<?php echo $key; ?>][weight]"
+                                value="<?php echo is_numeric($order->weight) ? (float)$order->weight : ''; ?>"
+                                <?php echo $disabled; ?>
+                            >
+                            <span>kg</span>
+                        </div>
                     </td>
                     <!-- packet id -->
                     <td>

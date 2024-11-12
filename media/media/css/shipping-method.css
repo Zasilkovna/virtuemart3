@@ -21,7 +21,12 @@
 }
 
 .controls fieldset#params_delivery_settings__shipping_type {
-    min-width: inherit !important;
+    width: 250px !important;
+    padding: 8px 5px 5px 5px !important;
+}
+
+.controls fieldset#params_delivery_settings__vendor_groups {
+    width: 250px !important;
 }
 
 .radio div.form-check {
