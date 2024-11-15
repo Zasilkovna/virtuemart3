@@ -858,7 +858,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         if ($shouldIncludeTailBlock) {
             $tailBlockHtml = $this->getTailBlockHtml($activeCheckout, $countryCode, $langCode, $carrierId);
-            $html[] = $tailBlockHtml;
+            $html[$key] .= $tailBlockHtml;
         }
 
         $htmlIn[] = $html;
