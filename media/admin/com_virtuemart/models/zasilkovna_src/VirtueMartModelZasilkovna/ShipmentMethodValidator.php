@@ -74,7 +74,7 @@ class ShipmentMethodValidator
     ) {
         $globalMaxWeight = $shipmentMethod->getGlobalMaxWeight();
 
-        if (empty($globalMaxWeight) && !is_numeric($globalMaxWeight)) {
+        if ($globalMaxWeight !== '' || $globalMaxWeight < 0.1) {
             $report->addError(ShipmentValidationReport::ERROR_CODE_GLOBAL_MAX_WEIGHT_MISSING);
         } elseif (!is_numeric($globalMaxWeight)) {
             $report->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
@@ -83,6 +83,29 @@ class ShipmentMethodValidator
         $weightsFE = ($shipmentMethod->getGlobalWeightRules() ?: []);
         foreach ($weightsFE as $weightRule) {
             $weightRulesReport = $this->validateWeightRule($weightRule, $globalMaxWeight);
+
+            if ($weightRulesReport->isValid() === false) {
+                $report->merge($weightRulesReport);
+                break;
+            }
+        }
+    }
+
+    private function validateGlobalShippingPriceRules(
+        ShipmentValidationReport $report,
+        ShipmentMethod $shipmentMethod
+    ) {
+        $globalDefaultPrice = $shipmentMethod->getGlobalDefaultPrice();
+
+        if ($globalDefaultPrice !== '' || $globalDefaultPrice < 0.1) {
+            $report->addError(ShipmentValidationReport::ERROR_CODE_GLOBAL_DEFAULT_PRICE_MISSING);
+        } elseif (!is_numeric($globalDefaultPrice)) {
+            $report->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
+        }
+
+        $weightsFE = ($shipmentMethod->getGlobalWeightRules() ?: []);
+        foreach ($weightsFE as $weightRule) {
+            $weightRulesReport = $this->validateWeightRule($weightRule, $globalDefaultPrice);
 
             if ($weightRulesReport->isValid() === false) {
                 $report->merge($weightRulesReport);

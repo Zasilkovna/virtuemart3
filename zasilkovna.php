@@ -1113,7 +1113,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             $persistedMethod = $this->getPluginMethod($data['virtuemart_shipmentmethod_id']);
             if ($persistedMethod) {
                 // To save parameters in Joomla 4
-                if (version_compare(JVERSION, '4.0.0', '>=')) {
+                if (version_compare(JVERSION, '3.9.28', '>')) {
                     $table->_varsToPushParam = $persistedMethod->_varsToPushParam;
                     foreach ($table->_varsToPushParam as $paramKey => $paramValue) {
                         if (!isset($table->{$paramKey})) {
