@@ -281,35 +281,9 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         $billing=$order['details']['BT'];
         $shipping=$order['details']['ST'];
-        //    $shippingDetails = $order['details']['ST'];
 
         // IF BILLING AND SHIPPING DETAILS ARE DIFFERENT USE SHIPPING DETAILS
-        if((int)$billing->STsameAsBT === 0){
-            // FALLBACK TO BILLING CONTACT IF NECESSARY, BECAUSE OF THE POSSIBILITY TO HAVE SHIPPING ADDRESS ENTIRELY WITHOUT CONTACT
-            $noShippingContact = (
-                empty($shipping->email) &&
-                empty($shipping->phone_1) &&
-                empty($shipping->phone_2)
-            );
-
-            if($noShippingContact){
-                $email = $billing->email;
-                $phone_1 = $billing->phone_1;
-                $phone_2 = $billing->phone_2;
-            }else{
-                $email = $shipping->email;
-                $phone_1 = $shipping->phone_1;
-                $phone_2 = $shipping->phone_2;
-            }
-            $details = $shipping;
-        }
-        else{
-            $email = $billing->email;
-            $phone_1 = $billing->phone_1;
-            $phone_2 = $billing->phone_2;
-
-            $details = $billing;
-        }
+        $details = ((int)$billing->STsameAsBT === 0) ? $shipping : $billing;
 
         // external pickup point support
         if (empty($branch_carrier_id)) {
@@ -341,13 +315,6 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         $values['branch_name_street'] = $branch_name_street;
         $values['is_carrier'] = $is_carrier;
         $values['carrier_pickup_point'] = $branch_carrier_pickup_point;
-        $values['email'] = $email;
-        $values['phone'] = $phone_1 ? $phone_1 : $phone_2;
-        $values['first_name'] = $details->first_name;
-        $values['last_name'] = $details->last_name;
-        $values['address'] = $details->address_1;
-        $values['city'] = $details->city;
-        $values['zip_code'] = $details->zip;
         $values['adult_content'] = 0;
         $values['packet_cod'] = ($codSettings ? $details->order_total : 0);
         $values['is_cod'] = $codSettings; //depends on actual settings of COD payments until its set manually in administration
