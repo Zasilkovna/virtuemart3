@@ -1169,7 +1169,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 
         $report = $this->shipmentMethodValidator->validate($method);
 
-        if ($report->isValid() === false) {
+        if ($report->isValid() === false || $form->getErrors() !== []) {
             foreach ($report->getErrors() as $error) {
                 if ($error->params && count($error->params) > 0) {
                     vmError(JText::sprintf($error->translationCode, ...$error->params));
