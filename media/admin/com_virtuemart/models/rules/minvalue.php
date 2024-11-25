@@ -20,12 +20,14 @@ class JFormRuleMinvalue extends JFormRule
      */
     public function test(SimpleXMLElement $element, $value, $group = null, JRegistry $input = null, JForm $form = null)
     {
-        $isRequired = (string)$element['required'] === 'true';
-        if (!$isRequired && trim($value) === '') {
+        // Check if the value is empty and the field is not required
+        $isRequired = (string) $element['required'] === 'true';
+        if (!$isRequired && empty($value)) {
             return true;
         }
-
-        if (!is_numeric($value)) {
+        
+        // Check if the value matches the regular expression
+        if (filter_var($value, FILTER_VALIDATE_FLOAT) === false) {
             $errorMessage = sprintf(
                 JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_FIELD_INVALID_FORMAT'),
                 JText::_($element['label'])
@@ -35,9 +37,9 @@ class JFormRuleMinvalue extends JFormRule
             return false;
         }
 
-        $value = (float)$value;
-        $min = (float)$element['min'];
+        $min = (float) $element['min'];
 
+        // Check if the value is less than the minimum value
         if ($value < $min) {
             $errorMessage = sprintf(
                 JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_FIELD_MUST_BE_MINIMAL'),
