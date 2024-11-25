@@ -52,6 +52,8 @@ class ShipmentMethodValidator
 
         $this->validateGlobalWeightRules($report, $shipmentMethod);
 
+        $this->validateGlobalShippingPriceRules($report, $shipmentMethod);
+
         $this->validateCountryWeightRulesAndCountries($report, $shipmentMethod);
 
         if ($shipmentMethod->getShippingType() === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS) {
@@ -74,7 +76,7 @@ class ShipmentMethodValidator
     ) {
         $globalMaxWeight = $shipmentMethod->getGlobalMaxWeight();
 
-        if ($globalMaxWeight !== '' || $globalMaxWeight < 0.1) {
+        if ($globalMaxWeight === '' || $globalMaxWeight < 0.1) {
             $report->addError(ShipmentValidationReport::ERROR_CODE_GLOBAL_MAX_WEIGHT_MISSING);
         } elseif (!is_numeric($globalMaxWeight)) {
             $report->addError(ShipmentValidationReport::ERROR_CODE_INVALID_TYPE);
