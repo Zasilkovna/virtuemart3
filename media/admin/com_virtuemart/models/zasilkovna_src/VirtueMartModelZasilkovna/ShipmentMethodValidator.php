@@ -51,7 +51,7 @@ class ShipmentMethodValidator
         $report = new ShipmentValidationReport();
 
         $this->validateGlobalWeightRules($report, $shipmentMethod);
-        
+
         $this->validateCountryWeightRulesAndCountries($report, $shipmentMethod);
 
         if ($shipmentMethod->getShippingType() === ShipmentMethod::SHIPPING_TYPE_PICKUPPOINTS) {
