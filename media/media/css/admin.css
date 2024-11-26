@@ -12,8 +12,33 @@
     font-size: inherit;
 }
 
-.zasilkovna .packetery-editable-input {
-    width: 60px;
+.zasilkovna .with-input {
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.zasilkovna .with-input div {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    width: 100%;
+}
+
+.zasilkovna .with-input div input {
+    padding: 4px 6px;
+    font-size: 1em;
+    min-width: 60px;
+    max-width: 150px;
+    box-sizing: border-box;
+    text-align: left;
+    height: 30px;
+    margin-bottom: 0;
+}
+
+.zasilkovna .with-input div span {
+    color: grey;
+    font-size: 1em;
+    white-space: nowrap;
 }
 
 .zasilkovna.table thead th {
@@ -118,6 +143,19 @@ a#toolbar-packetaPrintLabel:focus > span {
 #packeteryPrintLabelModal .chosen-container .chosen-results {
     overflow-x: initial;
     overflow-y: clip;
+}
+
+#packeteryPrintLabelModal .chosen-container .chosen-single {
+    width: 300px;
+}
+
+#packeteryPrintLabelModal .chosen-container .chosen-drop {
+    width: 300px;
+    overflow: hidden;
+}
+
+.packetery-label-format-select {
+    width: 250px;
 }
 
 #packeteryPrintLabelModal .chosen-container .active-result {

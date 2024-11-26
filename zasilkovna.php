@@ -1262,43 +1262,51 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
     private function addPacketaToolbarButtons(\VirtueMartModelZasilkovna\Order\Order $order)
     {
         $toolbar = JToolbar::getInstance('toolbar');
+        if (version_compare(JVERSION, '4.0.0', '>=')) {
+            if ($order->hasPacketId()) {
+                $button = new LinkButton(
+                    'packetaPrintLabel',
+                    JText::_('PLG_VMSHIPMENT_PACKETERY_PRINT_LABEL'),
+                    [
+                        'icon' => 'icon-printer',
+                        'class' => 'btn btn-small',
+                        'url' => '#',
+                    ]
+                );
+            } else {
+                $submitUrl = 'index.php?option=com_virtuemart&view=zasilkovna&task=submitPacket&virtuemart_order_id=' . $order->getVirtuemartOrderId();
+                $button = new LinkButton(
+                    'packetaSubmitPacket',
+                    JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_TO_PACKETA'),
+                    [
+                        'icon' => 'icon-envelope',
+                        'class' => 'btn btn-small',
+                        'url' => $submitUrl,
+                    ]
+                );
+            }
 
-        if ($order->hasPacketId()) {
-            $button = new LinkButton(
-                'packetaPrintLabel',
-                JText::_('PLG_VMSHIPMENT_PACKETERY_PRINT_LABEL'),
-                [
-                    'icon' => 'icon-printer',
-                    'class' => 'btn btn-small',
-                    'url' => '#',
-                ]
-            );
+            $button->setParent($toolbar);
+            $items = $toolbar->getItems();
+            // Last button is Help
+            $lastButton = array_pop($items);
+            $items[] = $button;
+            $items[] = $lastButton;
 
+            $toolbar->setItems($items);
+        } elseif ($order->hasPacketId()) {
+            $buttonHtml = '<button id="toolbar-packetaPrintLabel" class="btn btn-small">
+                              <span class="icon-print" title="' . JText::_('PLG_VMSHIPMENT_PACKETERY_PRINT_LABEL') . '"></span> ' .
+                              JText::_('PLG_VMSHIPMENT_PACKETERY_PRINT_LABEL') .
+                          '</button>';
+
+            $toolbar->appendButton('Custom', $buttonHtml, 'packetaPrintLabel');
         } else {
-            $button = new LinkButton(
-                'packetaSubmitPacket',
-                JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_TO_PACKETA'),
-                [
-                    'icon' => 'icon-envelope',
-                    'class' => 'btn btn-small',
-                    'url' => 'index.php?option=com_virtuemart&view=zasilkovna&task=submitPacket&virtuemart_order_id=' . $order->getVirtuemartOrderId(),
-                ]
-            );
+            $submitUrl = 'index.php?option=com_virtuemart&view=zasilkovna&task=submitPacket&virtuemart_order_id=' . $order->getVirtuemartOrderId();
+            JToolbarHelper::link($submitUrl, JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_TO_PACKETA'), 'envelope');
         }
-
-        $button->setParent($toolbar);
-
-        $separator = new SeparatorButton('separator');
-        $separator->setParent($toolbar);
-
-        $items = $toolbar->getItems();
-        // last button is Help
-        $lastButton = array_pop($items);
-        $items[] = $separator;
-        $items[] = $button;
-        $items[] = $lastButton;
-        $toolbar->setItems($items);
     }
+
     /**
      * @param TableOrders &$data
      * @param string $old_order_status
