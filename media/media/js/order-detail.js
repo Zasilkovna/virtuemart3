@@ -27,27 +27,36 @@ function escapeToCloseModal(event) {
 }
 
 jQuery(document).ready(function () {
-    jQuery('#showPacketeryUpdateOrderDetail').on('click',
-        function (event) {
-            jQuery('#packeteryUpdateOrderDetail').toggle();
-            event.preventDefault();
-        });
-    jQuery('#toolbar-packetaPrintLabel').on('click',
-        function (event) {
-            jQuery('#subhead-container').append(jQuery('#packeteryPrintLabelModal'));
-            var position = jQuery(this).position();
-            var buttonHeight = jQuery(this).outerHeight();
-            jQuery('#packeteryPrintLabelModal').css({
-                top: position.top + buttonHeight + 6,
-                left: position.left,
-                width: '540px'
-            });
+    if (isJoomla4OrNewer) {
+        jQuery('.uk-card-body #showPacketeryUpdateOrderDetail .vmicon-16-editadd').addClass('jm4');
+    }
 
-            jQuery('#packeteryPrintLabelModal').toggle();
+    jQuery('#showPacketeryUpdateOrderDetail').on('click', function (event) {
+        jQuery('#packeteryUpdateOrderDetail').toggle();
+        event.preventDefault();
+    });
 
-            if (jQuery('#packeteryPrintLabelModal').is(':visible')) {
-                jQuery(document).on('keyup', escapeToCloseModal);
-            }
-            event.preventDefault();
+    jQuery('#toolbar-packetaPrintLabel').on('click', function (event) {
+        var container = jQuery('.subhead').length
+            ? jQuery('.subhead')  // Joomla 3.x
+            : jQuery('#subhead-container'); // Joomla 4.x
+
+        container.append(jQuery('#packeteryPrintLabelModal'));
+
+        var position = jQuery(this).position();
+        var buttonHeight = jQuery(this).outerHeight();
+        jQuery('#packeteryPrintLabelModal').css({
+            top: position.top + buttonHeight + 6,
+            left: position.left,
+            width: '540px'
         });
+
+        jQuery('#packeteryPrintLabelModal').toggle();
+
+        if (jQuery('#packeteryPrintLabelModal').is(':visible')) {
+            jQuery(document).on('keyup', escapeToCloseModal);
+        }
+
+        event.preventDefault();
+    });
 });

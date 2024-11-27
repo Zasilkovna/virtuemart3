@@ -51,12 +51,16 @@ class Detail
             $detailFormHtml = $this->renderer->renderToString();
         }
         $document = JFactory::getDocument();
-            $document->addScript(
-                sprintf('%smedia/com_zasilkovna/media/js/order-detail.js?v=%s',
-                    JUri::root(),
-                    filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/order-detail.js')
-                )
-            );
+        $document->addScript(
+            sprintf('%smedia/com_zasilkovna/media/js/order-detail.js?v=%s',
+                JUri::root(),
+                filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/order-detail.js')
+            )
+        );
+        $isJoomla4OrNewer = version_compare(JVERSION, '4.0.0', '>=');
+        $document->addScriptDeclaration(
+            "var isJoomla4OrNewer = " . json_encode($isJoomla4OrNewer) . ";"
+        );
 
         return $detailsHtml . $detailFormHtml . $printLabelFormHtml;
     }
