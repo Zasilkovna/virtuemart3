@@ -82,7 +82,7 @@ fieldset {
     min-width: 500px;
 }
 
-.uk-grid-collapse.uk-grid.uk-grid-stack {
+.uk-grid-collapse.uk-grid.uk-grid {
     display: flex;
     flex-direction: column;
 }
