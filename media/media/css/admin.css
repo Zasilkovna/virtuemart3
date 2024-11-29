@@ -79,17 +79,38 @@ fieldset {
     z-index: 1000;
     background-color: #ffffff;
     bottom: 55px;
+    min-width: 500px;
+}
+
+.uk-grid-collapse.uk-grid.uk-grid {
+    display: flex;
+    flex-direction: column;
 }
 
 .uk-card-body #packeteryUpdateOrderDetail fieldset {
     margin: 10px;
 }
 
+.w-100.mt-2 {
+    margin-top: 10px;
+}
+
+#packeteryUpdateOrderDetail {
+    min-width: 500px;
+}
+
+#packeteryUpdateOrderDetailForm table input {
+    max-width: 140px;
+}
+
 .uk-card-body #showPacketeryUpdateOrderDetail .vmicon-16-editadd {
     float: left;
     margin-right: 5px;
-    position: relative;
     top: 5px;
+}
+
+.uk-card-body #showPacketeryUpdateOrderDetail .vmicon-16-editadd.jm4 {
+    position: relative;
 }
 
 .mb-4 {
