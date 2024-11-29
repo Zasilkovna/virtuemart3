@@ -5,7 +5,8 @@
 
     $adminTemplate = VMPATH_ROOT . '/administrator/templates/vmadmin/html/com_virtuemart/';
     JLoader::register('vmuikitAdminUIHelper', $adminTemplate . 'helpers/vmuikit_adminuihelper.php');
-    if (class_exists('vmuikitAdminUIHelper')) {
+    $isBelowJ4AndVM4 = version_compare(JVERSION, '4.0.0', '<') && version_compare(VmConfig::getInstalledVersion(), '4.0.0', '<');
+    if (class_exists('vmuikitAdminUIHelper') && !$isBelowJ4AndVM4) {
         vmuikitAdminUIHelper::startAdminArea($this);
     } else {
         AdminUIHelper::startAdminArea($this);
@@ -19,6 +20,9 @@
 
     // INCLUDE JS AND CSS
     $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/admin.css?v=' . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/admin.css'));
+    if ($isBelowJ4AndVM4) {
+        $document->addStyleSheet(JUri::root().'media/com_zasilkovna/media/css/vm-left-menu-j310.css?v=' . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/css/vm-left-menu-j310.css'));
+    }
 
     $document->addScript(JUri::root()."media/com_zasilkovna/media/js/repeater.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/repeater.js'));
     $document->addScript(JUri::root()."media/com_zasilkovna/media/js/admin.js?v=" . filemtime(JPATH_ROOT . '/media/com_zasilkovna/media/js/admin.js'));
@@ -30,7 +34,7 @@
         'config' => JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_TAB'),
         'carriers' => JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_TAB'),
     ];
-    if (class_exists('vmuikitAdminUIHelper')) {
+    if (class_exists('vmuikitAdminUIHelper') && !$isBelowJ4AndVM4) {
         vmuikitAdminUIHelper::buildTabs($this, $tabs);
     } else {
         AdminUIHelper::buildTabs($this, $tabs);
@@ -45,7 +49,7 @@
     ?>
 </form>
 <?php
-if (class_exists('vmuikitAdminUIHelper')) {
+if (class_exists('vmuikitAdminUIHelper')  && !$isBelowJ4AndVM4) {
     vmuikitAdminUIHelper::endAdminArea();
 } else {
     AdminUIHelper::endAdminArea();
