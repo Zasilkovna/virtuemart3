@@ -27,7 +27,7 @@ class JFormRuleMinvalue extends JFormRule
         }
         
         // Check if the value matches the regular expression
-        if (filter_var($value, FILTER_VALIDATE_INT) === false) {
+        if (filter_var($value, FILTER_VALIDATE_FLOAT) === false) {
             $errorMessage = sprintf(
                 JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_FIELD_INVALID_FORMAT'),
                 JText::_($element['label'])
