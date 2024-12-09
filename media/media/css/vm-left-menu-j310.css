@@ -1,0 +1,50 @@
+/* Left bar */
+
+/* Left bar links */
+.vmuikit-menu-wrapper ul.uk-nav-default > li > a {
+    padding: 8px 10px !important;
+    border-left: 4px solid transparent !important;
+    transition: all 0.20s ease-out !important;
+    border-bottom: 1px solid #222222 !important;
+}
+.vmuikit-menu-wrapper .uk-nav-header {
+    font-size: .8rem !important;
+}
+.vmuikit-menu-wrapper ul.uk-nav-default li.uk-nav-header {
+    padding: 20px 20px 8px 20px !important;
+}
+
+.vmuikit-menu-wrapper ul.uk-nav-default > li > a:hover, .vmuikit-menu-wrapper ul.uk-nav-default > li.uk-open > a {
+    border-left: 4px solid #00A1DF !important;
+    color: white !important;
+    background-color: #10223e !important;
+    -webkit-transition: background 90ms cubic-bezier(.55, 0, .1, 1) !important;
+    transition: background 90ms cubic-bezier(.55, 0, .1, 1) !important;
+}
+.vmuikit-menu-wrapper ul.uk-nav-default > li.uk-active > a {
+    border-left: 4px solid #00A1DF !important;
+}
+.vmuikit-menu-wrapper ul.uk-nav-default li .uk-nav-sub li a:hover {
+    color: white !important;
+    background-color: #10223e !important;
+    border-left: 2px solid #00A1DF !important;
+    -webkit-transition: background 90ms cubic-bezier(.55, 0, .1, 1) !important;
+    transition: background 90ms cubic-bezier(.55, 0, .1, 1) !important;
+}
+.vmuikit-menu-wrapper ul.uk-nav-default li .uk-nav-sub li.uk-active > a {
+    border-left: 2px solid #00A1DF !important;
+}
+.vmuikit-menu-wrapper ul.uk-nav-default li .uk-nav-sub li a {
+    padding:8px 14px !important;
+    border-left: 2px solid transparent !important;
+    transition: all 0.20s ease-out !important;
+    color: rgba(255,255,255,.8) !important;
+}
+
+.vmuikit-menu-wrapper ul.uk-nav-sub {
+    padding: 5px 0 5px 0px !important;
+}
+
+.uk-light a.uk-nav-header.uk-text-primary {
+    color: #00A1DF !important;
+}
