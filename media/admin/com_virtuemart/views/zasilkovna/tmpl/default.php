@@ -5,7 +5,7 @@
 
     $adminTemplate = VMPATH_ROOT . '/administrator/templates/vmadmin/html/com_virtuemart/';
     JLoader::register('vmuikitAdminUIHelper', $adminTemplate . 'helpers/vmuikit_adminuihelper.php');
-    if (class_exists('vmuikitAdminUIHelper')) {
+    if (version_compare(JVERSION, '4.0.0', '>=')) {
         vmuikitAdminUIHelper::startAdminArea($this);
     } else {
         AdminUIHelper::startAdminArea($this);
@@ -30,7 +30,7 @@
         'config' => JText::_('PLG_VMSHIPMENT_PACKETERY_CONFIG_TAB'),
         'carriers' => JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIERS_TAB'),
     ];
-    if (class_exists('vmuikitAdminUIHelper')) {
+    if (version_compare(JVERSION, '4.0.0', '>=')) {
         vmuikitAdminUIHelper::buildTabs($this, $tabs);
     } else {
         AdminUIHelper::buildTabs($this, $tabs);
@@ -45,7 +45,7 @@
     ?>
 </form>
 <?php
-if (class_exists('vmuikitAdminUIHelper')) {
+if (version_compare(JVERSION, '4.0.0', '>=')) {
     vmuikitAdminUIHelper::endAdminArea();
 } else {
     AdminUIHelper::endAdminArea();
