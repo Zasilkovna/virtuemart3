@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <extension version="3.0" type="plugin" method="upgrade" group="vmshipment">
     <!--  The extension commercial name: make it different form others at JED http://extensions.joomla.org/-->
-    <name>Zasilkovna VM3</name>
+    <name>PLG_VMSHIPMENT_PACKETERY_XML_NAME</name>
     <!-- The following elements are optional and free of formatting constraints -->
     <!-- Original creation date. Recommended: YYYY-MM-DD -->
     <creationDate>2015-04-20</creationDate>
     <author>Zásilkovna s.r.o.</author>
-    <authorEmail>technicka.podpora@zasilkovna.cz</authorEmail>
-    <authorUrl>http://www.zasilkovna.cz/</authorUrl>
-    <copyright>(c) 2021 Zásilkovna s.r.o.</copyright>
+    <authorEmail>e-commerce.support@packeta.com</authorEmail>
+    <authorUrl>https://www.zasilkovna.cz/</authorUrl>
+    <copyright>Copyright (C) 2024 Packeta s.r.o. All rights reserved.</copyright>
     <license>License Info with link</license>
     <!--  The version string is recorded in the components table -->
     <version>1.4.0</version>
@@ -17,10 +17,15 @@
     <!--  Type of release: Bug fix, Security Fix, Minor update, Major update -->
     <releaseType>Major update</releaseType>
     <!-- The description is optional and defaults to the name -->
-    <description>Zasilkovna.cz VM3 shipment plugin</description>
+    <description>PLG_VMSHIPMENT_PACKETERY_XML_DESCRIPTION</description>
 
     <scriptfile>install.zasilkovna.php</scriptfile>
     <installfile>install.zasilkovna.php</installfile>
+    <languages folder="language">
+        <language tag="en-GB">en-GB.plg_vmshipment_zasilkovna.sys.ini</language>
+        <language tag="cs-CZ">cs-CZ.plg_vmshipment_zasilkovna.sys.ini</language>
+        <language tag="sk-SK">sk-SK.plg_vmshipment_zasilkovna.sys.ini</language>
+    </languages>
     <files>
         <filename plugin="zasilkovna">zasilkovna.php</filename>
         <filename plugin="zasilkovna">install.sql</filename>
