@@ -38,7 +38,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
 {
     const DEFAULT_WEIGHT_UNIT = 'KG';
     const TEMPLATES_DIR = JPATH_ADMINISTRATOR . DS . 'components' . DS . 'com_virtuemart' . DS . 'views' . DS . 'zasilkovna' . DS . 'tmpl';
-    const TRACKING_URL = 'https://tracking.packeta.com/?id=%s';
+    const TRACKING_URL = 'https://tracking.app.packeta.com/%s';
     const ZASILKOVNA_OLD_RECREATE_KEY_VALUE = 'zasilkovna_old_recreate_key_value';
 
     public static $_this = false;
