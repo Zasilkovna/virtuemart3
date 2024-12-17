@@ -1112,7 +1112,7 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
         if (!$isBeingCreated) {
             $persistedMethod = $this->getPluginMethod($data['virtuemart_shipmentmethod_id']);
             if ($persistedMethod) {
-                if (version_compare(JVERSION, '3.10.0', '>=')) {
+                if (version_compare(vmVersion::$RELEASE, '4', '>=')) {
                     $table->_varsToPushParam = $persistedMethod->_varsToPushParam;
                     foreach ($table->_varsToPushParam as $paramKey => $paramValue) {
                         if (!isset($table->{$paramKey})) {
