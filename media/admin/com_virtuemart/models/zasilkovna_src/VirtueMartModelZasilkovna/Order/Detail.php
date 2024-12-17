@@ -67,7 +67,7 @@ class Detail
 
     /**
      * @param array $formData
-     * @return \VirtueMartModelZasilkovna\Order\DetailFormValidationReport
+     * @return DetailFormValidationReport
      */
     public function validateFormData(array $formData)
     {
@@ -76,20 +76,53 @@ class Detail
             'zasilkovna_packet_price' => 'PLG_VMSHIPMENT_PACKETERY_PACKET_PRICE',
             'packet_cod' => 'PLG_VMSHIPMENT_PACKETERY_COD',
         ];
-        $validationReport = new \VirtueMartModelZasilkovna\Order\DetailFormValidationReport();
 
-        foreach ($requiredNumericFields as $field => $translationKey) {
-            if (!isset($formData[$field]) || !is_numeric($formData[$field])) {
-                $validationReport->addError(
-                    \JText::sprintf(
-                        'PLG_VMSHIPMENT_PACKETERY_ORDER_DETAIL_FORM_ERROR_FIELD_REQUIRED',
-                        \JText::_($translationKey)
-                    )
-                );
-            }
+        $dimensions = [
+            'length' => 'PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_LENGTH',
+            'width' => 'PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_WIDTH',
+            'height' => 'PLG_VMSHIPMENT_PACKETERY_DIMENSIONS_HEIGHT',
+        ];
+
+        $errors = [];
+        $this->validateRequiredNumericFields($formData, $requiredNumericFields, $errors);
+        $this->validateMinimumValues($formData, array_merge($requiredNumericFields, $dimensions), $errors);
+
+        $validationReport = new DetailFormValidationReport();
+        if (count($errors) > 0) {
+            $validationReport->addError('<strong>' . \JText::_('PLG_VMSHIPMENT_PACKETERY_ORDER_DETAIL_FORM_GENERAL_ERROR') . '</strong>');
+        }
+
+        foreach ($errors as $error) {
+            $validationReport->addError($error);
         }
 
         return $validationReport;
+    }
+
+    private function validateRequiredNumericFields(array $formData, array $fields, &$errors)
+    {
+        foreach ($fields as $field => $translationKey) {
+            if (!isset($formData[$field]) || !is_numeric($formData[$field])) {
+                $errors[] =
+                \JText::sprintf(
+                    'PLG_VMSHIPMENT_PACKETERY_ORDER_DETAIL_FORM_ERROR_FIELD_REQUIRED',
+                    \JText::_($translationKey)
+                );
+            }
+        }
+    }
+
+    private function validateMinimumValues(array $formData, array $fields, &$errors)
+    {
+        foreach ($fields as $field => $translationKey) {
+            if (isset($formData[$field]) && $formData[$field] <= 0) {
+                $errors[] =
+                \JText::sprintf(
+                    'PLG_VMSHIPMENT_PACKETERY_ORDER_DETAIL_FORM_ERROR_MIN_VALUE',
+                    \JText::_($translationKey)
+                );
+            }
+        }
     }
 
     /**
