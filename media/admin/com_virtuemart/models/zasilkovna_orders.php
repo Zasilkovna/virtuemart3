@@ -26,6 +26,9 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     const NOT_EXPORTED = -3;
     const ZASILKOVNA_ORDERS = 0;
 
+    /** @var string */
+    const AFFILIATE_ID = 'dd52cfa1838ddfef';
+
     /** @var VirtueMartModelZasilkovna */
     private $zas_model;
 
@@ -187,6 +190,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                     'currency' => $order['currency'],
                     'eshop' => $sender_label = $this->zas_model->getConfig('zasilkovna_eshop_label'),
                     'adultContent' => (int)$order['adult_content'] === 1,
+                    'affiliateId' => self::AFFILIATE_ID,
                 );
 
                 $dimensions = ['length', 'width', 'height'];
