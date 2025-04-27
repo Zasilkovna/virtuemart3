@@ -15,6 +15,7 @@ defined('_JEXEC') or die('Restricted access');
 if(!class_exists('VmModel')) require(JPATH_VM_ADMINISTRATOR . DS . 'helpers' . DS . 'vmmodel.php');
 
 use VirtueMartModelZasilkovna\Label;
+use VirtueMartModelZasilkovna\Order\AddressProvider;
 
 /**
  * Class VirtueMartModelZasilkovna_orders
@@ -458,11 +459,14 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         }
     }
 
+    /**
+     * @param string[] $orders_arr
+     * @return array<string|string>
+     */
     protected function prepareForExport($orders_arr)
     {
-        if (!$orders_arr)
-        {
-            return;
+        if (!$orders_arr) {
+            return [];
         }
 
         $db = JFactory::getDBO();
@@ -471,25 +475,32 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             $orderNumbers[] = $db->escape($orderNumber);
         }
 
-        $ordersForINStatement = implode("','", $orderNumbers);
         $q = sprintf(
             "SELECT o.order_number, curr.currency_code_3 order_currency_name,
-                plg.zasilkovna_packet_price order_total, oi.first_name, oi.last_name,
-                oi_bt.email, IFNULL(oi.phone_1, oi_bt.phone_1) AS phone_1, IFNULL(oi.phone_2, oi_bt.phone_2) AS phone_2,
+                plg.zasilkovna_packet_price AS order_total, 
+                IFNULL(ui.email, ui_bt.email) AS email,
+                IFNULL(ui.first_name, ui_bt.first_name) AS first_name,
+                IFNULL(ui.last_name, ui_bt.last_name) AS last_name,
+                IFNULL(ui.phone_1, ui_bt.phone_1) AS phone_1,
+                IFNULL(ui.phone_2, ui_bt.phone_2) AS phone_2,
+                IFNULL(ui.address_1, ui_bt.address_1) AS address_1,
+                IFNULL(ui.address_2, ui_bt.address_2) AS address_2,
+                IFNULL(ui.city, ui_bt.city) AS city,
+                IFNULL(ui.zip, ui_bt.zip) AS zip,
                 plg.packet_cod, plg.branch_id, plg.zasilkovna_packet_id, plg.carrier_pickup_point, plg.is_carrier,
-                plg.address AS address, plg.adult_content AS adult_content, plg.city, plg.zip_code, plg.branch_currency,
+                plg.adult_content AS adult_content,  plg.branch_currency,
                 plg.weight, plg.width, plg.length, plg.height
             FROM #__virtuemart_orders o
-            INNER JOIN #__virtuemart_order_userinfos oi 
-                ON o.virtuemart_order_id = oi.virtuemart_order_id AND oi.address_type = IF(o.STsameAsBT = 1, 'BT', 'ST')
-            INNER JOIN #__virtuemart_order_userinfos oi_bt 
-                ON o.virtuemart_order_id = oi_bt.virtuemart_order_id AND oi_bt.address_type = 'BT'
+            LEFT JOIN #__virtuemart_order_userinfos ui 
+                ON o.virtuemart_order_id = ui.virtuemart_order_id AND ui.address_type = 'ST'
+            LEFT JOIN #__virtuemart_order_userinfos ui_bt 
+                ON o.virtuemart_order_id = ui_bt.virtuemart_order_id AND ui_bt.address_type = 'BT'
             INNER JOIN %s plg ON plg.order_number = o.order_number
             LEFT JOIN #__virtuemart_currencies curr ON curr.virtuemart_currency_id = o.order_currency
             WHERE o.order_number IN ('%s') 
             GROUP BY o.order_number",
             $this->zas_model->getDbTableName(),
-            $ordersForINStatement
+            implode("','", $orderNumbers)
         );
 
         $db->setQuery($q);
@@ -499,49 +510,24 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $ordersForExport = array();
         foreach($rows as $key => $row) {
             $orderForExport = array();
+            $address = AddressProvider::fromUserInfoArray($row);
 
-            $streetMatches = array();
-
-            $match = preg_match('/^(.*[^0-9]+) (([1-9][0-9]*)\/)?([1-9][0-9]*[a-cA-C]?)$/', $row['address'], $streetMatches);
-
-            if (!$match) {
-                $houseNumber = null;
-                $street = $row['address'];
-            } elseif (!isset($streetMatches[4])) {
-                $houseNumber = null;
-                $street = $streetMatches[1];
-            } else {
-                $houseNumber = (!empty($streetMatches[3])) ? $streetMatches[3] . "/" . $streetMatches[4] : $streetMatches[4];
-                $street = $streetMatches[1];
-            }
-
-
-            $phone = "";
-            foreach (array('phone_2', 'phone_1') as $field)
-            {
-                $phone_n = $this->normalizePhone($row[$field]);
-                if (NULL !== $phone_n)
-                {
-                    $phone = $phone_n;
-                }
-            }
-
-			$orderForExport['order_number'] = $row['order_number'];
-			$orderForExport['recipient_firstname'] = $row['first_name'];
-            $orderForExport['recipient_lastname'] = $row['last_name'];
+            $orderForExport['order_number'] = $row['order_number'];
+            $orderForExport['recipient_firstname'] = $address->getFirstName();
+            $orderForExport['recipient_lastname'] = $address->getLastName();
             $orderForExport['recipient_company'] = "";
-            $orderForExport['recipient_email'] = $row['email'];
-            $orderForExport['recipient_phone'] = $phone;
+            $orderForExport['recipient_email'] = $address->getEmail();
+            $orderForExport['recipient_phone'] = $address->getNormalizedPhone();
             $orderForExport['packet_cod'] = $row['packet_cod'];
             $orderForExport['currency'] = $row["order_currency_name"];
             $orderForExport['value'] = $row['order_total'];
             $orderForExport['weight'] = $row['weight'];
             $orderForExport['point_id'] = $row['branch_id'];
             $orderForExport['adult_content'] = $row['adult_content'];
-            $orderForExport['recipient_street'] = $street;
-            $orderForExport['recipient_house_number'] = $houseNumber;
-            $orderForExport['recipient_city'] = $row["city"];
-            $orderForExport['recipient_zip'] = $row['zip_code'];
+            $orderForExport['recipient_street'] = $address->getStreet();
+            $orderForExport['recipient_house_number'] = $address->getHouseNumber();
+            $orderForExport['recipient_city'] = $address->getCity();
+            $orderForExport['recipient_zip'] = $address->getZip();
             $orderForExport['carrier_point'] = $row['carrier_pickup_point'];
             $orderForExport['is_carrier'] = $row['is_carrier'];
             $orderForExport['width'] = $row['width'];
@@ -577,30 +563,6 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         return str_replace('"', '\"', $s);
     }
 	 */
-
-
-    /**
-     * Validates phone number and returns NULL if not valid
-     * @param string|null $value
-     * @return string|null
-     */
-    private function normalizePhone($value)
-    {
-        if (is_null($value) || $value === '') {
-            return null;
-        }
-
-        $value = str_replace(' ', '', trim($value));
-
-        // only + and numbers are allowed
-        if (preg_match('/^\+?\d+$/', $value) !== 1)
-        {
-            $value = '';
-        }
-
-        return ($value ?: NULL);
-    }
-
 
     /**
      * This function gets the orderId, for anonymous users
@@ -730,11 +692,6 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         return $order;
     }
 
-    public function getZasilkovnaOrdersList() {
-        return $this->getOrdersListByShipment(0);
-    }
-
-
     /*
         Copy _ALL_ orders to zasilkovna table
         (to be able to edit and submit all orders to zasilkovna)
@@ -764,14 +721,23 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         if(!$res) return array();
 
         //$this->_noLimit = $noLimit;
-        $select = " o.*, CONCAT_WS(' ',u.first_name,u.middle_name,u.last_name) AS order_name "
-            . ',pm.payment_name AS payment_method';
         $from = $this->getZasilkovnaOrdersListQuery();
-        $select .= ', plg.printed_label,plg.address,plg.city,plg.zip_code,plg.virtuemart_country_id, plg.branch_id, 
-        plg.exported AS exported,plg.is_cod AS is_cod, plg.packet_cod AS packet_cod, plg.branch_currency, plg.branch_name_street AS name_street, 
-        brnch.country as country, plg.adult_content, plg.email, u_bt.email AS billing_email, 
-        IF(IFNULL(u.phone_1, u_bt.phone_1) <> "", IFNULL(u.phone_1, u_bt.phone_1), IFNULL(u.phone_2, u_bt.phone_2)) as phone,              
-        plg.zasilkovna_packet_id,plg.zasilkovna_packet_price,plg.weight ';
+
+        $select = /** @lang SQL */
+            ' o.*, pm.payment_name AS payment_method, plg.printed_label,plg.virtuemart_country_id,
+            plg.branch_id, plg.exported AS exported,plg.is_cod AS is_cod, plg.packet_cod AS packet_cod, plg.branch_currency,
+            plg.branch_name_street AS name_street, brnch.country AS country, plg.adult_content,
+            IFNULL(ui.email, ui_bt.email) AS email,
+            IFNULL(ui.first_name, ui_bt.first_name) AS first_name,
+            IFNULL(ui.last_name, ui_bt.last_name) AS last_name,
+            IFNULL(ui.phone_1, ui_bt.phone_1) AS phone_1,
+            IFNULL(ui.phone_2, ui_bt.phone_2) AS phone_2,
+            IFNULL(ui.address_1, ui_bt.address_1) AS address_1,
+            IFNULL(ui.address_2, ui_bt.address_2) AS address_2,
+            IFNULL(ui.city, ui_bt.city) AS city,
+            IFNULL(ui.zip, ui_bt.zip) AS zip,
+            plg.zasilkovna_packet_id,plg.zasilkovna_packet_price,plg.weight ';
+
         if($shipment_id == self::ALL_ORDERS) {
             //no where statement => select all
             ;
@@ -796,7 +762,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 
             $search = '"%' . $this->_db->getEscaped($search, true) . '%"';
 
-            $where[] = ' ( u.first_name LIKE ' . $search . ' OR u.middle_name LIKE ' . $search . ' OR u.last_name LIKE ' . $search . ' OR `order_number` LIKE ' . $search . ')';
+            $where[] = ' ( ui.first_name LIKE ' . $search . ' OR ui.middle_name LIKE ' . $search . ' OR ui.last_name LIKE ' . $search . ' OR `order_number` LIKE ' . $search . ')';
         }
 
 
@@ -824,22 +790,26 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     }
 
     /**
-     * List of tables to include for the product query
+     * List of tables to include for the order query
      *
-     * @author Zasilkovna
+     * @return string
      */
     private function getZasilkovnaOrdersListQuery() {
         $db = JFactory::getDBO();
-
-        return ' FROM #__virtuemart_orders as o
-			LEFT JOIN #__virtuemart_order_userinfos as u
-			ON u.virtuemart_order_id = o.virtuemart_order_id AND u.address_type = IF(o.STsameAsBT = 1, "BT", "ST")
-                        LEFT JOIN #__virtuemart_order_userinfos u_bt 
-                        ON u_bt.virtuemart_order_id = o.virtuemart_order_id AND u_bt.address_type = "BT"
-			LEFT JOIN #__virtuemart_paymentmethods_' . $db->escape(VMLANG) . ' as pm
-			ON o.virtuemart_paymentmethod_id = pm.virtuemart_paymentmethod_id
-			RIGHT JOIN ' . $this->zas_model->getDbTableName() . ' as plg ON plg.order_number=o.order_number
-			LEFT JOIN #__virtuemart_zasilkovna_carriers as brnch ON brnch.id=plg.branch_id';
+        return sprintf(
+            /** @lang SQL */
+            ' FROM #__virtuemart_orders AS o
+            LEFT JOIN #__virtuemart_order_userinfos AS ui
+                ON ui.virtuemart_order_id = o.virtuemart_order_id AND ui.address_type = "ST"
+            LEFT JOIN #__virtuemart_order_userinfos ui_bt
+                ON ui_bt.virtuemart_order_id = o.virtuemart_order_id AND ui_bt.address_type = "BT"
+            LEFT JOIN #__virtuemart_paymentmethods_%s AS pm
+                ON o.virtuemart_paymentmethod_id = pm.virtuemart_paymentmethod_id
+            RIGHT JOIN %s AS plg ON plg.order_number=o.order_number
+            LEFT JOIN #__virtuemart_zasilkovna_carriers AS brnch ON brnch.id=plg.branch_id',
+            $db->escape(VMLANG),
+            $this->zas_model->getDbTableName()
+        );
     }
 
     /**

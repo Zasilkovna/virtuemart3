@@ -107,6 +107,7 @@ class plgVmShipmentZasilkovnaInstallerScript {
             recurse_delete($media_path);
 
             $this->removeAdministratorFiles();
+            $this->dropObsoleteTableColumns();
         }
 	}
 
@@ -661,5 +662,22 @@ class plgVmShipmentZasilkovnaInstallerScript {
         $db->setQuery($query);
         $db->execute();
     }
-}
 
+    private function dropObsoleteTableColumns()
+    {
+        if ($this->fromVersion && version_compare($this->fromVersion, '1.3.1', '>')) {
+            $columnsToDrop = ['first_name', 'last_name', 'address', 'city', 'zip', 'email', 'phone'];
+
+            $db = JFactory::getDBO();
+            $db->setQuery('SHOW COLUMNS FROM #__virtuemart_shipment_plg_zasilkovna');
+            $columns = $db->loadColumn(0);
+
+            foreach ($columnsToDrop as $column) {
+                if (in_array($column, $columns, true)) {
+                    $db->setQuery('ALTER TABLE `#__virtuemart_shipment_plg_zasilkovna` DROP COLUMN ' . $db->quoteName($column));
+                    $db->execute();
+                }
+            }
+        }
+    }
+}
