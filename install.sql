@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS `#__virtuemart_shipment_plg_zasilkovna` (
 	`branch_name_street` varchar(500),
 	`is_carrier` smallint(1) NOT NULL DEFAULT '0',
 	`carrier_pickup_point` varchar(40),
+	`carrier_number` varchar(50) NULL,
 	`email` varchar(255),
 	`phone` varchar(255),
 	`first_name` varchar(255),

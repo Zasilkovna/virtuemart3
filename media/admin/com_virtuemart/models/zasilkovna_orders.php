@@ -66,9 +66,10 @@ class VirtueMartModelZasilkovna_orders extends VmModel
      * @param int[]|string[] $packetIds
      * @param Label\Format $format
      * @param int $offset
+     * @param bool $fromOrderDetail
      * @return array
      */
-    public function printPacketaLabels(array $packetIds, Label\Format $format, $offset = 0)
+    public function printPacketaLabels(array $packetIds, Label\Format $format, $offset = 0, $fromOrderDetail = false)
     {
         $errors = [];
         if (empty($packetIds)) {
@@ -77,11 +78,22 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             return $errors;
         }
 
+        if ($fromOrderDetail === false) {
+            $filteredPacketIds = $this->repository->getPacketaPickupPointPacketIdsByPacketIds($packetIds);
+            if (empty($filteredPacketIds)) {
+                $errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_PRINT');
+
+                return $errors;
+            }
+        } else {
+            $filteredPacketIds = $packetIds;
+        }
+
         $soapClient = new SoapClient(VirtueMartModelZasilkovna::PACKETA_WSDL);
         $apiPassword = $this->zas_model->api_pass;
 
         try {
-            $pdfContent = $soapClient->packetsLabelsPdf($apiPassword, $packetIds, $format->getValue(), $offset);
+            $pdfContent = $soapClient->packetsLabelsPdf($apiPassword, $filteredPacketIds, $format->getValue(), $offset);
         } catch (SoapFault $e) {
             $errors[] = $e->faultstring . " ";
             if (is_array($e->detail->PacketIdsFault->ids->packetId)) {
@@ -99,7 +111,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             return $errors;
         }
 
-        $this->setPrintLabelFlag($packetIds);
+        $this->setPrintLabelFlag($filteredPacketIds);
         $this->echoLabelContent($pdfContent);
 
         exit;
@@ -120,8 +132,8 @@ class VirtueMartModelZasilkovna_orders extends VmModel
             return $errors;
         }
 
-        $validPacketIds = $this->repository->getExternalCarrierPacketIdsByPacketIds($packetIds);
-        if (empty($validPacketIds)) {
+        $packetsWithCarrierNumbers = $this->repository->getExternalCarrierPacketsWithCarrierNumbers($packetIds);
+        if (empty($packetsWithCarrierNumbers)) {
             $errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_NO_PACKET_TO_PRINT');
 
             return $errors;
@@ -131,15 +143,13 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $apiPassword = $this->zas_model->api_pass;
 
         try {
-            $packetsWithCarrierNumbers = [];
-
-            foreach ($validPacketIds as $packetId) {
-                $courierNumber = $soapClient->packetCourierNumberV2($apiPassword, $packetId)->courierNumber;
-
-                $packetsWithCarrierNumbers[] = [
-                    'packetId' => $packetId,
-                    'courierNumber' => $courierNumber,
-                ];
+            foreach ($packetsWithCarrierNumbers as $key => $packet) {
+                if ($packet['courierNumber'] !== null) {
+                    continue;
+                }
+                $carrierNumber = $soapClient->packetCourierNumberV2($apiPassword, $packet['packetId'])->courierNumber;
+                $this->repository->updateCarrierNumber($packet['packetId'], $carrierNumber);
+                $packetsWithCarrierNumbers[$key]['courierNumber'] = $carrierNumber;
             }
 
             $pdfContent = $soapClient->packetsCourierLabelsPdf(
@@ -148,14 +158,18 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $offset,
                 $format->getValue()
             );
-
         } catch (SoapFault $soapFault) {
-            $errors[] = $soapFault->faultstring;
+            $errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_FAILED_TO_PREPARE_CARRIER_LABELS');
+            $errors[] = JText::_('PLG_VMSHIPMENT_PACKETERY_ERROR') . ": {$soapFault->faultstring}";
 
             return $errors;
         }
 
-        $this->setPrintLabelFlag($validPacketIds);
+        $filteredPackets = array_filter($packetsWithCarrierNumbers, function($packet) {
+            return $packet['courierNumber'] !== null;
+        });
+        $carrierPacketIds = array_column($filteredPackets, 'packetId');
+        $this->setPrintLabelFlag($carrierPacketIds);
         $this->echoLabelContent($pdfContent);
 
         exit;
@@ -743,7 +757,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
 	private function copyOrdersToZasilkovnaTable()
     {
         $q = "INSERT INTO {$this->zas_model->getDbTableName()} (virtuemart_order_id,virtuemart_shipmentmethod_id,order_number,email,phone,branch_id,zasilkovna_packet_price,first_name,last_name,address,city,zip_code,virtuemart_country_id)
-        
+
         SELECT o.virtuemart_order_id,o.virtuemart_shipmentmethod_id,o.order_number, oi_bt.email, IFNULL(oi.phone_1, oi_bt.phone_1) as phone_1,-1,o.order_total,oi.first_name,oi.last_name,oi.address_1,oi.city,oi.zip,oi.virtuemart_country_id FROM #__virtuemart_orders as o
             INNER JOIN #__virtuemart_order_userinfos as oi ON o.virtuemart_order_id = oi.virtuemart_order_id AND oi.address_type = IF(o.STsameAsBT = 1, 'BT', 'ST')
             INNER JOIN #__virtuemart_order_userinfos as oi_bt ON o.virtuemart_order_id = oi_bt.virtuemart_order_id AND oi_bt.address_type = 'BT'

@@ -49,6 +49,9 @@ class Order
     /* @var string $carrier_pickup_point */
     private $carrier_pickup_point;
 
+    /* @var string|null $carrier_number */
+    private $carrier_number;
+
     /* @var string $email */
     private $email;
 
@@ -217,6 +220,14 @@ class Order
     public function getCarrierPickupPoint()
     {
         return $this->carrier_pickup_point;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getCarrierNumber()
+    {
+        return $this->carrier_number;
     }
 
     /**

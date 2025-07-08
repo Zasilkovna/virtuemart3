@@ -60,7 +60,7 @@ class Repository
      * @param int[]|string[] $packetIds
      * @return string[]
      */
-    public function getExternalCarrierPacketIdsByPacketIds(array $packetIds)
+    public function getPacketaPickupPointPacketIdsByPacketIds(array $packetIds)
     {
         $escapedPacketIds = [];
         foreach ($packetIds as $packetId) {
@@ -78,7 +78,7 @@ class Repository
         $query = $this->db->getQuery(true);
         $query->select('DISTINCT `zasilkovna_packet_id`')
             ->from(self::PACKETERY_ORDER_TABLE_NAME)
-            ->where('`is_carrier`=1')
+            ->where('`is_carrier` = 0')
             ->andWhere(
                 sprintf(
                     '`zasilkovna_packet_id` IN (%s)',
@@ -113,5 +113,66 @@ class Repository
         $query->values(implode(',', $values));
         $this->db->setQuery($query);
         $this->db->execute();
+    }
+
+    /**
+     * Update carrier number for a specific packet ID
+     *
+     * @param int|string $packetId
+     * @param string $carrierNumber
+     * @return bool
+     */
+    public function updateCarrierNumber($packetId, $carrierNumber)
+    {
+        if (!is_numeric($packetId)) {
+            throw new \InvalidArgumentException('Numeric packet ID is expected');
+        }
+
+        $query = $this->db->getQuery(true);
+        $query->update(self::PACKETERY_ORDER_TABLE_NAME)
+            ->set('`carrier_number` = ' . $this->db->quote($carrierNumber))
+            ->where('`zasilkovna_packet_id` = ' . (int)$packetId);
+
+        $this->db->setQuery($query);
+
+        return $this->db->execute();
+    }
+
+    /**
+     * Get external carrier packets with their carrier numbers
+     *
+     * @param int[]|string[] $packetIds
+     * @return array Array of packets with carrier numbers in format needed for SOAP call
+     */
+    public function getExternalCarrierPacketsWithCarrierNumbers(array $packetIds)
+    {
+        $escapedPacketIds = [];
+        foreach ($packetIds as $packetId) {
+            if (!is_numeric($packetId)) {
+                throw new \InvalidArgumentException('Numeric packet ID is expected');
+            }
+
+            $escapedPacketIds[] = (int)$packetId;
+        }
+
+        if (empty($escapedPacketIds)) {
+            return [];
+        }
+
+        $query = $this->db->getQuery(true);
+        $query->select('`zasilkovna_packet_id` AS `packetId`, `carrier_number` AS `courierNumber`')
+            ->from(self::PACKETERY_ORDER_TABLE_NAME)
+            ->where('`is_carrier` = 1')
+            ->where(
+                sprintf(
+                    '`zasilkovna_packet_id` IN (%s)',
+                    implode(',', $escapedPacketIds)
+                )
+            );
+
+        $this->db->setQuery($query);
+        $packetsWithCarrierNumbers = $this->db->loadAssocList();
+
+        return $packetsWithCarrierNumbers ?: [];
     }
 }
