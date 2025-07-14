@@ -161,6 +161,14 @@ class VirtuemartControllerZasilkovna extends VmController
                 new Label\Format($format),
                 (int)$postData['label_first_page_skip']
             );
+            if ($fromOrderDetail === true && $result !== []) {
+                $result = $this->zasOrdersModel->printPacketaLabels(
+                    $packetIds,
+                    new Label\Format($format),
+                    (int)$postData['label_first_page_skip'],
+                    $fromOrderDetail
+                );
+            }
         } else {
             $format = str_replace('_', ' ', $postData['print_type']);
             $result = $this->zasOrdersModel->printPacketaLabels(
