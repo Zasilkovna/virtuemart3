@@ -1,3 +1,4 @@
+1.4.1 - Updated: Add new fields to CSV export and update version number to 8
 1.4.0 - Added: manual trigger for carrier list update via Packeta API
       - Added: allowed the use of different types of pickup points separately
       - Added: carrier v4 import
