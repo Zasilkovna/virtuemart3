@@ -339,7 +339,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $exportedOrders = array();
         $sender_label = $this->zas_model->getConfig('zasilkovna_eshop_label');
 
-        echo '"verze 5"'.PHP_EOL.PHP_EOL;
+        echo '"version 8"'.PHP_EOL.PHP_EOL;
 
         foreach($ordersForExport as $row) {
             //foreach ($row as $key => $col)if(empty($col))$row[$key]="";
@@ -367,6 +367,11 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $row['width'] ?: '',
                 $row['height'] ?: '',
                 $row['length'] ?: '',
+                '', // note
+                '', // Allow public tracking
+                '', // Allow tracking for users
+                '', // Romania CIF Number
+                self::AFFILIATE_ID,
             );
 
             echo "," . implode(',', $order) . PHP_EOL;
