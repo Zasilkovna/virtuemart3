@@ -131,6 +131,8 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $this->addStandardDefaultViewLists($ordersModel, 'created_on');
         $this->lists['state_list'] = $this->renderOrderstatesList();
 
+        $ordersModel->setPaginationLimits(true);
+        
         $shipping_method_selectec_id = $mainframe->input->getInt('order_exported', 0);
         $orderslist = $ordersModel->getOrdersListByShipment($shipping_method_selectec_id);
 
