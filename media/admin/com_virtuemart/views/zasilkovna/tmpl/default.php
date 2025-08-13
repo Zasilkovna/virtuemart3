@@ -52,10 +52,10 @@ if (version_compare(JVERSION, '4.0.0', '>=')) {
 }
 ?>
 <script>
-    jQuery("a.toolbar").each(function() {
-        var onClickStr = $(this).attr("onclick");
-        if (onClickStr.indexOf('printLabels') >= 0 || onClickStr.indexOf('updateAndExportZasilkovnaOrders') >= 0) {
-            $(this).click(function() {
+    jQuery("joomla-toolbar-button").each(function() {
+        var taskValue = jQuery(this).attr("task");
+        if (taskValue && (taskValue.indexOf('printLabels') >= 0 || taskValue.indexOf('updateAndExportZasilkovnaOrders') >= 0)) {
+            jQuery(this).click(function() {
                 window.setTimeout(function() {
                     document.adminForm.task.value = "";
                 }, 1000);
