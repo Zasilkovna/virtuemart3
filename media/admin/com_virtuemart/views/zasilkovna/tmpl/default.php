@@ -52,16 +52,27 @@ if (version_compare(JVERSION, '4.0.0', '>=')) {
 }
 ?>
 <script>
-    let toolbarSelector = jQuery('joomla-toolbar-button'.length > 0 ? 'joomla-toolbar-button' : 'a.toolbar';
-    
-    jQuery(toolbarSelector).each(function() {
-        let taskValue = jQuery(this).attr('task');
-        if (taskValue && (taskValue.indexOf('printLabels') >= 0 || taskValue.indexOf('updateAndExportZasilkovnaOrders') >= 0)) {
-            jQuery(this).click(function() {
-                window.setTimeout(function() {
-                    document.adminForm.task.value = "";
-                }, 1000);
-            })
-        }
-    });
+    if (jQuery('joomla-toolbar-button'.length > 0))
+        jQuery('joomla-toolbar-button').each(function() {
+            let taskValue = jQuery(this).attr('task');
+            if (taskValue && (taskValue.indexOf('printLabels') >= 0 || taskValue.indexOf('updateAndExportZasilkovnaOrders') >= 0)) {
+                jQuery(this).click(function() {
+                    window.setTimeout(function() {
+                        document.adminForm.task.value = "";
+                    }, 1000);
+                })
+            }
+        });
+    } else if(jQuery('a.toolbar'.length > 0)) { // for backward compatibility
+        jQuery('a.toolbar').each(function() {
+            var onClickStr = $(this).attr("onclick");
+            if (onClickStr.indexOf('printLabels') >= 0 || onClickStr.indexOf('updateAndExportZasilkovnaOrders') >= 0) {
+                $(this).click(function() {
+                    window.setTimeout(function() {
+                        document.adminForm.task.value = "";
+                    }, 1000);
+                })
+            }
+        });
+    }
 </script>
