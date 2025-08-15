@@ -52,10 +52,10 @@ if (version_compare(JVERSION, '4.0.0', '>=')) {
 }
 ?>
 <script>
-    let toolbarSelector = jQuery("joomla-toolbar-button").length > 0 ? "joomla-toolbar-button" : "a.toolbar";
+    let toolbarSelector = jQuery('joomla-toolbar-button'.length > 0 ? 'joomla-toolbar-button' : 'a.toolbar';
     
     jQuery(toolbarSelector).each(function() {
-        let taskValue = jQuery(this).attr("task");
+        let taskValue = jQuery(this).attr('task');
         if (taskValue && (taskValue.indexOf('printLabels') >= 0 || taskValue.indexOf('updateAndExportZasilkovnaOrders') >= 0)) {
             jQuery(this).click(function() {
                 window.setTimeout(function() {
