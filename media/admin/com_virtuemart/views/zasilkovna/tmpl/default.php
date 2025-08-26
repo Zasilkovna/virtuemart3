@@ -52,7 +52,7 @@ if (version_compare(JVERSION, '4.0.0', '>=')) {
 }
 ?>
 <script>
-    if (jQuery('joomla-toolbar-button'.length > 0))
+    if (jQuery('joomla-toolbar-button'.length > 0)) {
         jQuery('joomla-toolbar-button').each(function() {
             let taskValue = jQuery(this).attr('task');
             if (taskValue && (taskValue.indexOf('printLabels') >= 0 || taskValue.indexOf('updateAndExportZasilkovnaOrders') >= 0)) {
@@ -63,7 +63,7 @@ if (version_compare(JVERSION, '4.0.0', '>=')) {
                 })
             }
         });
-    } else if(jQuery('a.toolbar'.length > 0)) { // for backward compatibility
+    } else if (jQuery('a.toolbar'.length > 0)) { // for backward compatibility
         jQuery('a.toolbar').each(function() {
             var onClickStr = $(this).attr("onclick");
             if (onClickStr.indexOf('printLabels') >= 0 || onClickStr.indexOf('updateAndExportZasilkovnaOrders') >= 0) {
