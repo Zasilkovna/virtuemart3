@@ -270,7 +270,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     public function cancelOrderSubmitToZasilkovna($order_id) {
         if(!isset($order_id)) return false;
         $db = JFactory::getDBO();
-        $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET exported=0, zasilkovna_packet_id=0 WHERE virtuemart_order_id = " . (int)$order_id . ";";
+        $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET `exported` = 0, `zasilkovna_packet_id` = 0, `carrier_number` = NULL WHERE `virtuemart_order_id` = " . (int)$order_id . ";";
         $db->setQuery($q);
         $db->execute();
 
