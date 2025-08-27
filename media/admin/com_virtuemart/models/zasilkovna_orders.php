@@ -95,16 +95,14 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         try {
             $pdfContent = $soapClient->packetsLabelsPdf($apiPassword, $filteredPacketIds, $format->getValue(), $offset);
         } catch (SoapFault $e) {
-            $errors[] = $e->faultstring . " ";
-            if (is_array($e->detail->PacketIdsFault->ids->packetId)) {
-                $wrongPacketIds = "";
-                foreach ($e->detail->PacketIdsFault->ids->packetId as $wrongPacketId) {
-                    $wrongPacketIds .= $wrongPacketId . " ";
-                }
-                $errors[] = $wrongPacketIds;
-            } else {
-                if (is_object($e->detail->PacketIdsFault)) { //only one error
-                    $errors[] = $e->detail->PacketIdsFault->ids->packetId;
+            $faultIdentifier = $this->getFaultIdentifier($e);
+            $packetApiErrorTranslation = JText::_('PLG_VMSHIPMENT_PACKETERY_PACKETA_API');
+            $errors[] = "{$packetApiErrorTranslation} {$e->faultstring}";
+            if ($this->hasPacketIdsFault($faultIdentifier) && isset($e->detail->PacketIdsFault->ids->packetId)) {
+                if (is_array($e->detail->PacketIdsFault->ids->packetId)) {
+                    $errors[] = implode(', ', $e->detail->PacketIdsFault->ids->packetId);
+                } else {
+                    $errors[] = (string)$e->detail->PacketIdsFault->ids->packetId;
                 }
             }
 
@@ -897,5 +895,30 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         $formData['submitted'] = 0;
 
         $this->updateOrders([$formData['virtuemart_order_id'] => $formData]);
+    }
+
+    /**
+     * @param SoapFault $exception
+     * @return string
+     */
+    private function getFaultIdentifier( SoapFault $exception ) {
+        if (isset($exception->detail)) {
+            $detailVars = get_object_vars($exception->detail);
+            $firstKey   = key($detailVars);
+
+            if ($firstKey !== null) {
+                return (string) $firstKey;
+            }
+        }
+
+        return (string) $exception->faultstring;
+    }
+
+    /**
+     * @param string $fault
+     * @return bool
+     */
+    private function hasPacketIdsFault( $fault ) {
+        return $fault === 'PacketIdsFault';
     }
 }
