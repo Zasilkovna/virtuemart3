@@ -1,10 +1,10 @@
 [Návod v češtině](https://github.com/Zasilkovna/virtuemart3#modul-pro-virtuemart-3--joomla-3)
 
-# Module for VirtueMart 3 or 4 + Joomla 3 or 4
+# Module for VirtueMart 4 + Joomla 4 or 5
 
 ### Download module
 
-[Actual version 1.3.1](https://github.com/Zasilkovna/virtuemart3/archive/refs/tags/v.1.3.1.zip)
+[Download the latest version](https://github.com/Zasilkovna/virtuemart3/releases/latest)
 
 ### Installation
 
@@ -70,8 +70,8 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 
 #### Supported versions:
 
-- VirtueMart 3 or 4 + Joomla 3 or 4
-- If you have trouble using the module, please contact us at [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
+- VirtueMart 4 + Joomla 4 or 5
+- If you have trouble using the module, please contact us at [e-commerce.support@packeta.com](mailto:e-commerce.support@packeta.com).
 
 #### Functions provided:
 
@@ -88,7 +88,7 @@ Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a
 
 - *One Page Checkout for VirtueMart* from [RuposTel](https://www.rupostel.com/)
 
-In case you are using another third-party cart module, please write to [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
+In case you are using another third-party cart module, please write to [e-commerce.support@packeta.com](mailto:e-commerce.support@packeta.com).
 Packeta module may not work with another OPC module.
 
 <a id="settings-payment_method"></a>
@@ -117,11 +117,11 @@ Users, who modified the file `components/com_virtuemart/views/cart/tmpl/select_p
 
 ```
 
-# Modul pro VirtueMart 3 nebo 4 + Joomla 3 nebo 4
+# Modul pro VirtueMart 4 + Joomla 4 or 5
 
 ### Stažení modulu
 
-[Aktuální verze 1.3.1](https://github.com/Zasilkovna/virtuemart3/archive/refs/tags/v.1.3.1.zip)
+[Stažení aktuální verze](https://github.com/Zasilkovna/virtuemart3/releases/latest)
 
 ### Instalace
 
@@ -188,8 +188,8 @@ Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Met
 
 #### Podporované verze:
 
-- VirtueMart 3 nebo 4 + Joomla 3 nebo 4
-- Při problému s použitím modulu nás kontaktujte na adrese [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz)
+- VirtueMart 4 + Joomla 4 or 5
+- Při problému s použitím modulu nás kontaktujte na adrese [e-commerce.support@packeta.com](mailto:e-commerce.support@packeta.com)
 
 #### Poskytované funkce:
 
@@ -205,7 +205,7 @@ Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Met
 ### Podpora pro OPC
 - *One Page Checkout for VirtueMart* od [RuposTel](https://www.rupostel.com/)
 
-Pokud používáte nějaký jiný modul košíku třetí strany, napište nám [technicka.podpora@zasilkovna.cz](mailto:technicka.podpora@zasilkovna.cz).
+Pokud používáte nějaký jiný modul košíku třetí strany, napište nám [e-commerce.support@packeta.com](mailto:e-commerce.support@packeta.com).
 Modul Zásilkovny nemusí být s jiným OPC modulem funkční.
 
 <a id="nastaveni-platebni_metody"></a>
