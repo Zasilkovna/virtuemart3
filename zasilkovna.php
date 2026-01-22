@@ -173,9 +173,25 @@ class plgVmShipmentZasilkovna extends vmPSPlugin
             jExit();
         }
 
+        $displayDebugInfo = false;
+        $getParams = vRequest::getGet();
+        if (isset($getParams['debug']) && (string)$getParams['debug'] === '1') {
+            $displayDebugInfo = true;
+            error_reporting(E_ALL);
+            ini_set('display_errors', 1);
+        }
+
         /** @var VirtueMartModelZasilkovna $model */
         $model = VmModel::getModel('zasilkovna');
         $model->updateCarriers();
+
+        if ($displayDebugInfo) {
+            $lastError = error_get_last();
+            if ($lastError !== null) {
+                var_dump($lastError);
+                echo '<br>';
+            }
+        }
 
         foreach ($model->errors as $error) {
             echo $error;
