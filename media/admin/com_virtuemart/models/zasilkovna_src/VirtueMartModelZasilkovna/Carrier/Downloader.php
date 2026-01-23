@@ -3,6 +3,7 @@
 namespace VirtueMartModelZasilkovna\Carrier;
 
 use JText;
+use vRequest;
 
 /**
  * Class Downloader downloads carriers' settings from API.
@@ -14,6 +15,9 @@ class Downloader
     /** @var string */
     private $apiKey;
 
+    /** @var bool */
+    private $debug = false;
+
     /**
      * Downloader constructor.
      * @param string $apiKey
@@ -21,6 +25,11 @@ class Downloader
     public function __construct($apiKey)
     {
         $this->apiKey = $apiKey;
+
+        $getParams = vRequest::getGet();
+        if (isset($getParams['debug']) && (string)$getParams['debug'] === '1') {
+            $this->debug = true;
+        }
     }
 
     /**
@@ -32,8 +41,12 @@ class Downloader
     {
         $carriers = $this->fetchAsArray($lang);
 
-        if (!$this->validateCarrierData($carriers)) {
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
+        $errorDetails = [];
+        if (!$this->validateCarrierData($carriers, $errorDetails)) {
+            throw new DownloadException(
+                JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_VALIDATION_ERROR') .
+                ($this->debug === true ? ' ' . json_encode($errorDetails) : '')
+            );
         }
 
         return $carriers;
@@ -93,7 +106,13 @@ class Downloader
         $response = $this->fetch($url);
 
         if ($response === false) {
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
+            $lastError = error_get_last();
+            $appendError = isset($lastError['message']) && $this->debug === true;
+
+            throw new DownloadException(
+                JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR') .
+                ($appendError ? ': ' . $lastError['message'] : '')
+            );
         }
 
         return $response;
@@ -109,7 +128,13 @@ class Downloader
         $carriersData = json_decode($json, true);
 
         if (!is_array($carriersData)) {
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
+            $error = json_last_error_msg();
+            $appendError = json_last_error() !== JSON_ERROR_NONE  && $this->debug === true;
+
+            throw new DownloadException(
+                JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR') .
+                ($appendError ? " (JSON error: $error). Data: " . htmlspecialchars(substr($json, 0, 100)) . '...' : '')
+            );
         }
 
         if (isset($carriersData['error'])) {
@@ -124,31 +149,43 @@ class Downloader
      * Validates data from API.
      *
      * @param array $carriers Data retrieved from API.
+     * @param string|null $errorDetails
      * @return bool
      */
-    private function validateCarrierData(array $carriers)
+    private function validateCarrierData(array $carriers, &$errorDetails = null)
     {
         if (empty($carriers)) {
-
+            $errorDetails = 'Empty carrier data.';
             return false;
         }
 
+        $requiredFields = [
+            'id',
+            'name',
+            'country',
+            'currency',
+            'pickupPoints',
+            'apiAllowed',
+            'separateHouseNumber',
+            'customsDeclarations',
+            'requiresEmail',
+            'requiresPhone',
+            'requiresSize',
+            'disallowsCod',
+            'maxWeight',
+        ];
+
         foreach ($carriers as $carrier) {
-            if (!isset(
-                $carrier['id'],
-                $carrier['name'],
-                $carrier['country'],
-                $carrier['currency'],
-                $carrier['pickupPoints'],
-                $carrier['apiAllowed'],
-                $carrier['separateHouseNumber'],
-                $carrier['customsDeclarations'],
-                $carrier['requiresEmail'],
-                $carrier['requiresPhone'],
-                $carrier['requiresSize'],
-                $carrier['disallowsCod'],
-                $carrier['maxWeight']
-            )) {
+            $missingFields = [];
+            foreach ($requiredFields as $field) {
+                if (!isset($carrier[$field])) {
+                    $missingFields[] = $field;
+                }
+            }
+
+            if (!empty($missingFields)) {
+                $carrierId = isset($carrier['id']) ? $carrier['id'] : 'unknown';
+                $errorDetails = sprintf('Carrier ID %s is missing fields: %s', $carrierId, implode(', ', $missingFields));
                 return false;
             }
         }
