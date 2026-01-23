@@ -107,7 +107,7 @@ class Downloader
 
         if ($response === false) {
             $lastError = error_get_last();
-            $appendError = $lastError['message'] !== null && $this->debug === true;
+            $appendError = isset($lastError['message']) && $this->debug === true;
 
             throw new DownloadException(
                 JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR') .
@@ -129,7 +129,7 @@ class Downloader
 
         if (!is_array($carriersData)) {
             $error = json_last_error_msg();
-            $appendError = $error !== 'No error' && $this->debug === true;
+            $appendError = json_last_error() !== JSON_ERROR_NONE  && $this->debug === true;
 
             throw new DownloadException(
                 JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR') .
