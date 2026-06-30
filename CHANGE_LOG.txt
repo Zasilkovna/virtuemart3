@@ -1,3 +1,6 @@
+1.5.0 - Added: display of consignment code in order detail and Packeta orders list
+      - Updated: Slovak translations
+
 1.4.0 - Added: manual trigger for carrier list update via Packeta API
       - Added: allowed the use of different types of pickup points separately
       - Added: carrier v5 import

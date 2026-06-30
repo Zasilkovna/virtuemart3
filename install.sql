@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS `#__virtuemart_shipment_plg_zasilkovna` (
 	`width` smallint(5) unsigned NULL,
 	`height` smallint(5) unsigned NULL,
 	`branch_id` decimal(10,0),
+	`consign_password` varchar(10) NULL,
 	`branch_currency` char(5),
 	`branch_name_street` varchar(500),
 	`is_carrier` smallint(1) NOT NULL DEFAULT '0',

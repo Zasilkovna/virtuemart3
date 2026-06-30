@@ -38,6 +38,9 @@ defined('_JEXEC') or die('Restricted access'); ?>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_COD'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_WEIGHT'); ?></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_TRACKING_NO'); ?></th>
+            <?php if ($this->showConsignPassword) { ?>
+                <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CONSIGNMENT_CODE'); ?></th>
+            <?php } ?>
             <!-- for cancel button -->
             <th></th>
             <th><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_PICKUP_POINT_OR_CARRIER'); ?></th>
@@ -156,6 +159,10 @@ defined('_JEXEC') or die('Restricted access'); ?>
                             <a href="<?php echo sprintf(plgVmShipmentZasilkovna::TRACKING_URL, urlencode($order->zasilkovna_packet_id)); ?>" target="_blank"><?php echo 'Z' . htmlentities($order->zasilkovna_packet_id); ?></a>
                         <?php } ?>
                     </td>
+                    <?php if ($this->showConsignPassword) { ?>
+                        <!-- consignment code -->
+                        <td><?php echo isset($order->consign_password) ? htmlentities($order->consign_password) : ''; ?></td>
+                    <?php } ?>
                     <!--  cancel packet id button -->
                     <?php
                     $link = 'index.php?option=com_virtuemart&view=zasilkovna&task=cancelOrderSubmitToZasilkovna&cancel_order_id=' . htmlentities($order->virtuemart_order_id);
