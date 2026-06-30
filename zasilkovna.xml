@@ -11,9 +11,9 @@
     <copyright>Copyright (C) 2024 Packeta s.r.o. All rights reserved.</copyright>
     <license>License Info with link</license>
     <!--  The version string is recorded in the components table -->
-    <version>1.4.0</version>
+    <version>1.5.0</version>
     <!--  The date for the actual version release -->
-    <releaseDate>2021-06-29</releaseDate>
+    <releaseDate>2026-07-01</releaseDate>
     <!--  Type of release: Bug fix, Security Fix, Minor update, Major update -->
     <releaseType>Major update</releaseType>
     <!-- The description is optional and defaults to the name -->
