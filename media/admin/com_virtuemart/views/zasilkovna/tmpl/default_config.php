@@ -107,6 +107,21 @@ ob_start();
 <?php
 $autoSubmitContent = ob_get_clean();
 
+ob_start();
+?>
+    <table class="admintable">
+        <tr>
+            <th>
+                <?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CONSIGNMENT_CODE_SHOW'); ?>
+            </th>
+            <td class="pl-3">
+                <?php echo VmHTML::checkbox('zasilkovna_show_consign_password', $model->getConfig('zasilkovna_show_consign_password', '0')); ?>
+            </td>
+        </tr>
+    </table>
+<?php
+$consignPasswordContent = ob_get_clean();
+
 $renderer->setVariables([
     'title' => JText::_('PLG_VMSHIPMENT_PACKETERY_SETTINGS'),
     'icon' => 'cog',
@@ -125,6 +140,14 @@ $renderer->setVariables([
     'title' => JText::_('PLG_VMSHIPMENT_PACKETERY_AUTOSUBMIT_TITLE'),
     'icon' => 'forward',
     'content' => $autoSubmitContent,
+]);
+
+echo $renderer->renderToString();
+
+$renderer->setVariables([
+    'title' => JText::_('PLG_VMSHIPMENT_PACKETERY_CONSIGNMENT_CODE_BOX_TITLE'),
+    'icon' => 'lock',
+    'content' => $consignPasswordContent,
 ]);
 
 echo $renderer->renderToString();

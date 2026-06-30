@@ -3,6 +3,7 @@
  * Template variables
  * @var \VirtueMartModelZasilkovna\Order\Order $order
  * @var string $trackingLinkHtml
+ * @var bool $showConsignPassword
  */
 
 defined('_JEXEC') or die;
@@ -12,6 +13,12 @@ $exportedYesNo = $order->isExported() ? 'PLG_VMSHIPMENT_PACKETERY_YES' : 'PLG_VM
 ?>
     <table>
         <?php echo $trackingLinkHtml; ?>
+        <?php if ($showConsignPassword && $order->getConsignPassword() !== null && $order->getConsignPassword() !== '') { ?>
+            <tr>
+                <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_CONSIGNMENT_CODE'); ?></th>
+                <td><?php echo htmlentities($order->getConsignPassword()); ?></td>
+            </tr>
+        <?php } ?>
         <tr>
             <th class="key va-middle"><?php echo JText::_('PLG_VMSHIPMENT_PACKETERY_SHIPPING_NAME'); ?></th>
             <td><?php echo htmlentities($order->getShipmentName()); ?></td>

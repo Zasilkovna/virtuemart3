@@ -52,6 +52,9 @@ class Order
     /* @var string|null $carrier_number */
     private $carrier_number;
 
+    /* @var string|null $consign_password */
+    private $consign_password;
+
     /* @var string $email */
     private $email;
 
@@ -228,6 +231,14 @@ class Order
     public function getCarrierNumber()
     {
         return $this->carrier_number;
+    }
+
+    /**
+     * @return string|null
+     */
+    public function getConsignPassword()
+    {
+        return $this->consign_password;
     }
 
     /**

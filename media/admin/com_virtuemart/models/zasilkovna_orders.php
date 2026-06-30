@@ -234,6 +234,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
                 $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET zasilkovna_packet_id=" . (int)$packet->id . " WHERE order_number = '" . $db->escape($order['order_number']) . "'; ";
                 $db->setQuery($q);
                 $db->execute();
+                $this->fetchAndStoreConsignPassword($gw, $apiPassword, (int)$packet->id, $order['order_number']);
                 $exportedOrders[] = array('order_number' => $order['order_number'], 'zasilkovna_id' => $packet->id);
                 $exportedOrdersNumber[] = $order['order_number'];
             }
@@ -268,11 +269,44 @@ class VirtueMartModelZasilkovna_orders extends VmModel
     public function cancelOrderSubmitToZasilkovna($order_id) {
         if(!isset($order_id)) return false;
         $db = JFactory::getDBO();
-        $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET `exported` = 0, `zasilkovna_packet_id` = 0, `carrier_number` = NULL WHERE `virtuemart_order_id` = " . (int)$order_id . ";";
+        $q = "UPDATE " . $this->zas_model->getDbTableName() . " SET `exported` = 0, `zasilkovna_packet_id` = 0, `carrier_number` = NULL, `consign_password` = NULL WHERE `virtuemart_order_id` = " . (int)$order_id . ";";
         $db->setQuery($q);
         $db->execute();
 
         return true;
+    }
+
+    /**
+     * @param SoapClient $soapClient
+     * @param string $apiPassword
+     * @param int $packetId
+     * @param string $orderNumber
+     * @return void
+     */
+    private function fetchAndStoreConsignPassword(SoapClient $soapClient, $apiPassword, $packetId, $orderNumber)
+    {
+        if ((int)$this->zas_model->getConfig('zasilkovna_show_consign_password', 0) !== 1) {
+            return;
+        }
+
+        try {
+            $packetInfo = $soapClient->packetInfo($apiPassword, $packetId);
+        } catch (SoapFault $e) {
+            return;
+        } catch (Exception $e) {
+            return;
+        }
+
+        if (!isset($packetInfo->consignPassword) || $packetInfo->consignPassword === '') {
+            return;
+        }
+
+        $db = JFactory::getDBO();
+        $q = "UPDATE " . $this->zas_model->getDbTableName()
+            . " SET `consign_password` = " . $db->quote($packetInfo->consignPassword)
+            . " WHERE `order_number` = " . $db->quote($orderNumber);
+        $db->setQuery($q);
+        $db->execute();
     }
 
     private function setPrintLabelFlag($printedLabels) {
@@ -788,7 +822,7 @@ class VirtueMartModelZasilkovna_orders extends VmModel
         plg.exported AS exported,plg.is_cod AS is_cod, plg.packet_cod AS packet_cod, plg.branch_currency, plg.branch_name_street AS name_street, 
         brnch.country as country, plg.adult_content, plg.email, u_bt.email AS billing_email, 
         IF(IFNULL(u.phone_1, u_bt.phone_1) <> "", IFNULL(u.phone_1, u_bt.phone_1), IFNULL(u.phone_2, u_bt.phone_2)) as phone,              
-        plg.zasilkovna_packet_id,plg.zasilkovna_packet_price,plg.weight ';
+        plg.zasilkovna_packet_id,plg.zasilkovna_packet_price,plg.weight, plg.consign_password ';
         if($shipment_id == self::ALL_ORDERS) {
             //no where statement => select all
             ;
