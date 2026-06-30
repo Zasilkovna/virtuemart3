@@ -151,6 +151,7 @@ class VirtuemartViewZasilkovna extends VmViewAdmin {
         $zas_model = VmModel::getModel('zasilkovna');
 
         $this->media_url = $zas_model->_media_url;
+        $this->showConsignPassword = ((int)$zas_model->getConfig('zasilkovna_show_consign_password', 0) === 1);
 
         JToolBarHelper::save('submitToZasilkovna', JText::_('PLG_VMSHIPMENT_PACKETERY_SUBMIT_ORDERS_TO_ZASILKOVNA'));
         JToolBarHelper::custom('printLabels', 'copy', '', JText::_('PLG_VMSHIPMENT_PACKETERY_DO_PRINT_LABELS'), false, false);

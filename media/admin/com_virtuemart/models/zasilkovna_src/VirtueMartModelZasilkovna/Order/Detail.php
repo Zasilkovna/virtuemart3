@@ -36,6 +36,7 @@ class Detail
         $this->renderer->setVariables([
             'order' => $order,
             'trackingLinkHtml' => $this->getTrackingLinkHtml($order),
+            'showConsignPassword' => ((int)\VmModel::getModel('zasilkovna')->getConfig('zasilkovna_show_consign_password', 0) === 1),
         ]);
         $this->renderer->setTemplate(self::TEMPLATES_DIR . DS . 'order_extended_detail.php');
         $detailsHtml = $this->renderer->renderToString();
