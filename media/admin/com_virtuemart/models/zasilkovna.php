@@ -16,7 +16,7 @@ if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugin
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.5.0';
+    const VERSION = '1.5.1';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
@@ -272,7 +272,18 @@ class VirtueMartModelZasilkovna extends VmModel
             return;
         }
 
-        $this->saveCarriers($carriers);
+        try {
+            $this->saveCarriers($carriers);
+        } catch (\Exception $e) {
+            // The feed passed validation, so whatever the database refused is a value no rule
+            // here anticipated. Without this the client gets a Joomla error page with the table
+            // name in it instead of a message.
+            // The code goes in front of the message, because getMessage() carries only the mysqli
+            // text - and that is what tells a deadlock (1205, 1213) from damaged data (1366).
+            $this->errors[] = \VirtueMartModelZasilkovna\Carrier\Downloader::saveError(
+                $e->getCode() . ' ' . $e->getMessage()
+            );
+        }
     }
 
     /**
@@ -280,6 +291,31 @@ class VirtueMartModelZasilkovna extends VmModel
      * @return void
      */
     private function saveCarriers(array $carriers) {
+
+        $db = \JFactory::getDBO();
+        $db->transactionStart();
+
+        try {
+            $this->saveCarriersInTransaction($carriers);
+        } catch (\Exception $e) {
+            // Half a carrier list is worse than none: the merchant would ship with a mix of the
+            // old and the new data and nothing would say so.
+            $db->transactionRollback();
+
+            throw $e;
+        }
+
+        $db->transactionCommit();
+    }
+
+    /**
+     * @param array<int, array{id: scalar, name: scalar, pickupPoints: scalar, apiAllowed: scalar,
+     *     separateHouseNumber: scalar, customsDeclarations: scalar, requiresEmail: scalar,
+     *     requiresPhone: scalar, requiresSize: scalar, disallowsCod: scalar, country: scalar,
+     *     currency: scalar, maxWeight: scalar}> $carriers
+     * @return void
+     */
+    private function saveCarriersInTransaction(array $carriers) {
 
         $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
         foreach ($carriers as $carrier) {

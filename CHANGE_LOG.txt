@@ -1,3 +1,7 @@
+1.5.1 - Added: specific error messages for the carrier list update, including a missing or rejected API password
+      - Added: technical detail split by severity into packeta.errors.php and packeta.warnings.php, unreadable feed saved as packeta.feed.php
+      - Added: carrier list is saved in a transaction; a failed save is reported and logged
+
 1.5.0 - Added: display of consignment code in order detail and Packeta orders list
       - Updated: Slovak translations
 
