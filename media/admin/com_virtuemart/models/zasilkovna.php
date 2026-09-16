@@ -309,7 +309,10 @@ class VirtueMartModelZasilkovna extends VmModel
     }
 
     /**
-     * @param array $carriers
+     * @param array<int, array{id: scalar, name: scalar, pickupPoints: scalar, apiAllowed: scalar,
+     *     separateHouseNumber: scalar, customsDeclarations: scalar, requiresEmail: scalar,
+     *     requiresPhone: scalar, requiresSize: scalar, disallowsCod: scalar, country: scalar,
+     *     currency: scalar, maxWeight: scalar}> $carriers
      * @return void
      */
     private function saveCarriersInTransaction(array $carriers) {

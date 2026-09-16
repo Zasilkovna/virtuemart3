@@ -373,7 +373,7 @@ class Downloader
     /**
      * Validates data from API. One carrier missing one field invalidates the whole batch.
      *
-     * @param array $carriers Data retrieved from API.
+     * @param array<int, mixed> $carriers Data retrieved from API, each item validated as a carrier.
      * @param string $json Raw feed body, kept for support when the data is damaged.
      *
      * @return void
@@ -453,7 +453,7 @@ class Downloader
     }
 
     /**
-     * @param array $fields
+     * @param string[] $fields
      *
      * @return string
      */
@@ -598,7 +598,7 @@ class Downloader
      * Tells a new feed format from a damaged batch: the same fields missing for every carrier
      * mean Packeta changed the feed, missing only for some of them mean damaged data.
      *
-     * @param array $invalidCarriers
+     * @param array<int, array{id: scalar, missing: string[], nulled: string[], badTypes: string[]}> $invalidCarriers
      * @param int $carrierCount
      *
      * @return bool
