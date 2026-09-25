@@ -266,23 +266,33 @@ class VirtueMartModelZasilkovna extends VmModel
         $language2code = $language ? substr($language->getTag(), 0, 2) : 'en';
         try {
             $carriers = $this->carrierDownloader->run($language2code);
-        } catch (\VirtueMartModelZasilkovna\Carrier\DownloadException $e) {
-            $this->errors[] = $e->getMessage();
 
-            return;
+            foreach ($this->carrierDownloader->getFetchWarnings() as $warning) {
+                $this->carrierDownloader->log($warning, \Joomla\CMS\Log\Log::WARNING);
+            }
+
+            $this->saveDownloadedCarriers($carriers);
+        } catch (\VirtueMartModelZasilkovna\Carrier\DownloadException $e) {
+            if ($e->getPrevious() !== null) {
+                $this->carrierDownloader->log($e->getPrevious()->getMessage());
+            }
+
+            $this->errors[] = $e->getMessage();
         }
+    }
+
+    /**
+     * @param array $carriers
+     * @return void
+     * @throws \VirtueMartModelZasilkovna\Carrier\DownloadException
+     */
+    private function saveDownloadedCarriers(array $carriers) {
 
         try {
             $this->saveCarriers($carriers);
         } catch (\Exception $e) {
-            // The feed passed validation, so whatever the database refused is a value no rule
-            // here anticipated. Without this the client gets a Joomla error page with the table
-            // name in it instead of a message.
-            // The code goes in front of the message, because getMessage() carries only the mysqli
-            // text - and that is what tells a deadlock (1205, 1213) from damaged data (1366).
-            $this->errors[] = \VirtueMartModelZasilkovna\Carrier\Downloader::saveError(
-                $e->getCode() . ' ' . $e->getMessage()
-            );
+            // Without this the client gets a Joomla error page that names the table.
+            throw $this->carrierDownloader->saveFailure($carriers, $e);
         }
     }
 
@@ -298,8 +308,7 @@ class VirtueMartModelZasilkovna extends VmModel
         try {
             $this->saveCarriersInTransaction($carriers);
         } catch (\Exception $e) {
-            // Half a carrier list is worse than none: the merchant would ship with a mix of the
-            // old and the new data and nothing would say so.
+            // Half a carrier list is worse than none, because nothing tells the merchant which data is old.
             $db->transactionRollback();
 
             throw $e;
