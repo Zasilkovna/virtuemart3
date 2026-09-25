@@ -149,7 +149,6 @@ class Downloader
 
         set_error_handler(
             function ($severity, $message) {
-                // Returning true also keeps it out of the host's PHP error log.
                 $this->fetchWarnings[] = $message;
 
                 return true;
