@@ -16,7 +16,7 @@ if(!class_exists('plgVmShipmentZasilkovna')) require_once VMPATH_ROOT . '/plugin
  */
 class VirtueMartModelZasilkovna extends VmModel
 {
-    const VERSION = '1.5.0';
+    const VERSION = '1.5.1';
     const PLG_NAME = 'zasilkovna';
 
     const MAX_WEIGHT_DEFAULT = 5;
@@ -266,13 +266,34 @@ class VirtueMartModelZasilkovna extends VmModel
         $language2code = $language ? substr($language->getTag(), 0, 2) : 'en';
         try {
             $carriers = $this->carrierDownloader->run($language2code);
+
+            foreach ($this->carrierDownloader->getFetchWarnings() as $warning) {
+                $this->carrierDownloader->log($warning, \Joomla\CMS\Log\Log::WARNING);
+            }
+
+            $this->saveDownloadedCarriers($carriers);
         } catch (\VirtueMartModelZasilkovna\Carrier\DownloadException $e) {
+            if ($e->getPrevious() !== null) {
+                $this->carrierDownloader->log($e->getPrevious()->getMessage());
+            }
+
             $this->errors[] = $e->getMessage();
-
-            return;
         }
+    }
 
-        $this->saveCarriers($carriers);
+    /**
+     * @param array $carriers
+     * @return void
+     * @throws \VirtueMartModelZasilkovna\Carrier\DownloadException
+     */
+    private function saveDownloadedCarriers(array $carriers) {
+
+        try {
+            $this->saveCarriers($carriers);
+        } catch (\Exception $e) {
+            // Without this the client gets a Joomla error page that names the table.
+            throw $this->carrierDownloader->saveFailure($carriers, $e);
+        }
     }
 
     /**
@@ -280,6 +301,29 @@ class VirtueMartModelZasilkovna extends VmModel
      * @return void
      */
     private function saveCarriers(array $carriers) {
+
+        $db = \JFactory::getDBO();
+        $db->transactionStart();
+
+        try {
+            $this->saveCarriersInTransaction($carriers);
+        } catch (\Exception $e) {
+            $db->transactionRollback();
+
+            throw $e;
+        }
+
+        $db->transactionCommit();
+    }
+
+    /**
+     * @param array<int, array{id: scalar, name: scalar, pickupPoints: scalar, apiAllowed: scalar,
+     *     separateHouseNumber: scalar, customsDeclarations: scalar, requiresEmail: scalar,
+     *     requiresPhone: scalar, requiresSize: scalar, disallowsCod: scalar, country: scalar,
+     *     currency: scalar, maxWeight: scalar}> $carriers
+     * @return void
+     */
+    private function saveCarriersInTransaction(array $carriers) {
 
         $carrierIdsToDelete = $this->carrierRepository->getAllActiveCarrierIds();
         foreach ($carriers as $carrier) {
