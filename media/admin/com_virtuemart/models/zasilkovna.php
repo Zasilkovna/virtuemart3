@@ -308,7 +308,6 @@ class VirtueMartModelZasilkovna extends VmModel
         try {
             $this->saveCarriersInTransaction($carriers);
         } catch (\Exception $e) {
-            // Half a carrier list is worse than none, because nothing tells the merchant which data is old.
             $db->transactionRollback();
 
             throw $e;

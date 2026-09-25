@@ -16,10 +16,7 @@ class Downloader
 
     const API_ERROR_INVALID_KEY = 'Invalid API key';
 
-    // Enough to reach past the <head> of an HTML error page to the title that names the cause.
-    const MAX_LOG_TEXT_LENGTH = 500;
-
-    const MAX_SCREEN_TEXT_LENGTH = 200;
+    const MAX_TEXT_LENGTH = 200;
 
     const LOG_CATEGORY_ERRORS = 'packeta.errors';
 
@@ -29,9 +26,6 @@ class Downloader
 
     // The log view has no ACL action of its own, so whoever can update carriers can open it.
     const LOG_VIEW_PATH = 'administrator/index.php?option=com_virtuemart&amp;view=log';
-
-    // Cap on the text handed to strip_tags(), so the error path itself cannot exhaust memory.
-    const MAX_FLATTEN_LENGTH = 65536;
 
     const REQUIRED_CARRIER_FIELDS = array(
         'id',
@@ -49,15 +43,11 @@ class Downloader
         'maxWeight',
     );
 
-
     /** @var string */
     private $apiKey;
 
     /** @var string[] */
     private $fetchWarnings = array();
-
-    /** @var string */
-    private $statusLine = '';
 
     /**
      * Downloader constructor.
@@ -76,13 +66,11 @@ class Downloader
     public function run($lang)
     {
         $this->fetchWarnings = array();
-        $this->statusLine = '';
 
         $json = $this->downloadJson($lang);
         $carriers = $this->getFromJson($json);
 
         $this->validateCarrierData($carriers, $json);
-        self::removeFeedCopy();
 
         return $carriers;
     }
@@ -107,17 +95,14 @@ class Downloader
         // getMessage() lacks the SQL error code, which tells a deadlock from damaged data.
         $detail = "saving carriers failed: {$cause->getCode()} {$cause->getMessage()}";
 
-        // The shared opening sentence blames the download, so this message does not use it.
         return new DownloadException(
             JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_SAVE_ERROR') . self::feedCopyNote($stored),
             0,
-            new \Exception($detail . self::feedCopyDetail($stored), 0, $cause)
+            new \Exception($detail, 0, $cause)
         );
     }
 
     /**
-     * Writes a technical detail into a Packeta log file, which VirtueMart shows under Logs
-     *
      * @param string $detail
      * @param int $severity One of the Log severity constants.
      * @return void
@@ -131,7 +116,7 @@ class Downloader
         }
 
         // The log view echoes every line into <li> unescaped.
-        $message = htmlspecialchars(self::flattenForLog($detail, false), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+        $message = htmlspecialchars(self::flattenForLog($detail), ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 
         try {
             // Without the format the logger writes {CLIENTIP} into a file the client sends to support.
@@ -144,10 +129,8 @@ class Downloader
                 array($category)
             );
             Log::add($message, $severity, $category);
-        } catch (\Exception $e) {
-            // A failed log must not replace the message with an error page.
         } catch (\Throwable $e) {
-            // The same for PHP 7 errors.
+            // A failed log must not replace the message with an error page.
         }
     }
 
@@ -160,54 +143,38 @@ class Downloader
     {
         if (!ini_get('allow_url_fopen')) {
             throw new DownloadException(
-                self::carrierError('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_URLFOPEN_ERROR')
+                self::carrierError(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_URLFOPEN_ERROR'))
             );
         }
 
         set_error_handler(
             function ($severity, $message) {
-                // A deprecation would read as the cause of a failed download.
-                if ($severity !== E_WARNING) {
-                    return false;
-                }
-
                 // Returning true also keeps it out of the host's PHP error log.
                 $this->fetchWarnings[] = $message;
 
                 return true;
-            }
+            },
+            E_WARNING
         );
 
-        $ctx = null;
-
         try {
-            if (function_exists('stream_context_create')) {
-                $ctx = stream_context_create(
-                    array(
-                        'http' => array(
-                            'timeout' => 20,
-                            'ignore_errors' => true, //to get API response although headers are not 200
-                        )
+            if (!function_exists('stream_context_create')) {
+                return file_get_contents($url);
+            }
+
+            $ctx = stream_context_create(
+                array(
+                    'http' => array(
+                        'timeout' => 20,
+                        'ignore_errors' => true, //to get API response although headers are not 200
                     )
-                );
-            }
+                )
+            );
 
-            // fopen() gives the status line without $http_response_header, which PHP 8.4 deprecates.
-            $handle = $ctx === null ? fopen($url, 'r') : fopen($url, 'r', false, $ctx);
-
-            if ($handle === false) {
-                return false;
-            }
-
-            $meta = stream_get_meta_data($handle);
-            $this->statusLine = isset($meta['wrapper_data'][0]) ? $meta['wrapper_data'][0] : '';
-            $response = stream_get_contents($handle);
-            fclose($handle);
+            return file_get_contents($url, false, $ctx);
         } finally {
             restore_error_handler();
         }
-
-        return $response;
     }
 
     /**
@@ -234,40 +201,17 @@ class Downloader
     {
         $stored = self::storeFeedCopy($json);
 
-        return $this->failure(
-            self::carrierError($key, self::feedCopyNote($stored)),
-            $detail . self::feedCopyDetail($stored)
-        );
+        return $this->failure(self::carrierError(JText::_($key), self::feedCopyNote($stored)), $detail);
     }
 
     /**
-     * @param string $key
+     * @param string $sentence Translated cause.
      * @param string $note
-     *
      * @return string
      */
-    private static function carrierError($key, $note = '')
-    {
-        return self::carrierErrorMessage(JText::_($key), $note);
-    }
-
-    /**
-     * @param string $sentence
-     * @param string $note
-     *
-     * @return string
-     */
-    private static function carrierErrorMessage($sentence, $note = '')
+    private static function carrierError($sentence, $note = '')
     {
         return JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_FAILED') . ' ' . $sentence . $note;
-    }
-
-    /**
-     * @return string
-     */
-    private function statusNote()
-    {
-        return $this->statusLine === '' ? '' : ' (' . $this->statusLine . ')';
     }
 
     /**
@@ -279,7 +223,7 @@ class Downloader
     {
         if (!$this->apiKey) {
             throw $this->failure(
-                self::carrierError('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_API_KEY_MISSING'),
+                self::carrierError(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_API_KEY_MISSING')),
                 'API key is not set'
             );
         }
@@ -289,15 +233,21 @@ class Downloader
 
         if ($response === false) {
             throw $this->failure(
-                self::carrierError('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR', self::logNote()),
-                'download failed' . $this->statusNote()
+                self::carrierError(
+                    JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR'),
+                    self::logNote()
+                ),
+                'download failed'
             );
         }
 
         if (trim($response) === '') {
             throw $this->failure(
-                self::carrierError('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR', self::logNote()),
-                'empty response body' . $this->statusNote()
+                self::carrierError(
+                    JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR'),
+                    self::logNote()
+                ),
+                'empty response body'
             );
         }
 
@@ -316,53 +266,30 @@ class Downloader
         if (!is_array($carriersData)) {
             throw $this->feedFailure(
                 'PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR',
-                $this->describeJsonFailure($json, $carriersData),
+                self::describeJsonFailure($json),
                 $json
             );
         }
 
-        // array_key_exists(), not isset(): a null error would read as a feed format change.
         if (array_key_exists('error', $carriersData)) {
-            if (!is_string($carriersData['error'])) {
-                throw $this->failure(
-                    self::carrierError(
-                        'PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_API_ERROR',
-                        self::logNoteOrSupport()
-                    ),
-                    sprintf('error field is %s, expected string', gettype($carriersData['error']))
-                );
-            }
-
             $apiError = trim($carriersData['error']);
-
-            if ($apiError === '') {
-                throw $this->failure(
-                    self::carrierError(
-                        'PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_API_ERROR',
-                        self::logNoteOrSupport()
-                    ),
-                    'error field is empty'
-                );
-            }
-
-            // Flattened before the cap, so the log keeps characters of text, not of markup.
-            $flattened = self::flattenForLog($apiError, false);
-            $detail = self::truncateForLog($flattened, self::MAX_LOG_TEXT_LENGTH);
+            $flattened = self::flattenForLog($apiError);
+            $detail = self::truncateForLog($flattened, self::MAX_TEXT_LENGTH);
 
             // Substring, not equality: the API wraps the phrase in a whole sentence.
             if (stripos($apiError, self::API_ERROR_INVALID_KEY) !== false) {
                 throw $this->failure(
-                    self::carrierError('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_API_KEY_INVALID'),
+                    self::carrierError(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_API_KEY_INVALID')),
                     $detail
                 );
             }
 
             throw $this->failure(
-                self::carrierErrorMessage(
+                self::carrierError(
                     JText::sprintf(
                         'PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_API_ERROR_REPORTED',
                         htmlspecialchars(
-                            self::truncateForLog($flattened, self::MAX_SCREEN_TEXT_LENGTH, '…'),
+                            self::truncateForLog($flattened, self::MAX_TEXT_LENGTH, '…'),
                             // Without ENT_SUBSTITUTE invalid UTF-8 gives an empty string.
                             ENT_QUOTES | ENT_SUBSTITUTE,
                             'UTF-8'
@@ -379,27 +306,20 @@ class Downloader
 
     /**
      * @param string $json
-     * @param mixed $decoded Result of json_decode() on $json.
-     *
      * @return string
      */
-    private function describeJsonFailure($json, $decoded)
+    private static function describeJsonFailure($json)
     {
-        $preview = self::truncateForLog(self::flattenForLog($json), self::MAX_LOG_TEXT_LENGTH);
+        $reason = json_last_error() === JSON_ERROR_NONE ? 'not a JSON array' : json_last_error_msg();
+        $preview = self::truncateForLog(self::flattenForLog($json), self::MAX_TEXT_LENGTH);
 
-        $reason = json_last_error() === JSON_ERROR_NONE
-            ? sprintf('decoded as %s, expected array', gettype($decoded))
-            : json_last_error_msg();
-
-        return sprintf('%s%s. Data: %s', $reason, $this->statusNote(), $preview);
+        return "{$reason}. Data: {$preview}";
     }
 
     /**
      * Validates data from API.
-     *
      * @param array<int, mixed> $carriers Data retrieved from API, each item validated as a carrier.
      * @param string $json Raw feed body, kept for support when the data is damaged.
-     *
      * @return void
      * @throws DownloadException
      */
@@ -418,25 +338,20 @@ class Downloader
         foreach ($carriers as $carrier) {
             $missing = array();
             $nulled = array();
-            $badTypes = array();
 
             foreach (self::REQUIRED_CARRIER_FIELDS as $field) {
                 if (!is_array($carrier) || !array_key_exists($field, $carrier)) {
                     $missing[] = $field;
                 } elseif ($carrier[$field] === null) {
                     $nulled[] = $field;
-                } elseif (!is_scalar($carrier[$field])) {
-                    // An array in `id` would end the request with a TypeError in unset($ids[$carrier['id']]).
-                    $badTypes[] = $field;
                 }
             }
 
-            if ($missing || $nulled || $badTypes) {
+            if ($missing || $nulled) {
                 $invalidCarriers[] = array(
-                    'id' => isset($carrier['id']) && is_scalar($carrier['id']) ? $carrier['id'] : '?',
+                    'id' => isset($carrier['id']) ? $carrier['id'] : '?',
                     'missing' => $missing,
                     'nulled' => $nulled,
-                    'badTypes' => $badTypes,
                 );
             }
         }
@@ -445,20 +360,16 @@ class Downloader
             return;
         }
 
-        // Listed apart, because that difference tells a feed format change from damaged data.
         $detail = sprintf(
-            'carrier %s has missing fields: %s; fields with no value: %s;'
-                . ' fields of an unusable type: %s (%d of %d carriers are invalid)',
+            'carrier %s has missing fields: %s; fields with no value: %s (%d of %d carriers are invalid)',
             $invalidCarriers[0]['id'],
             self::formatFieldList($invalidCarriers[0]['missing']),
             self::formatFieldList($invalidCarriers[0]['nulled']),
-            self::formatFieldList($invalidCarriers[0]['badTypes']),
             count($invalidCarriers),
             count($carriers)
         );
 
         if (self::isFeedFormatChange($invalidCarriers, count($carriers))) {
-            // Named here too: if the module is already current, support needs the feed body.
             throw $this->feedFailure(
                 'PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_FEED_VERSION_ERROR',
                 $detail,
@@ -471,7 +382,6 @@ class Downloader
 
     /**
      * @param string[] $fields
-     *
      * @return string
      */
     private static function formatFieldList(array $fields)
@@ -481,7 +391,6 @@ class Downloader
 
     /**
      * @param bool $stored Return value of storeFeedCopy().
-     *
      * @return string
      */
     private static function feedCopyNote($stored)
@@ -496,18 +405,6 @@ class Downloader
             self::logViewLinkOpen(),
             '</a>'
         );
-    }
-
-    /**
-     * @param bool $stored Return value of storeFeedCopy().
-     *
-     * @return string
-     */
-    private static function feedCopyDetail($stored)
-    {
-        return $stored
-            ? '; a copy of the feed was stored in ' . self::FEED_COPY_FILE
-            : '; the feed copy could not be stored in ' . self::logPath(self::FEED_COPY_FILE);
     }
 
     /**
@@ -548,10 +445,8 @@ class Downloader
 
     /**
      * The same fields missing for every carrier mean Packeta changed the feed, otherwise the data is damaged
-     *
-     * @param array<int, array{id: scalar, missing: string[], nulled: string[], badTypes: string[]}> $invalidCarriers
+     * @param array<int, array{id: mixed, missing: string[], nulled: string[]}> $invalidCarriers
      * @param int $carrierCount
-     *
      * @return bool
      */
     private static function isFeedFormatChange(array $invalidCarriers, $carrierCount)
@@ -561,8 +456,7 @@ class Downloader
         }
 
         foreach ($invalidCarriers as $carrier) {
-            // Null or an unusable type keeps the old shape, so an update of the module would not help.
-            if ($carrier['nulled'] || $carrier['badTypes']) {
+            if ($carrier['nulled']) {
                 return false;
             }
 
@@ -571,7 +465,6 @@ class Downloader
             }
         }
 
-        // No required field at all proves a changed shape even for one carrier, e.g. a {"carriers": [...]} wrapper.
         if (count($invalidCarriers[0]['missing']) === count(self::REQUIRED_CARRIER_FIELDS)) {
             return true;
         }
@@ -580,57 +473,22 @@ class Downloader
     }
 
     /**
-     * Overwrites the copy on every failure, because appended bodies would no longer parse as JSON
-     *
      * @param string $json
-     *
      * @return bool Whether the copy is on disk.
      */
     private static function storeFeedCopy($json)
     {
-        $path = self::logPath(self::FEED_COPY_FILE);
-        $folder = dirname($path);
-
-        if (!is_dir($folder) && !@mkdir($folder, 0755, true) && !is_dir($folder)) {
-            return false;
-        }
-
-        // The date tells support which failure the copy belongs to.
         $header = sprintf("#<?php die('Forbidden.'); ?>\n# Downloaded %s\n", gmdate('Y-m-d H:i:s') . ' UTC');
 
-        // The log view echoes a text/plain file unescaped, and a JSON parser reads < back as `<`.
+        // The log view echoes a text/plain file unescaped, and a JSON parser reads \u003C back as `<`.
         $content = $header . str_replace('<', '\\u003C', $json);
-        $written = @file_put_contents($path, $content);
 
-        // A full disk returns the bytes that fit, not false.
-        if ($written !== strlen($content)) {
-            @unlink($path);
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * Drops the copy of an earlier failure, so support never analyses a feed that later downloaded fine
-     *
-     * @return void
-     */
-    private static function removeFeedCopy()
-    {
-        $path = self::logPath(self::FEED_COPY_FILE);
-
-        if (file_exists($path)) {
-            @unlink($path);
-        }
+        return @file_put_contents(self::logPath(self::FEED_COPY_FILE), $content) !== false;
     }
 
     /**
      * Uses the default of FormattedtextLogger::initFile(), so our files land next to the Joomla ones
-     *
      * @param string $file
-     *
      * @return string
      */
     private static function logPath($file)
@@ -640,9 +498,7 @@ class Downloader
 
     /**
      * Checked up front, because Joomla 5 ignores a failed write and Joomla 4 throws
-     *
      * @param string $category
-     *
      * @return bool
      */
     private static function isLogWritable($category)
@@ -660,19 +516,11 @@ class Downloader
     }
 
     /**
-     * VirtueMart links a log file only when finfo reports it as text/plain, so the entry must stay plain text
-     *
      * @param string $message
-     * @param bool $stripMarkup False for text the feed reported, where `<` is not markup.
-     *
      * @return string
      */
-    private static function flattenForLog($message, $stripMarkup = true)
+    private static function flattenForLog($message)
     {
-        if (strlen($message) > self::MAX_FLATTEN_LENGTH) {
-            $message = substr($message, 0, self::MAX_FLATTEN_LENGTH);
-        }
-
         // strip_tags() keeps the contents of <style> and <script>, which would fill the preview with CSS.
         $withoutHeads = preg_replace('#<(script|style)\b[^>]*>.*?</\1>#is', ' ', $message);
 
@@ -680,39 +528,18 @@ class Downloader
             $message = $withoutHeads;
         }
 
-        if ($stripMarkup) {
-            $message = strip_tags($message);
-        } else {
-            // strip_tags() would cut "weight <5 kg not allowed" at the `<`, so only a real tag goes.
-            $withoutTags = preg_replace('#<!--.*?-->|</?[a-zA-Z][^>]*>#s', ' ', $message);
-
-            if ($withoutTags !== null) {
-                $message = $withoutTags;
-            }
-        }
-
-        $message = preg_replace('/\s+/', ' ', $message);
-
-        // One control byte makes finfo read the append-only log as octet-stream, and VirtueMart stops linking it.
-        return trim(preg_replace('/[[:cntrl:]]/', '', $message));
+        return trim(preg_replace('/\s+/', ' ', strip_tags($message)));
     }
 
     /**
-     * Without mbstring the cut can damage one multibyte character instead of causing a fatal error
-     *
      * @param string $text
      * @param int $length
      * @param string $marker Appended only when the text is shortened.
-     *
      * @return string
      */
     private static function truncateForLog($text, $length, $marker = '')
     {
-        if (function_exists('mb_substr')) {
-            $cut = mb_substr($text, 0, $length, 'UTF-8');
-        } else {
-            $cut = substr($text, 0, $length);
-        }
+        $cut = mb_substr($text, 0, $length, 'UTF-8');
 
         if ($marker !== '' && $cut !== $text) {
             $cut .= $marker;
