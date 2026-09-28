@@ -18,6 +18,16 @@ class Downloader
 
     const MAX_TEXT_LENGTH = 200;
 
+    const HTTP_STATUS_SUCCESS_MIN = 200;
+
+    const HTTP_STATUS_SUCCESS_MAX = 299;
+
+    const HTTP_STATUS_UNAUTHORIZED = 401;
+
+    const HTTP_STATUS_SERVER_ERROR_MIN = 500;
+
+    const HTTP_STATUS_SERVER_ERROR_MAX = 599;
+
     /** @var string */
     private $apiKey;
 
@@ -51,29 +61,62 @@ class Downloader
 
     /**
      * @param string $url
-     * @return false|string
+     * @return array{status: int|null, body: string}|false
      * @throws DownloadException
      */
     private function fetch($url)
     {
-        if (ini_get('allow_url_fopen')) {
-            if (function_exists('stream_context_create')) {
-                $ctx = stream_context_create(
-                    array(
-                        'http' => array(
-                            'timeout' => 20,
-                            'ignore_errors' => true, //to get API response although headers are not 200
-                        )
-                    )
-                );
-
-                return file_get_contents($url, 0, $ctx);
-            }
-
-            return file_get_contents($url);
+        if (!ini_get('allow_url_fopen')) {
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_URLFOPEN_ERROR'));
         }
 
-        throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_URLFOPEN_ERROR'));
+        $context = null;
+        if (function_exists('stream_context_create')) {
+            $context = stream_context_create(
+                [
+                    'http' => [
+                        'timeout' => 20,
+                        'ignore_errors' => true, //to get API response although headers are not 200
+                    ],
+                ]
+            );
+        }
+
+        // fopen() gives the status line without $http_response_header, which PHP 8.5 deprecates.
+        $handle = $context === null ? fopen($url, 'r') : fopen($url, 'r', false, $context);
+        if ($handle === false) {
+            return false;
+        }
+
+        $metaData = stream_get_meta_data($handle);
+        $body = stream_get_contents($handle);
+        fclose($handle);
+        if ($body === false) {
+            return false;
+        }
+
+        return [
+            'status' => $this->getStatusCode($metaData),
+            'body' => $body,
+        ];
+    }
+
+    /**
+     * Reads the HTTP status of the last response, after redirects
+     * @param array $metaData Result of stream_get_meta_data().
+     * @return int|null
+     */
+    private function getStatusCode(array $metaData)
+    {
+        $status = null;
+        $headers = isset($metaData['wrapper_data']) && is_array($metaData['wrapper_data']) ? $metaData['wrapper_data'] : [];
+        foreach ($headers as $headerLine) {
+            if (preg_match('~^HTTP/\S+\s+(\d{3})~', $headerLine, $matches)) {
+                $status = (int) $matches[1];
+            }
+        }
+
+        return $status;
     }
 
     /**
@@ -91,6 +134,7 @@ class Downloader
 
     /**
      * @param string $language
+     * @return string
      * @throws DownloadException
      */
     private function downloadJson($language)
@@ -122,7 +166,41 @@ class Downloader
             throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR'));
         }
 
-        return $response;
+        // The feed returns 401 for an invalid API key. The text of the body is not used.
+        if ($response['status'] === self::HTTP_STATUS_UNAUTHORIZED) {
+            $this->log('HTTP 401. Data: ' . $this->truncate($response['body']));
+
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_API_KEY_INVALID'));
+        }
+
+        // A server error comes with an HTML page. Its text does not tell the client anything.
+        if ($response['status'] >= self::HTTP_STATUS_SERVER_ERROR_MIN
+            && $response['status'] <= self::HTTP_STATUS_SERVER_ERROR_MAX
+        ) {
+            $this->log('HTTP ' . $response['status'] . '. Data: ' . $this->truncate($response['body']));
+
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_SERVER_ERROR'));
+        }
+
+        // Another status outside 2xx means a wrong URL, a blocked account or a rate limit.
+        // The body does not describe carriers, so it is not used.
+        // A response without a status line (null) does not stop the download.
+        if ($response['status'] !== null
+            && ($response['status'] < self::HTTP_STATUS_SUCCESS_MIN
+                || $response['status'] > self::HTTP_STATUS_SUCCESS_MAX)
+        ) {
+            $this->log('HTTP ' . $response['status'] . '. Data: ' . $this->truncate($response['body']));
+
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR'));
+        }
+
+        if (trim($response['body']) === '') {
+            $this->log('Empty response body');
+
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR'));
+        }
+
+        return $response['body'];
     }
 
     /**
@@ -141,6 +219,12 @@ class Downloader
         }
 
         if (isset($carriersData['error'])) {
+            if (!is_string($carriersData['error']) || trim($carriersData['error']) === '') {
+                $this->log('Invalid error field. Data: ' . $this->truncate($json));
+
+                throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_VALIDATION_ERROR'));
+            }
+
             throw new DownloadException($this->escape($this->truncate($carriersData['error'])));
         }
 
