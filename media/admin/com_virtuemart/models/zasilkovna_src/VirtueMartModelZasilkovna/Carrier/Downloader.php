@@ -3,7 +3,7 @@
 namespace VirtueMartModelZasilkovna\Carrier;
 
 use JText;
-use vRequest;
+use Joomla\CMS\Log\Log;
 
 /**
  * Class Downloader downloads carriers' settings from API.
@@ -12,11 +12,14 @@ class Downloader
 {
     const API_URL = 'https://pickup-point.api.packeta.com/v5/%s/carrier.json?lang=%s';
 
+    const LOG_CATEGORY = 'packeta.errors';
+
+    const LOG_FILE = 'packeta.errors.php';
+
+    const MAX_TEXT_LENGTH = 200;
+
     /** @var string */
     private $apiKey;
-
-    /** @var bool */
-    private $debug = false;
 
     /**
      * Downloader constructor.
@@ -25,11 +28,6 @@ class Downloader
     public function __construct($apiKey)
     {
         $this->apiKey = $apiKey;
-
-        $getParams = vRequest::getGet();
-        if (isset($getParams['debug']) && (string)$getParams['debug'] === '1') {
-            $this->debug = true;
-        }
     }
 
     /**
@@ -41,12 +39,11 @@ class Downloader
     {
         $carriers = $this->fetchAsArray($lang);
 
-        $errorDetails = [];
+        $errorDetails = null;
         if (!$this->validateCarrierData($carriers, $errorDetails)) {
-            throw new DownloadException(
-                JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_VALIDATION_ERROR') .
-                ($this->debug === true ? ' ' . json_encode($errorDetails) : '')
-            );
+            $this->log('Validation failed: ' . $errorDetails);
+
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_VALIDATION_ERROR'));
         }
 
         return $carriers;
@@ -103,16 +100,26 @@ class Downloader
         }
 
         $url = sprintf(self::API_URL, $this->apiKey, $language);
-        $response = $this->fetch($url);
+        $warnings = [];
+        set_error_handler(
+            function ($severity, $message) use (&$warnings) {
+                $warnings[] = $message;
+
+                return true;
+            },
+            E_WARNING
+        );
+
+        try {
+            $response = $this->fetch($url);
+        } finally {
+            restore_error_handler();
+        }
 
         if ($response === false) {
-            $lastError = error_get_last();
-            $appendError = isset($lastError['message']) && $this->debug === true;
+            $this->log('Download failed: ' . implode('; ', $warnings));
 
-            throw new DownloadException(
-                JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR') .
-                ($appendError ? ': ' . $lastError['message'] : '')
-            );
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR'));
         }
 
         return $response;
@@ -128,22 +135,69 @@ class Downloader
         $carriersData = json_decode($json, true);
 
         if (!is_array($carriersData)) {
-            $error = json_last_error_msg();
-            $appendError = json_last_error() !== JSON_ERROR_NONE  && $this->debug === true;
+            $this->log('JSON error: ' . json_last_error_msg() . '. Data: ' . $this->truncate($json));
 
-            throw new DownloadException(
-                JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR') .
-                ($appendError ? " (JSON error: $error). Data: " . htmlspecialchars(substr($json, 0, 100)) . '...' : '')
-            );
+            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
         }
 
         if (isset($carriersData['error'])) {
-            throw new DownloadException($carriersData['error']);
+            throw new DownloadException($this->escape($this->truncate($carriersData['error'])));
         }
 
         return $carriersData;
     }
 
+    /**
+     * Writes the technical cause of a failure to the log, the client sees only the translated message
+     * @param string $detail
+     * @return void
+     */
+    private function log($detail)
+    {
+        try {
+            Log::addLogger(
+                [
+                    'text_file' => self::LOG_FILE,
+                    // Without the format the logger writes the client IP address into the file.
+                    'text_entry_format' => '{DATETIME} {PRIORITY} {CATEGORY} {MESSAGE}',
+                ],
+                Log::ALL,
+                [self::LOG_CATEGORY]
+            );
+            // The VirtueMart log view prints the lines without escaping.
+            Log::add($this->escape(str_replace(["\r", "\n"], ' ', $detail)), Log::ERROR, self::LOG_CATEGORY);
+        } catch (\Throwable $e) {
+            // A failed log must not replace the message for the client.
+        }
+    }
+
+    /**
+     * Escapes text from the feed before it goes to HTML output
+     *
+     * Without ENT_SUBSTITUTE invalid UTF-8 gives an empty string.
+     * @param string $text
+     * @return string
+     */
+    private function escape($text)
+    {
+        return htmlspecialchars($text, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+    }
+
+    /**
+     * Shortens text from the feed without cutting a UTF-8 character in half
+     *
+     * mb_substr() replaces invalid UTF-8, so only the length tells whether the text was cut.
+     * @param string $text
+     * @return string
+     */
+    private function truncate($text)
+    {
+        if (mb_strlen($text, 'UTF-8') <= self::MAX_TEXT_LENGTH) {
+            return $text;
+        }
+
+        return mb_substr($text, 0, self::MAX_TEXT_LENGTH, 'UTF-8') . '...';
+    }
 
     /**
      * Validates data from API.
