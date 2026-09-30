@@ -10,7 +10,7 @@ use Joomla\CMS\Log\Log;
  */
 class Downloader
 {
-    const API_URL = 'https://pickup-point.api.packeta.com/v5/%s/carrier.json?lang=%s';
+    const API_URL = 'https://pickup-point.api.packeta.com/v5/%s/carrier/json?lang=%s';
 
     const LOG_CATEGORY = 'packeta.errors';
 
