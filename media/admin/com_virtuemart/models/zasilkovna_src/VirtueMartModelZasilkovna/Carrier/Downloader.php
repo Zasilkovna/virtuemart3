@@ -3,6 +3,7 @@
 namespace VirtueMartModelZasilkovna\Carrier;
 
 use JText;
+use JUri;
 use Joomla\CMS\Log\Log;
 
 /**
@@ -18,15 +19,8 @@ class Downloader
 
     const MAX_TEXT_LENGTH = 200;
 
-    const HTTP_STATUS_SUCCESS_MIN = 200;
-
-    const HTTP_STATUS_SUCCESS_MAX = 299;
-
-    const HTTP_STATUS_UNAUTHORIZED = 401;
-
-    const HTTP_STATUS_SERVER_ERROR_MIN = 500;
-
-    const HTTP_STATUS_SERVER_ERROR_MAX = 599;
+    // The VirtueMart log view shows the content of this log file.
+    const LOG_VIEW_PATH = 'administrator/index.php?option=com_virtuemart&amp;view=log&amp;task=edit&amp;logfile=' . self::LOG_FILE;
 
     /** @var string */
     private $apiKey;
@@ -53,7 +47,7 @@ class Downloader
         if (!$this->validateCarrierData($carriers, $errorDetails)) {
             $this->log('Validation failed: ' . $errorDetails);
 
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_VALIDATION_ERROR'));
+            throw new DownloadException(JText::sprintf('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_VALIDATION_ERROR', $this->getLogLink()));
         }
 
         return $carriers;
@@ -163,41 +157,31 @@ class Downloader
         if ($response === false) {
             $this->log('Download failed: ' . implode('; ', $warnings));
 
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR'));
+            throw new DownloadException(JText::sprintf('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR', $this->getLogLink()));
         }
 
-        // The feed returns 401 for an invalid API key. The text of the body is not used.
-        if ($response['status'] === self::HTTP_STATUS_UNAUTHORIZED) {
-            $this->log('HTTP 401. Data: ' . $this->truncate($response['body']));
+        // The body of a status other than 200 does not describe carriers, so the client never sees it.
+        // A status other than 401 or 5xx means a wrong URL, a blocked account or a rate limit.
+        // A response without a status line (null) goes on to the body check.
+        $status = $response['status'];
+        if ($status !== null && $status !== 200) {
+            if ($status === 401) {
+                $message = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_API_KEY_INVALID');
+            } elseif ($status >= 500 && $status <= 599) {
+                $message = JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_SERVER_ERROR');
+            } else {
+                $message = JText::sprintf('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR', $this->getLogLink());
+            }
 
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_API_KEY_INVALID'));
-        }
+            $this->log('HTTP ' . $status . '. Data: ' . $this->truncate($response['body']));
 
-        // A server error comes with an HTML page. Its text does not tell the client anything.
-        if ($response['status'] >= self::HTTP_STATUS_SERVER_ERROR_MIN
-            && $response['status'] <= self::HTTP_STATUS_SERVER_ERROR_MAX
-        ) {
-            $this->log('HTTP ' . $response['status'] . '. Data: ' . $this->truncate($response['body']));
-
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_SERVER_ERROR'));
-        }
-
-        // Another status outside 2xx means a wrong URL, a blocked account or a rate limit.
-        // The body does not describe carriers, so it is not used.
-        // A response without a status line (null) does not stop the download.
-        if ($response['status'] !== null
-            && ($response['status'] < self::HTTP_STATUS_SUCCESS_MIN
-                || $response['status'] > self::HTTP_STATUS_SUCCESS_MAX)
-        ) {
-            $this->log('HTTP ' . $response['status'] . '. Data: ' . $this->truncate($response['body']));
-
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR'));
+            throw new DownloadException($message);
         }
 
         if (trim($response['body']) === '') {
             $this->log('Empty response body');
 
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR'));
+            throw new DownloadException(JText::sprintf('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_DOWNLOAD_ERROR', $this->getLogLink()));
         }
 
         return $response['body'];
@@ -215,20 +199,31 @@ class Downloader
         if (!is_array($carriersData)) {
             $this->log('JSON error: ' . json_last_error_msg() . '. Data: ' . $this->truncate($json));
 
-            throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR'));
+            throw new DownloadException(JText::sprintf('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_JSON_ERROR', $this->getLogLink()));
         }
 
         if (isset($carriersData['error'])) {
             if (!is_string($carriersData['error']) || trim($carriersData['error']) === '') {
                 $this->log('Invalid error field. Data: ' . $this->truncate($json));
 
-                throw new DownloadException(JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_VALIDATION_ERROR'));
+                throw new DownloadException(JText::sprintf('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_VALIDATION_ERROR', $this->getLogLink()));
             }
 
-            throw new DownloadException($this->escape($this->truncate($carriersData['error'])));
+            $this->log('Feed error. Data: ' . $this->truncate($json));
+
+            throw new DownloadException(JText::sprintf('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_FEED_ERROR', $this->escape($this->truncate($carriersData['error'])), $this->getLogLink()));
         }
 
         return $carriersData;
+    }
+
+    /**
+     * Returns a link to the VirtueMart log view
+     * @return string
+     */
+    private function getLogLink()
+    {
+        return '<a href="' . JUri::root() . self::LOG_VIEW_PATH . '">' . JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_LOG_LINK') . '</a>';
     }
 
     /**
