@@ -2,6 +2,7 @@
 
 namespace VirtueMartModelZasilkovna\Carrier;
 
+use JFactory;
 use JText;
 use JUri;
 use Joomla\CMS\Log\Log;
@@ -41,11 +42,13 @@ class Downloader
      */
     public function run($lang)
     {
-        $carriers = $this->fetchAsArray($lang);
+        $json = $this->downloadJson($lang);
+        $carriers = $this->getFromJson($json);
 
         $errorDetails = null;
         if (!$this->validateCarrierData($carriers, $errorDetails)) {
             $this->log('Validation failed: ' . $errorDetails);
+            $this->storeFeedCopy($json);
 
             throw new DownloadException(JText::sprintf('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_VALIDATION_ERROR', $this->getLogLink()));
         }
@@ -111,19 +114,6 @@ class Downloader
         }
 
         return $status;
-    }
-
-    /**
-     * Downloads carriers and returns in array.
-     * @param string $lang
-     * @return array
-     * @throws DownloadException
-     */
-    private function fetchAsArray($lang)
-    {
-        $json = $this->downloadJson($lang);
-
-        return $this->getFromJson($json);
     }
 
     /**
@@ -205,6 +195,7 @@ class Downloader
         if (isset($carriersData['error'])) {
             if (!is_string($carriersData['error']) || trim($carriersData['error']) === '') {
                 $this->log('Invalid error field. Data: ' . $this->truncate($json));
+                $this->storeFeedCopy($json);
 
                 throw new DownloadException(JText::sprintf('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_VALIDATION_ERROR', $this->getLogLink()));
             }
@@ -224,6 +215,22 @@ class Downloader
     private function getLogLink()
     {
         return '<a href="' . JUri::root() . self::LOG_VIEW_PATH . '">' . JText::_('PLG_VMSHIPMENT_PACKETERY_CARRIER_DOWNLOADER_LOG_LINK') . '</a>';
+    }
+
+    /**
+     * Saves the last invalid feed next to the log, so that support can analyse it
+     * @param string $json
+     * @return void
+     */
+    private function storeFeedCopy($json)
+    {
+        $path = JFactory::getConfig()->get('log_path') . '/packeta.feed.php';
+        // The leading # keeps the file plain text, so the VirtueMart log view shows it as a link.
+        $header = "#<?php die('Forbidden.'); ?>\n";
+        // The VirtueMart log view prints the lines without escaping.
+        if (@file_put_contents($path, $header . $this->escape($json)) === false) {
+            $this->log('Cannot write the feed copy: ' . $path);
+        }
     }
 
     /**
