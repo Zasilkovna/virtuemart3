@@ -1,3 +1,6 @@
+1.5.1 - Updated: carrier list update uses the current Packeta API address and shows specific errors, for example a missing or invalid API password
+      - Added: carrier list update logs errors to packeta.errors.php and warnings to packeta.warnings.php, and saves the last feed with invalid carrier data to packeta.feed.php
+
 1.5.0 - Added: display of consignment code in order detail and Packeta orders list
       - Updated: Slovak translations
 
