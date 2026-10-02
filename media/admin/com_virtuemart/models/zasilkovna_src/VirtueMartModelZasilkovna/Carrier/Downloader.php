@@ -18,6 +18,10 @@ class Downloader
 
     const LOG_FILE = 'packeta.errors.php';
 
+    const WARNING_LOG_CATEGORY = 'packeta.warnings';
+
+    const WARNING_LOG_FILE = 'packeta.warnings.php';
+
     const MAX_TEXT_LENGTH = 200;
 
     // The VirtueMart log view shows the content of this log file.
@@ -144,6 +148,11 @@ class Downloader
             restore_error_handler();
         }
 
+        // The client never sees the warnings, so they go to their own log also after a successful download
+        if ($warnings !== []) {
+            $this->log('Download warnings: ' . implode('; ', $warnings), Log::WARNING);
+        }
+
         if ($response === false) {
             $this->log('Download failed: ' . implode('; ', $warnings));
 
@@ -234,24 +243,27 @@ class Downloader
     }
 
     /**
-     * Writes the technical cause of a failure to the log, the client sees only the translated message
+     * Writes technical details to the log, the client sees only the translated message
      * @param string $detail
+     * @param int $priority Log::WARNING goes to the warning log, other priorities to the error log
      * @return void
      */
-    private function log($detail)
+    private function log($detail, $priority = Log::ERROR)
     {
+        $isWarning = $priority === Log::WARNING;
+        $category = $isWarning ? self::WARNING_LOG_CATEGORY : self::LOG_CATEGORY;
         try {
             Log::addLogger(
                 [
-                    'text_file' => self::LOG_FILE,
+                    'text_file' => $isWarning ? self::WARNING_LOG_FILE : self::LOG_FILE,
                     // Without the format the logger writes the client IP address into the file.
                     'text_entry_format' => '{DATETIME} {PRIORITY} {CATEGORY} {MESSAGE}',
                 ],
                 Log::ALL,
-                [self::LOG_CATEGORY]
+                [$category]
             );
             // The VirtueMart log view prints the lines without escaping.
-            Log::add($this->escape(str_replace(["\r", "\n"], ' ', $detail)), Log::ERROR, self::LOG_CATEGORY);
+            Log::add($this->escape(str_replace(["\r", "\n"], ' ', $detail)), $priority, $category);
         } catch (\Throwable $e) {
             // A failed log must not replace the message for the client.
         }
