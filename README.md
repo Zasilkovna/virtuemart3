@@ -43,7 +43,7 @@ Pro každou podporovanou zemi je možné nastavit:
 - ** Weight rules ** - click ** Add ** to set prices for different order weights. To cancel the weight rule, click the ** Remove ** button
 
 Save the configuration with the ** Save ** button in the upper left corner of the page.
-Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a new shipping method. The added method must have ** Shipment Method ** set to ** VM3 Mail **
+Next, select ** VirtueMart ** / ** Shipment Methods ** in the top menu and add a new shipping method. The added method must have ** Shipment Method ** set to ** Packeta **
 
 #### List of orders
 
@@ -161,7 +161,7 @@ Pro každou podporovanou zemi je možné nastavit:
 - **Váhová pravidla** - kliknutím na tlačítko **Přidat** můžete nastavit ceny pro různé váhy objednávky.  Pro zrušení váhového pravidla klikněte na tlačítko **Odebrat**
 
 Konfiguraci uložte tlačítkem **Save** v levém horním rohu stránky.
-Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Methods** a přidat novou metodu dopravy. Přidaná metoda musí mít parametr **Shipment Method** nastavený na **Zasilkovna VM3**
+Dále je potřeba zvolit v horním menu položku **VirtueMart** / **Shipment Methods** a přidat novou metodu dopravy. Přidaná metoda musí mít parametr **Shipment Method** nastavený na **Packeta**
 
 #### Seznam objednávek
 
