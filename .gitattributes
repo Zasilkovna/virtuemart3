@@ -2,3 +2,4 @@
 .gitignore export-ignore
 *README.md export-ignore
 *CHANGE_LOG.txt export-ignore
+tests/ export-ignore

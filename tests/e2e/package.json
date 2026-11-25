@@ -1,0 +1,18 @@
+{
+  "name": "packeta-virtuemart-e2e",
+  "private": true,
+  "description": "Playwright E2E tests for the Packeta VirtueMart shipment plugin",
+  "scripts": {
+    "test": "playwright test",
+    "install-browsers": "playwright install chromium",
+    "typecheck": "tsc --noEmit"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.61.0",
+    "@types/node": "20.19.43",
+    "typescript": "6.0.3"
+  }
+}
